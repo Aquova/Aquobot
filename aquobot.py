@@ -56,13 +56,13 @@ async def on_message(message):
 
     elif message.content.startswith('!status'):
         raw = str(subprocess.check_output('uptime'))
-        foo = raw.split(',')[0]
-        foo = foo.split(' ')[-1]
-        await client.send_message(message.channel, "Uptime: " + foo)
+        uptime = raw.split(',')[0]
+        uptime = uptime.split(' ')[-1]
 
-        temp = str(subprocess.check_output('uptime'))
-        print(temp)
-        await client.send_message(message.channel, "Temp: " + temp)
+        raw_temp = str(subprocess.check_output(['cat','/sys/class/thermal/thermal_zone0/temp']))
+        temp = int(raw_temp[2:6])
+        temp = (temp * 9 / 5) + 32
+        await client.send_message(message.channel, "Uptime: " + uptime + " Temp: " + temp + "ºF")
 
     elif message.content.startswith('!echo'):
         tmp = message.content
