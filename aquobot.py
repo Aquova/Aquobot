@@ -6,6 +6,7 @@ import discord
 import asyncio
 import wolframalpha
 import json
+import subprocess
 
 # config.json isn't included in repository, to protect public keys
 with open('config.json') as json_data_file:
@@ -52,6 +53,16 @@ async def on_message(message):
     elif message.content.startswith('!alive'):
         if discord.Client.is_logged_in:
             await client.send_message(message.channel, 'Nah.')
+
+    elif message.content.startswith('!status'):
+        raw = str(subprocess.check_output('uptime'))
+        foo = raw.split(',')[0]
+        foo = foo.split(' ')[-1]
+        await client.send_message(message.channel, "Uptime: " + foo)
+
+        temp = str(subprocess.check_output('uptime'))
+        print(temp)
+        await client.send_message(message.channel, "Temp: " + temp)
 
     elif message.content.startswith('!echo'):
         tmp = message.content
