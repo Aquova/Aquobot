@@ -36,30 +36,29 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    print(message.author.name + ": " + message.content)
     if message.content.startswith("!help"):
-        await client.send_message(message.channel, "http://aquova.github.io/aquobot.html")
+        out = "http://aquova.github.io/aquobot.html"
+        print(out)
+        await client.send_message(message.channel, out)
 
     elif message.content.startswith("🔪"):
-        await client.send_message(message.channel, ":gun:")
+        out = ":gun:"
+        print(out)
+        await client.send_message(message.channel, out)
 
     elif message.content.startswith('!wolfram'):
         q = message.content[9:]
         res = waclient.query(q)
         out = next(res.results).text
+        print(out)
         await client.send_message(message.channel, out)
-
-    # if message.content.startswith('!test'):
-    #     counter = 0
-    #     tmp = await client.send_message(message.channel, 'Calculating messages...')
-    #     async for log in client.logs_from(message.channel, limit=100):
-    #         if log.author == message.author:
-    #             counter += 1
-    #
-    #     await client.edit_message(tmp, 'You have {} messages.'.format(counter))
 
     elif message.content.startswith('!alive'):
         if discord.Client.is_logged_in:
-            await client.send_message(message.channel, 'Nah.')
+            out = 'Nah.'
+            print(out)
+            await client.send_message(message.channel, out)
 
     elif message.content.startswith('!status'):
         raw = str(subprocess.check_output('uptime'))
@@ -69,27 +68,40 @@ async def on_message(message):
         raw_temp = str(subprocess.check_output(['cat','/sys/class/thermal/thermal_zone0/temp']))
         temp = int(raw_temp[2:7])
         temp = ((temp/1000) * 9 / 5) + 32
-        await client.send_message(message.channel, "Uptime: " + uptime + " Temp: " + str(temp) + "ºF")
+        out = "Uptime: " + uptime + " Temp: " + str(temp) + "ºF"
+        print(out)
+        await client.send_message(message.channel, out)
 
     elif message.content.startswith('!echo'):
         tmp = message.content
-        tmp = tmp[5:]
-        await client.send_message(message.channel, tmp)
+        out = tmp[5:]
+        print(out)
+        await client.send_message(message.channel, out)
 
     elif message.content.startswith('!power'):
         if message.author.id == ids.get("aquova"):
-            await client.send_message(message.channel, 'Yeah, thats coo.')
+            out = 'Yeah, thats coo.'
+            print(out)
+            await client.send_message(message.channel, out)
         else:
-            await client.send_message(message.channel, '*NO*')
+            out = '*NO*'
+            print(out)
+            await client.send_message(message.channel, out)
 
     elif ("BELGIAN" in message.content.upper()) or ("BELGIUM" in message.content.upper()):
         if message.author.id != client.user.id:
-            await client.send_message(message.channel, "https://i0.wp.com/www.thekitchenwhisperer.net/wp-content/uploads/2014/04/BelgianWaffles8.jpg")
+            out = "https://i0.wp.com/www.thekitchenwhisperer.net/wp-content/uploads/2014/04/BelgianWaffles8.jpg"
+            print(out)
+            await client.send_message(message.channel, out)
 
     elif ("NETHERLANDS" in message.content.upper()) or ("DUTCH" in message.content.upper()):
-        await client.send_message(message.channel, ":flag_nl:")
+        out = ":flag_nl:"
+        print(out)
+        await client.send_message(message.channel, out)
 
     elif "EXCUSE ME" in message.content.upper():
-        await client.send_message(message.channel, "You're excused.")
+        out = "You're excused."
+        print(out)
+        await client.send_message(message.channel, out)
 
 client.run(discord_key)
