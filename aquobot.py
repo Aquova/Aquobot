@@ -7,6 +7,13 @@ import asyncio
 import wolframalpha
 import json
 import subprocess
+import logging
+
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
 
 # config.json isn't included in repository, to protect public keys
 with open('config.json') as json_data_file:
