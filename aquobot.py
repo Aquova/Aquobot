@@ -29,7 +29,7 @@ async def on_ready():
 @client.event
 async def on_message(message):
     if message.content.startswith("!help"):
-        await client.send_message(message.channel, "http://aquova.github.com/aquobot.html")
+        await client.send_message(message.channel, "http://aquova.github.io/aquobot.html")
 
     elif message.content.startswith("🔪"):
         await client.send_message(message.channel, ":gun:")
