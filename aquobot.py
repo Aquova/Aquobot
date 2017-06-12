@@ -60,9 +60,9 @@ async def on_message(message):
         uptime = uptime.split(' ')[-1]
 
         raw_temp = str(subprocess.check_output(['cat','/sys/class/thermal/thermal_zone0/temp']))
-        temp = int(raw_temp[2:6])
-        temp = (temp * 9 / 5) + 32
-        await client.send_message(message.channel, "Uptime: " + uptime + " Temp: " + temp + "ºF")
+        temp = int(raw_temp[2:7])
+        temp = ((temp/1000) * 9 / 5) + 32
+        await client.send_message(message.channel, "Uptime: " + uptime + " Temp: " + str(temp) + "ºF")
 
     elif message.content.startswith('!echo'):
         tmp = message.content
