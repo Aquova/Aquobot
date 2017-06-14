@@ -1,2 +1,4 @@
 *config.json
 *discord.log
+*.DS_Store
+*__pycache__

@@ -1,13 +1,15 @@
-#!/usr/bin/python
-# Requires Python 3.5+ to run
-# Written by Austin Bricker, 2017
+# The Aquobot program for discord
+# http://github.com/Aquova/aquobot
 
-import discord
-import asyncio
-import wolframalpha
-import json
-import subprocess
-import logging
+# Written by Austin Bricker, 2017
+# Requires Python 3.5+ to run
+
+import sys
+sys.path.insert(0, './programs')
+
+import discord, wolframalpha
+import asyncio, json, subprocess, logging
+import Morse, Scrabble_Values, Roman_Numerals, Days_Until
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
@@ -78,8 +80,31 @@ async def on_message(message):
         print(out)
         await client.send_message(message.channel, out)
 
+    elif message.content.startswith('!morse'):
+        parse = message.content.split(" ")
+        if message.content == '!morse':
+            out = '!morse ENCODE/DECODE MESSAGE'
+        elif parse[1].upper() == 'ENCODE':
+            out = Morse.encode(" ".join(parse[2:]))
+        elif parse[1].upper() == 'DECODE':
+            print(" ".join(parse[2:]))
+            out = Morse.decode(" ".join(parse[2:]))
+        else:
+            if message.author.id != client.user.id:
+                out = "That is not a valid option, choose encode or decode."
+
+        await client.send_message(message.channel, out)
+
     elif message.content.startswith('!pin'):
-        await client.pin_message(old_message)
+        if message.content == '!pin':
+            await client.send_message(message.channel, '!pin USERNAME')
+        else:
+            name = message.content.split(" ")[1]
+            user = discord.utils.get(message.server.members, name=name)
+            async for pin in client.logs_from(message.channel, limit=100):
+                if (pin.author == user and pin.content != message.content):
+                    await client.pin_message(pin)
+                    break
 
     elif message.content.startswith('!power'):
         if message.author.id == ids.get("aquova"):
@@ -90,6 +115,32 @@ async def on_message(message):
             out = '*NO*'
             print(out)
             await client.send_message(message.channel, out)
+
+    elif message.content.startswith('!roman'):
+        parse = message.content.split(" ")
+        if (message.content == '!roman'):
+            out = '!roman NUMBER/NUMERAL'
+        elif parse[1].isalpha() == True:
+            out = Roman_Numerals.roman_to_int(parse[1])
+        else:
+            out = Roman_Numerals.int_to_roman(parse[1])
+        await client.send_message(message.channel, out)
+
+    elif message.content.startswith('!scrabble'):
+        parse = message.content.split(" ")
+        if (message.content == '!scrabble'):
+            out = '!scrabble WORD'
+        else:
+            out = Scrabble_Values.scrabble(parse[1])
+        await client.send_message(message.channel, out)
+
+    elif message.content.startswith('!until'):
+        parse = message.content.split(" ")
+        if (message.content == '!until'):
+            out = '!until MM-DD-YYYY'
+        else:
+            out = Days_Until.until(parse[1]) + " days"
+        await client.send_message(message.channel, out)
 
     elif ("BELGIAN" in message.content.upper()) or ("BELGIUM" in message.content.upper()):
         if message.author.id != client.user.id:
@@ -116,7 +167,5 @@ async def on_message(message):
         out = "I'm excused."
         print(out)
         await client.send_message(message.channel, out)
-
-    old_message = message
 
 client.run(discord_key)
