@@ -104,4 +104,9 @@ async def on_message(message):
         print(out)
         await client.send_message(message.channel, out)
 
+    elif "EXCUSE YOU" in message.content.upper():
+        out = "I'm excused."
+        print(out)
+        await client.send_message(message.channel, out)
+        
 client.run(discord_key)
