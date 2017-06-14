@@ -139,7 +139,7 @@ async def on_message(message):
         if (message.content == '!until'):
             out = '!until MM-DD-YYYY'
         else:
-            out = Days_Until.until(parse[1]) + " days"
+            out = str(Days_Until.until(parse[1])) + " days"
         await client.send_message(message.channel, out)
 
     elif ("BELGIAN" in message.content.upper()) or ("BELGIUM" in message.content.upper()):
