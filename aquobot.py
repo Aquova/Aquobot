@@ -78,6 +78,9 @@ async def on_message(message):
         print(out)
         await client.send_message(message.channel, out)
 
+    elif message.content.startswith('!pin'):
+        await client.pin_message(old_message)
+
     elif message.content.startswith('!power'):
         if message.author.id == ids.get("aquova"):
             out = 'Yeah, thats coo.'
@@ -99,6 +102,11 @@ async def on_message(message):
         print(out)
         await client.send_message(message.channel, out)
 
+    elif "MERICA" in message.content.upper():
+        out = "http://2static.fjcdn.com/pictures/Blank_7a73f9_5964511.jpg"
+        print(out)
+        await client.send_message(message.channel, out)
+
     elif "EXCUSE ME" in message.content.upper():
         out = "You're excused."
         print(out)
@@ -108,5 +116,7 @@ async def on_message(message):
         out = "I'm excused."
         print(out)
         await client.send_message(message.channel, out)
-        
+
+    old_message = message
+
 client.run(discord_key)
