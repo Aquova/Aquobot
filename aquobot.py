@@ -202,7 +202,7 @@ async def on_message(message):
         await client.send_message(message.channel, out)
 
     elif "FUCK ME" in message.content.upper():
-        out = "http://iv1.lisimg.com/image/9778011/606full-alexander-rybak.jpg"
+        out = "https://s-media-cache-ak0.pinimg.com/736x/48/2a/bf/482abf4c4f8cd8d9345253db901cf1d7.jpg"
         await client.send_message(message.channel, out)
 
 
