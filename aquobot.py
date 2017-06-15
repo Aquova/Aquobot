@@ -38,15 +38,12 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    print(message.author.name + ": " + message.content)
     if message.content.startswith("!help"):
         out = "http://aquova.github.io/aquobot.html"
-        print(out)
         await client.send_message(message.channel, out)
 
     elif message.content.startswith("🔪"):
         out = ":gun:"
-        print(out)
         await client.send_message(message.channel, out)
 
     elif message.content.startswith('!ban'):
@@ -60,26 +57,23 @@ async def on_message(message):
     elif message.content.startswith('!alive'):
         if discord.Client.is_logged_in:
             out = 'Nah.'
-            print(out)
             await client.send_message(message.channel, out)
 
     elif message.content.startswith('!status'):
         raw = str(subprocess.check_output('uptime'))
         first = raw.split(',')[0]
-        time = first.split(' ')[0]
-        uptime = first.split(' ')[2:]
+        time = first.split(' ')[1]
+        uptime = " ".join(first.split(' ')[3:])
 
         raw_temp = str(subprocess.check_output(['cat','/sys/class/thermal/thermal_zone0/temp']))
         temp = int(raw_temp[2:7])
-        temp = ((temp/1000) * 9 / 5) + 32
-        out = "Local Time: " + time + "Uptime: " + uptime + " Temp: " + str(temp[0:5]) + "ºF"
-        print(out)
+        temp = round(((temp/1000) * 9 / 5) + 32, 1)
+        out = "Local Time: " + time + "Uptime: " + uptime + " Temp: " + str(temp) + "ºF"
         await client.send_message(message.channel, out)
 
     elif message.content.startswith('!echo'):
         tmp = message.content
         out = tmp[5:]
-        print(out)
         await client.send_message(message.channel, out)
 
     elif message.content.startswith('!morse'):
@@ -89,7 +83,6 @@ async def on_message(message):
         elif parse[1].upper() == 'ENCODE':
             out = Morse.encode(" ".join(parse[2:]))
         elif parse[1].upper() == 'DECODE':
-            print(" ".join(parse[2:]))
             out = Morse.decode(" ".join(parse[2:]))
         else:
             if message.author.id != client.user.id:
@@ -111,11 +104,9 @@ async def on_message(message):
     elif message.content.startswith('!power'):
         if message.author.id == ids.get("aquova"):
             out = 'Yeah, thats coo.'
-            print(out)
             await client.send_message(message.channel, out)
         else:
             out = '*NO*'
-            print(out)
             await client.send_message(message.channel, out)
 
     elif message.content.startswith('!roman'):
@@ -148,33 +139,27 @@ async def on_message(message):
         q = message.content[9:]
         res = waclient.query(q)
         out = next(res.results).text
-        print(out)
         await client.send_message(message.channel, out)
 
     elif ("BELGIAN" in message.content.upper()) or ("BELGIUM" in message.content.upper()):
         if message.author.id != client.user.id:
             out = "https://i0.wp.com/www.thekitchenwhisperer.net/wp-content/uploads/2014/04/BelgianWaffles8.jpg"
-            print(out)
             await client.send_message(message.channel, out)
 
     elif ("NETHERLANDS" in message.content.upper()) or ("DUTCH" in message.content.upper()):
         out = ":flag_nl:"
-        print(out)
         await client.send_message(message.channel, out)
 
     elif "MERICA" in message.content.upper():
         out = "http://2static.fjcdn.com/pictures/Blank_7a73f9_5964511.jpg"
-        print(out)
         await client.send_message(message.channel, out)
 
     elif "EXCUSE ME" in message.content.upper():
         out = "You're excused."
-        print(out)
         await client.send_message(message.channel, out)
 
     elif "EXCUSE YOU" in message.content.upper():
         out = "I'm excused."
-        print(out)
         await client.send_message(message.channel, out)
 
 client.run(discord_key)
