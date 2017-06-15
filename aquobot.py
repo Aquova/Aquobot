@@ -162,4 +162,9 @@ async def on_message(message):
         out = "I'm excused."
         await client.send_message(message.channel, out)
 
+    elif "fuck me" in message.content.upper():
+        if message.author.id != client.user.id:
+            out = "http://iv1.lisimg.com/image/9778011/606full-alexander-rybak.jpg"
+            await client.send_message(message.channel, out)
+            
 client.run(discord_key)
