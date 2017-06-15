@@ -201,5 +201,9 @@ async def on_message(message):
         out = "┬─┬﻿ ノ( ゜-゜ノ)"
         await client.send_message(message.channel, out)
 
+    elif "FUCK ME" in message.content.upper():
+        out = "http://iv1.lisimg.com/image/9778011/606full-alexander-rybak.jpg"
+        await client.send_message(message.channel, out)
+
 
 client.run(discord_key)
