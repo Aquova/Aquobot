@@ -1,4 +1,5 @@
-# The Aquobot program for discord
+# The Aquobot program for Discord
+# The only Discord bot that utilizes the Mayan calendar!
 # http://github.com/Aquova/Aquobot
 
 # Written by Austin Bricker, 2017
@@ -189,7 +190,7 @@ async def on_message(message):
             out = "https://s-media-cache-ak0.pinimg.com/736x/48/2a/bf/482abf4c4f8cd8d9345253db901cf1d7.jpg"
 
         await client.send_message(message.channel, out)
-        
+
     except discord.errors.HTTPException:
         pass
 

@@ -7,7 +7,7 @@ def mayan(num):
     if num.upper() == "TODAY":
         target = datetime.date.today()
     else:
-        new = num.split('/')
+        new = num.split('-')
         m = int(new[0])
         d = int(new[1])
         y = int(new[2])
