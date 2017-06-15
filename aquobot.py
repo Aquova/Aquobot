@@ -8,7 +8,7 @@ import sys
 sys.path.insert(0, './programs')
 
 import discord, wolframalpha
-import asyncio, json, subprocess, logging
+import asyncio, json, subprocess, logging, random
 import Morse, Scrabble_Values, Roman_Numerals, Days_Until
 
 logger = logging.getLogger('discord')
@@ -49,11 +49,12 @@ async def on_message(message):
         print(out)
         await client.send_message(message.channel, out)
 
-    elif message.content.startswith('!wolfram'):
-        q = message.content[9:]
-        res = waclient.query(q)
-        out = next(res.results).text
-        print(out)
+    elif message.content.startswith('!ban'):
+        mem_list = []
+        mes_list = ["You got it, banning ", "Not a problem, banning ", "You're the boss, banning " ,"Ugh *fine*, banning "]
+        for member in message.server.members:
+            mem_list.append(member)
+        out = random.choice(mes_list) + random.choice(mem_list).name
         await client.send_message(message.channel, out)
 
     elif message.content.startswith('!alive'):
@@ -64,13 +65,14 @@ async def on_message(message):
 
     elif message.content.startswith('!status'):
         raw = str(subprocess.check_output('uptime'))
-        uptime = raw.split(',')[0]
-        uptime = uptime.split(' ')[-1]
+        first = raw.split(',')[0]
+        time = first.split(' ')[0]
+        uptime = first.split(' ')[2:]
 
         raw_temp = str(subprocess.check_output(['cat','/sys/class/thermal/thermal_zone0/temp']))
         temp = int(raw_temp[2:7])
         temp = ((temp/1000) * 9 / 5) + 32
-        out = "Uptime: " + uptime + " Temp: " + str(temp) + "ºF"
+        out = "Local Time: " + time + "Uptime: " + uptime + " Temp: " + str(temp[0:5]) + "ºF"
         print(out)
         await client.send_message(message.channel, out)
 
@@ -140,6 +142,13 @@ async def on_message(message):
             out = '!until MM-DD-YYYY'
         else:
             out = str(Days_Until.until(parse[1])) + " days"
+        await client.send_message(message.channel, out)
+
+    elif message.content.startswith('!wolfram'):
+        q = message.content[9:]
+        res = waclient.query(q)
+        out = next(res.results).text
+        print(out)
         await client.send_message(message.channel, out)
 
     elif ("BELGIAN" in message.content.upper()) or ("BELGIUM" in message.content.upper()):
