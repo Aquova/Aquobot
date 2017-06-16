@@ -214,6 +214,9 @@ async def on_message(message):
         elif "GERMAN" in message.content.upper():
             out = "https://i.imgur.com/tK71YYY.gifv"
 
+        elif "AUSTIN" in message.content.upper():
+            out = "Hello!!"
+
         await client.send_message(message.channel, out)
 
     except discord.errors.HTTPException:
