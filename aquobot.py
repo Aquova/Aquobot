@@ -52,9 +52,8 @@ async def on_message(message):
         # Updates bot to most recent version
         elif message.content.startswith("!update"):
             if (message.author.id == ids.get("eemie") or message.author.id == ids.get("aquova")):
-                client.logout
                 subprocess.call("./update.sh", shell=True)
-                client.run
+                sys.exit()
 
         # Never bring a knife to a gunfight
         elif message.content.startswith("🔪"):
