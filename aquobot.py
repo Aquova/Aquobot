@@ -11,7 +11,7 @@ sys.path.insert(0, './programs')
 import discord, wolframalpha
 import asyncio, json, subprocess, logging, random
 # Python programs I wrote, in ./programs
-import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan
+import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes
 
 # Handles logging to discord.log
 logger = logging.getLogger('discord')
@@ -49,9 +49,21 @@ async def on_message(message):
         if message.content.startswith("!help"):
             out = "http://aquova.github.io/aquobot.html"
 
+        # Updates bot to most recent version
+        elif message.content.startswith("!update"):
+            if (message.author.id == ids.get("eemie") or message.author.id == ids.get("aquova")):
+                client.logout
+                subprocess.call("update.sh")
+                client.run
+
         # Never bring a knife to a gunfight
         elif message.content.startswith("🔪"):
             out = ":gun:"
+
+        # Responds if active
+        elif message.content.startswith('!alive'):
+            if discord.Client.is_logged_in:
+                out = 'Nah.'
 
         # Ban actually does nothing
         # It picks a random user on the server and says it will ban them, but takes no action
@@ -62,27 +74,25 @@ async def on_message(message):
                 mem_list.append(member)
             out = random.choice(mes_list) + random.choice(mem_list).name
 
-        # Responds if active
-        elif message.content.startswith('!alive'):
-            if discord.Client.is_logged_in:
-                out = 'Nah.'
-
-        # Posts local time, computer uptime, and RPi temperature
-        elif message.content.startswith('!status'):
-            raw = str(subprocess.check_output('uptime'))
-            first = raw.split(',')[0]
-            time = first.split(' ')[1]
-            uptime = " ".join(first.split(' ')[3:])
-
-            raw_temp = str(subprocess.check_output(['cat','/sys/class/thermal/thermal_zone0/temp']))
-            temp = int(raw_temp[2:7])
-            temp = round(((temp/1000) * 9 / 5) + 32, 1)
-            out = "Local Time: " + time + " Uptime: " + uptime + " RPi Temp: " + str(temp) + "ºF"
+        elif message.content.startswith('!choose'):
+            if message.content == "!choose":
+                out = "!choose OPTION1, OPTION2, OPTION3..."
+            else:
+                tmp = message.content[7:]
+                choice = tmp.split(",")
+                out = str(random.choice(choice))
 
         # Repeats back user message
         elif message.content.startswith('!echo'):
             tmp = message.content
             out = tmp[5:]
+
+        # elif message.content.startswith('!joke'):
+        #     joke_list = Jokes.joke()
+        #     pick_joke = random.choice(list(joke_list.keys()))
+        #     out = joke_list[pick_joke]
+        #     await client.send_message(message.channel, pick_joke)
+        #     await asyncio.sleep(5)
 
         # Converts time into the Mayan calendar, why not
         elif message.content.startswith('!mayan'):
@@ -142,6 +152,18 @@ async def on_message(message):
             else:
                 out = Scrabble_Values.scrabble(parse[1])
 
+        # Posts local time, computer uptime, and RPi temperature
+        elif message.content.startswith('!status'):
+            raw = str(subprocess.check_output('uptime'))
+            first = raw.split(',')[0]
+            time = first.split(' ')[1]
+            uptime = " ".join(first.split(' ')[3:])
+
+            raw_temp = str(subprocess.check_output(['cat','/sys/class/thermal/thermal_zone0/temp']))
+            temp = int(raw_temp[2:7])
+            temp = round(((temp/1000) * 9 / 5) + 32, 1)
+            out = "Local Time: " + time + " Uptime: " + uptime + " RPi Temp: " + str(temp) + "ºF"
+
         # Gives number of days until specified date
         elif message.content.startswith('!until'):
             parse = message.content.split(" ")
@@ -188,6 +210,9 @@ async def on_message(message):
 
         elif ("FUCK ME" in message.content.upper() and message.author.id == ids.get("eemie")):
             out = "https://s-media-cache-ak0.pinimg.com/736x/48/2a/bf/482abf4c4f8cd8d9345253db901cf1d7.jpg"
+
+        elif "GERMAN" in message.content.upper():
+            out = "https://i.imgur.com/tK71YYY.gifv"
 
         await client.send_message(message.channel, out)
 
