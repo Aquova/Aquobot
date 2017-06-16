@@ -126,6 +126,29 @@ async def on_message(message):
                         await client.pin_message(pin)
                         break
 
+        # Produces a poll where users can vote via reactions
+        elif message.content.startswith('!poll'):
+            num_emoji = {1:"1⃣", 2:"2⃣", 3:"3⃣", 4:"4⃣", 5:"5⃣",
+                            6:"6⃣", 7:"7⃣", 8:"8⃣", 9:"9⃣"}
+            if message.content == "!poll":
+                out = "!poll TITLE, OPTION1, OPTION2, OPTION3..."
+            else:
+                tmp = message.content[5:]
+                options = tmp.split(",")
+                num = len(options) - 1
+                i = 0
+                poll = options[0] + '\n'
+                for item in options[1:]:
+                    i += 1
+                    poll = poll + str(i) + ". " + item + '\n'
+
+                poll_message = await client.send_message(message.channel, poll)
+
+                for j in range(1, num + 1):
+                    await client.add_reaction(poll_message, num_emoji[j])
+
+                out = "Vote now!!"
+
         # Doesn't do anything right now
         elif message.content.startswith('!power'):
             if message.author.id == ids.get("aquova"):
@@ -213,8 +236,8 @@ async def on_message(message):
         elif "GERMAN" in message.content.upper():
             out = "https://i.imgur.com/tK71YYY.gifv"
 
-        elif "AUSTIN" in message.content.upper():
-            out = "Hello!!"
+        elif ("AQUOBOT" in message.content.upper() and (("FUCK" in message.content.upper()) or ("HATE" in message.content.upper()))):
+            out = ":cold_sweat:"
 
         await client.send_message(message.channel, out)
 
