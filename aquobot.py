@@ -53,7 +53,7 @@ async def on_message(message):
         elif message.content.startswith("!update"):
             if (message.author.id == ids.get("eemie") or message.author.id == ids.get("aquova")):
                 client.logout
-                subprocess.call("update.sh")
+                subprocess.call("./update.sh", shell=True)
                 client.run
 
         # Never bring a knife to a gunfight
@@ -87,12 +87,12 @@ async def on_message(message):
             tmp = message.content
             out = tmp[5:]
 
-        # elif message.content.startswith('!joke'):
-        #     joke_list = Jokes.joke()
-        #     pick_joke = random.choice(list(joke_list.keys()))
-        #     out = joke_list[pick_joke]
-        #     await client.send_message(message.channel, pick_joke)
-        #     await asyncio.sleep(5)
+        elif message.content.startswith('!joke'):
+            joke_list = Jokes.joke()
+            pick_joke = random.choice(list(joke_list.keys()))
+            out = joke_list[pick_joke]
+            await client.send_message(message.channel, pick_joke)
+            await asyncio.sleep(5)
 
         # Converts time into the Mayan calendar, why not
         elif message.content.startswith('!mayan'):
