@@ -2,3 +2,4 @@
 *discord.log
 *.DS_Store
 *__pycache__
+*database.db

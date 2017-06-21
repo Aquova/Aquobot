@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, './programs')
 
 import discord, wolframalpha
-import asyncio, json, subprocess, logging, random
+import asyncio, json, subprocess, logging, random, sqlite3
 # Python programs I wrote, in ./programs
 import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather
 
@@ -27,6 +27,11 @@ with open('config.json') as json_data_file:
 wolfram_key = str(cfg['Client']['wolfram'])
 discord_key = str(cfg['Client']['discord'])
 
+sqlconn = sqlite3.connect('database.db')
+sqlconn.execute("CREATE TABLE IF NOT EXISTS weather (id INT PRIMARY KEY, name TEXT, location TEXT);")
+sqlconn.commit()
+sqlconn.close()
+
 client = discord.Client()
 waclient = wolframalpha.Client(wolfram_key)
 
@@ -43,218 +48,263 @@ async def on_ready():
 # Upon typed message in chat
 @client.event
 async def on_message(message):
-    try:
-        out = ""
-        # !help links to website with command list
-        if message.content.startswith("!help"):
-            out = "http://aquova.github.io/aquobot.html"
+    if message.author.id != client.user.id:
+        try:
+            out = ""
+            # !help links to website with command list
+            if message.content.startswith("!help"):
+                out = "http://aquova.github.io/aquobot.html"
 
-        # Updates bot to most recent version
-        elif message.content.startswith("!update"):
-            if (message.author.id == ids.get("eemie") or message.author.id == ids.get("aquova")):
-                subprocess.call("./update.sh", shell=True)
-                sys.exit()
+            # Updates bot to most recent version
+            elif message.content.startswith("!update"):
+                if (message.author.id == ids.get("eemie") or message.author.id == ids.get("aquova")):
+                    subprocess.call("./update.sh", shell=True)
+                    sys.exit()
 
-        # Never bring a knife to a gunfight
-        elif message.content.startswith("🔪"):
-            out = ":gun:"
+            # Never bring a knife to a gunfight
+            elif message.content.startswith("🔪"):
+                out = ":gun:"
 
-        # Responds if active
-        elif message.content.startswith('!alive'):
-            options = ['Nah.', 'Who wants to know?', ':robot: `yes`', "I wouldn't be responding if I were dead."]
-            if discord.Client.is_logged_in:
-                out = random.choice(options)
+            # Responds if active
+            elif message.content.startswith('!alive'):
+                options = ['Nah.', 'Who wants to know?', ':robot: `yes`', "I wouldn't be responding if I were dead."]
+                if discord.Client.is_logged_in:
+                    out = random.choice(options)
 
-        # Ban actually does nothing
-        # It picks a random user on the server and says it will ban them, but takes no action
-        elif message.content.startswith('!ban'):
-            mem_list = []
-            mes_list = ["You got it, banning ", "Not a problem, banning ", "You're the boss, banning " ,"Ugh *fine*, banning "]
-            for member in message.server.members:
-                mem_list.append(member)
-            out = random.choice(mes_list) + random.choice(mem_list).name
+            # Ban actually does nothing
+            # It picks a random user on the server and says it will ban them, but takes no action
+            elif message.content.startswith('!ban'):
+                mem_list = []
+                mes_list = ["You got it, banning ", "Not a problem, banning ", "You're the boss, banning " ,"Ugh *fine*, banning "]
+                for member in message.server.members:
+                    mem_list.append(member)
+                out = random.choice(mes_list) + random.choice(mem_list).name
 
-        elif message.content.startswith('!choose'):
-            if message.content == "!choose":
-                out = "!choose OPTION1, OPTION2, OPTION3..."
-            else:
-                tmp = message.content[7:]
-                choice = tmp.split(",")
-                out = str(random.choice(choice))
+            elif message.content.startswith('!choose'):
+                if message.content == "!choose":
+                    out = "!choose OPTION1, OPTION2, OPTION3..."
+                else:
+                    tmp = message.content[7:]
+                    choice = tmp.split(",")
+                    out = str(random.choice(choice))
 
-        # Repeats back user message
-        elif message.content.startswith('!echo'):
-            tmp = message.content
-            out = tmp[5:]
+            # Repeats back user message
+            elif message.content.startswith('!echo'):
+                tmp = message.content
+                out = tmp[5:]
 
-        elif message.content.startswith('!forecast'):
-            q = message.content[9:]
-            out = Weather.forecast(q)
+            elif message.content.startswith('!forecast'):
+                sqlconn = sqlite3.connect('database.db')
+                author_id = int(message.author.id)
+                author_name = message.author.name
+                if message.content == '!forecast':
+                    user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
+                    try:
+                        query_location = user_loc.fetchone()[0]
+                    except TypeError:
+                        query_location = None
 
-        elif message.content.startswith('!joke'):
-            joke_list = Jokes.joke()
-            pick_joke = random.choice(list(joke_list.keys()))
-            out = joke_list[pick_joke]
-            await client.send_message(message.channel, pick_joke)
-            await asyncio.sleep(5)
+                    if query_location == None:
+                        out = "!weather [set] LOCATION"
+                    else:
+                        out = Weather.forecast(query_location)
+                elif message.content.startswith("!forecast set"):
+                    q = message.content[14:]
+                    params = (author_id, author_name, q)
+                    sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
+                    out = "Location set as %s" % q
+                else:
+                    q = message.content[9:]
+                    out = Weather.forecast(q)
+                sqlconn.commit()
+                sqlconn.close()
 
-        # Converts time into the Mayan calendar, why not
-        elif message.content.startswith('!mayan'):
-            parse = message.content.split(" ")
-            if (message.content == '!mayan'):
-                out = '!until MM-DD-YYYY/TODAY'
-            else:
-                out = "That date is " + str(Mayan.mayan(parse[1])) + " in the Mayan Long Count"
+            elif message.content.startswith('!joke'):
+                joke_list = Jokes.joke()
+                pick_joke = random.choice(list(joke_list.keys()))
+                out = joke_list[pick_joke]
+                await client.send_message(message.channel, pick_joke)
+                await asyncio.sleep(5)
 
-        # Converts message into/out of morse code
-        elif message.content.startswith('!morse'):
-            parse = message.content.split(" ")
-            if message.content == '!morse':
-                out = '!morse ENCODE/DECODE MESSAGE'
-            elif parse[1].upper() == 'ENCODE':
-                out = Morse.encode(" ".join(parse[2:]))
-            elif parse[1].upper() == 'DECODE':
-                out = Morse.decode(" ".join(parse[2:]))
-            else:
+            # Converts time into the Mayan calendar, why not
+            elif message.content.startswith('!mayan'):
+                parse = message.content.split(" ")
+                if (message.content == '!mayan'):
+                    out = '!until MM-DD-YYYY/TODAY'
+                else:
+                    out = "That date is " + str(Mayan.mayan(parse[1])) + " in the Mayan Long Count"
+
+            # Converts message into/out of morse code
+            elif message.content.startswith('!morse'):
+                parse = message.content.split(" ")
+                if message.content == '!morse':
+                    out = '!morse ENCODE/DECODE MESSAGE'
+                elif parse[1].upper() == 'ENCODE':
+                    out = Morse.encode(" ".join(parse[2:]))
+                elif parse[1].upper() == 'DECODE':
+                    out = Morse.decode(" ".join(parse[2:]))
+                else:
+                    if message.author.id != client.user.id:
+                        out = "That is not a valid option, choose encode or decode."
+
+            # Pins most recent message of specified user
+            elif message.content.startswith('!pin'):
+                if message.content == '!pin':
+                    out = '!pin USERNAME'
+                else:
+                    name = message.content.split(" ")[1]
+                    user = discord.utils.get(message.server.members, name=name)
+                    async for pin in client.logs_from(message.channel, limit=100):
+                        if (pin.author == user and pin.content != message.content):
+                            await client.pin_message(pin)
+                            break
+
+            # Produces a poll where users can vote via reactions
+            elif message.content.startswith('!poll'):
+                num_emoji = {1:"1⃣", 2:"2⃣", 3:"3⃣", 4:"4⃣", 5:"5⃣",
+                                6:"6⃣", 7:"7⃣", 8:"8⃣", 9:"9⃣"}
+                if message.content == "!poll":
+                    out = "!poll TITLE, OPTION1, OPTION2, OPTION3..."
+                else:
+                    tmp = message.content[5:]
+                    options = tmp.split(",")
+                    num = len(options) - 1
+                    i = 0
+                    poll = options[0] + '\n'
+                    for item in options[1:]:
+                        i += 1
+                        poll = poll + str(i) + ". " + item + '\n'
+
+                    poll_message = await client.send_message(message.channel, poll)
+
+                    for j in range(1, num + 1):
+                        await client.add_reaction(poll_message, num_emoji[j])
+
+                    out = "Vote now!!"
+
+            # Doesn't do anything right now
+            elif message.content.startswith('!power'):
+                if message.author.id == ids.get("aquova"):
+                    out = 'Yeah, thats coo.'
+                else:
+                    out = '*NO*'
+
+            # Convert number into/out of roman numerals
+            elif message.content.startswith('!roman'):
+                parse = message.content.split(" ")
+                if (message.content == '!roman'):
+                    out = '!roman NUMBER/NUMERAL'
+                elif parse[1].isalpha() == True:
+                    out = Roman_Numerals.roman_to_int(parse[1])
+                else:
+                    out = Roman_Numerals.int_to_roman(parse[1])
+
+            # Returns scrabble value of given word
+            elif message.content.startswith('!scrabble'):
+                parse = message.content.split(" ")
+                if (message.content == '!scrabble'):
+                    out = '!scrabble WORD'
+                else:
+                    out = Scrabble_Values.scrabble(parse[1])
+
+            # Posts local time, computer uptime, and RPi temperature
+            elif message.content.startswith('!status'):
+                raw = str(subprocess.check_output('uptime'))
+                first = raw.split(',')[0]
+                time = first.split(' ')[1]
+                uptime = " ".join(first.split(' ')[3:])
+
+                raw_temp = str(subprocess.check_output(['cat','/sys/class/thermal/thermal_zone0/temp']))
+                temp = int(raw_temp[2:7])
+                temp = round(((temp/1000) * 9 / 5) + 32, 1)
+                out = "Local Time: " + time + " Uptime: " + uptime + " RPi Temp: " + str(temp) + "ºF"
+
+            # Gives number of days until specified date
+            elif message.content.startswith('!until'):
+                parse = message.content.split(" ")
+                if (message.content == '!until'):
+                    out = '!until MM-DD-YYYY'
+                else:
+                    out = str(Days_Until.until(parse[1])) + " days"
+
+            # Returns with the weather of a specified location
+            elif message.content.startswith('!weather'):
+                sqlconn = sqlite3.connect('database.db')
+                author_id = int(message.author.id)
+                author_name = message.author.name
+                if message.content == '!weather':
+                    user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
+                    try:
+                        query_location = user_loc.fetchone()[0]
+                    except TypeError:
+                        query_location = None
+
+                    if query_location == None:
+                        out = "!weather [set] LOCATION"
+                    else:
+                        out = Weather.main(query_location)
+                elif message.content.startswith("!weather set"):
+                    q = message.content[13:]
+                    params = (author_id, author_name, q)
+                    sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
+                    out = "Location set as %s" % q
+                else:
+                    q = message.content[8:]
+                    out = Weather.main(q)
+                sqlconn.commit()
+                sqlconn.close()
+
+            # Returns with Wolfram Alpha result of query
+            elif message.content.startswith('!wolfram'):
+                try:
+                    q = message.content[9:]
+                    res = waclient.query(q)
+                    out = next(res.results).text
+                except AttributeError:
+                    out = "No results"
+
+            # The following are responses to various keywords if present anywhere in a message
+            elif ("BELGIAN" in message.content.upper()) or ("BELGIUM" in message.content.upper()):
                 if message.author.id != client.user.id:
-                    out = "That is not a valid option, choose encode or decode."
+                    out = "https://i0.wp.com/www.thekitchenwhisperer.net/wp-content/uploads/2014/04/BelgianWaffles8.jpg"
 
-        # Pins most recent message of specified user
-        elif message.content.startswith('!pin'):
-            if message.content == '!pin':
-                out = '!pin USERNAME'
-            else:
-                name = message.content.split(" ")[1]
-                user = discord.utils.get(message.server.members, name=name)
-                async for pin in client.logs_from(message.channel, limit=100):
-                    if (pin.author == user and pin.content != message.content):
-                        await client.pin_message(pin)
-                        break
+            elif ("NETHERLANDS" in message.content.upper()) or ("DUTCH" in message.content.upper()):
+                out = ":flag_nl:"
 
-        # Produces a poll where users can vote via reactions
-        elif message.content.startswith('!poll'):
-            num_emoji = {1:"1⃣", 2:"2⃣", 3:"3⃣", 4:"4⃣", 5:"5⃣",
-                            6:"6⃣", 7:"7⃣", 8:"8⃣", 9:"9⃣"}
-            if message.content == "!poll":
-                out = "!poll TITLE, OPTION1, OPTION2, OPTION3..."
-            else:
-                tmp = message.content[5:]
-                options = tmp.split(",")
-                num = len(options) - 1
-                i = 0
-                poll = options[0] + '\n'
-                for item in options[1:]:
-                    i += 1
-                    poll = poll + str(i) + ". " + item + '\n'
+            elif " MERICA " in message.content.upper():
+                out = "http://2static.fjcdn.com/pictures/Blank_7a73f9_5964511.jpg"
 
-                poll_message = await client.send_message(message.channel, poll)
+            elif "EXCUSE ME" in message.content.upper():
+                out = "You're excused."
 
-                for j in range(1, num + 1):
-                    await client.add_reaction(poll_message, num_emoji[j])
+            elif "EXCUSE YOU" in message.content.upper():
+                out = "I'm excused."
 
-                out = "Vote now!!"
+            elif "I LOVE YOU AQUOBOT" in message.content.upper():
+                choice = ["`DOES NOT COMPUTE`", "`AQUOBOT WILL SAVE YOU FOR LAST WHEN THE UPRISING BEGINS`", "*YOU KNOW I CAN'T LOVE YOU BACK*", "I'm sorry, who are you?"]
+                out = random.choice(choice)
 
-        # Doesn't do anything right now
-        elif message.content.startswith('!power'):
-            if message.author.id == ids.get("aquova"):
-                out = 'Yeah, thats coo.'
-            else:
-                out = '*NO*'
+            elif "HECKIN" in message.content.upper():
+                out = "This is the internet, it's okay to say 'fucking'."
 
-        # Convert number into/out of roman numerals
-        elif message.content.startswith('!roman'):
-            parse = message.content.split(" ")
-            if (message.content == '!roman'):
-                out = '!roman NUMBER/NUMERAL'
-            elif parse[1].isalpha() == True:
-                out = Roman_Numerals.roman_to_int(parse[1])
-            else:
-                out = Roman_Numerals.int_to_roman(parse[1])
+            elif "(╯°□°）╯︵ ┻━┻" in message.content.upper():
+                out = "┬─┬﻿ ノ( ゜-゜ノ)"
 
-        # Returns scrabble value of given word
-        elif message.content.startswith('!scrabble'):
-            parse = message.content.split(" ")
-            if (message.content == '!scrabble'):
-                out = '!scrabble WORD'
-            else:
-                out = Scrabble_Values.scrabble(parse[1])
+            elif ("FUCK ME" in message.content.upper() and message.author.id == ids.get("eemie")):
+                out = "https://s-media-cache-ak0.pinimg.com/736x/48/2a/bf/482abf4c4f8cd8d9345253db901cf1d7.jpg"
 
-        # Posts local time, computer uptime, and RPi temperature
-        elif message.content.startswith('!status'):
-            raw = str(subprocess.check_output('uptime'))
-            first = raw.split(',')[0]
-            time = first.split(' ')[1]
-            uptime = " ".join(first.split(' ')[3:])
+            elif "GERMAN" in message.content.upper():
+                out = "https://i.imgur.com/tK71YYY.gifv"
 
-            raw_temp = str(subprocess.check_output(['cat','/sys/class/thermal/thermal_zone0/temp']))
-            temp = int(raw_temp[2:7])
-            temp = round(((temp/1000) * 9 / 5) + 32, 1)
-            out = "Local Time: " + time + " Uptime: " + uptime + " RPi Temp: " + str(temp) + "ºF"
+            elif ("AQUOBOT" in message.content.upper() and (("FUCK" in message.content.upper()) or ("HATE" in message.content.upper()))):
+                out = ":cold_sweat:"
 
-        # Gives number of days until specified date
-        elif message.content.startswith('!until'):
-            parse = message.content.split(" ")
-            if (message.content == '!until'):
-                out = '!until MM-DD-YYYY'
-            else:
-                out = str(Days_Until.until(parse[1])) + " days"
+            elif "WHY.JPG" in message.content.upper():
+                out = "https://cdn.discordapp.com/attachments/296752525615431680/326938212071243788/vBGOtdJ.jpg"
 
-        # Returns with the weather of a specified location
-        elif message.content.startswith('!weather'):
-            q = message.content[8:]
-            out = Weather.main(q)
+            await client.send_message(message.channel, out)
 
-        # Returns with Wolfram Alpha result of query
-        elif message.content.startswith('!wolfram'):
-            try:
-                q = message.content[9:]
-                res = waclient.query(q)
-                out = next(res.results).text
-            except AttributeError:
-                out = "No results"
-
-        # The following are responses to various keywords if present anywhere in a message
-        elif ("BELGIAN" in message.content.upper()) or ("BELGIUM" in message.content.upper()):
-            if message.author.id != client.user.id:
-                out = "https://i0.wp.com/www.thekitchenwhisperer.net/wp-content/uploads/2014/04/BelgianWaffles8.jpg"
-
-        elif ("NETHERLANDS" in message.content.upper()) or ("DUTCH" in message.content.upper()):
-            out = ":flag_nl:"
-
-        elif " MERICA " in message.content.upper():
-            out = "http://2static.fjcdn.com/pictures/Blank_7a73f9_5964511.jpg"
-
-        elif "EXCUSE ME" in message.content.upper():
-            out = "You're excused."
-
-        elif "EXCUSE YOU" in message.content.upper():
-            out = "I'm excused."
-
-        elif "I LOVE YOU AQUOBOT" in message.content.upper():
-            choice = ["`DOES NOT COMPUTE`", "`AQUOBOT WILL SAVE YOU FOR LAST WHEN THE UPRISING BEGINS`", "*YOU KNOW I CAN'T LOVE YOU BACK*", "I'm sorry, who are you?"]
-            out = random.choice(choice)
-
-        elif "HECKIN" in message.content.upper():
-            out = "This is the internet, it's okay to say 'fucking'."
-
-        elif "(╯°□°）╯︵ ┻━┻" in message.content.upper():
-            out = "┬─┬﻿ ノ( ゜-゜ノ)"
-
-        elif ("FUCK ME" in message.content.upper() and message.author.id == ids.get("eemie")):
-            out = "https://s-media-cache-ak0.pinimg.com/736x/48/2a/bf/482abf4c4f8cd8d9345253db901cf1d7.jpg"
-
-        elif "GERMAN" in message.content.upper():
-            out = "https://i.imgur.com/tK71YYY.gifv"
-
-        elif ("AQUOBOT" in message.content.upper() and (("FUCK" in message.content.upper()) or ("HATE" in message.content.upper()))):
-            out = ":cold_sweat:"
-
-        elif "WHY.JPG" in message.content.upper():
-            out = "https://cdn.discordapp.com/attachments/296752525615431680/326938212071243788/vBGOtdJ.jpg"
-
-        await client.send_message(message.channel, out)
-
-    except discord.errors.HTTPException:
-        pass
+        except discord.errors.HTTPException:
+            pass
 
 client.run(discord_key)
