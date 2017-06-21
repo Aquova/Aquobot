@@ -11,7 +11,7 @@ sys.path.insert(0, './programs')
 import discord, wolframalpha
 import asyncio, json, subprocess, logging, random
 # Python programs I wrote, in ./programs
-import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes
+import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather
 
 # Handles logging to discord.log
 logger = logging.getLogger('discord')
@@ -61,8 +61,9 @@ async def on_message(message):
 
         # Responds if active
         elif message.content.startswith('!alive'):
+            options = ['Nah.', 'Who wants to know?', ':robot: `yes`', "I wouldn't be responding if I were dead."]
             if discord.Client.is_logged_in:
-                out = 'Nah.'
+                out = random.choice(options)
 
         # Ban actually does nothing
         # It picks a random user on the server and says it will ban them, but takes no action
@@ -194,6 +195,11 @@ async def on_message(message):
             else:
                 out = str(Days_Until.until(parse[1])) + " days"
 
+        # Returns with the weather of a specified location
+        elif message.content.startswith('!weather'):
+            q = message.content[8:]
+            out = Weather.main(q)
+
         # Returns with Wolfram Alpha result of query
         elif message.content.startswith('!wolfram'):
             try:
@@ -238,6 +244,9 @@ async def on_message(message):
 
         elif ("AQUOBOT" in message.content.upper() and (("FUCK" in message.content.upper()) or ("HATE" in message.content.upper()))):
             out = ":cold_sweat:"
+
+        elif "WHY.JPG" in message.content.upper():
+            out = "https://cdn.discordapp.com/attachments/296752525615431680/326938212071243788/vBGOtdJ.jpg"
 
         await client.send_message(message.channel, out)
 
