@@ -17,8 +17,3 @@ It responds to commands and certain phrases, and can provide various services.
 -- Commands --
 
 For a full command list with examples, type '!help' or visit http://aquova.github.io/aquobot.html/
-
-
--- Version History --
-
-6/12/17 - Aquobot goes online for the first time, and is able to respond to about 10 commands or phrases. 
