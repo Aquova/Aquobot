@@ -51,6 +51,14 @@ def cardinal(value):
         out = 'N'
     return out
 
+def forecast(place):
+    data = get_data(place)
+    week = data['item']['forecast']
+    out = ""
+    for i in range(7):
+        out = out + week[i]['day'] + " " + week[i]['date'] + ", " + week[i]['text'] + " with a high of " + week[i]['high'] + "°F (" + F2C(week[i]['high']) + "°C) " + '\n'
+    return out
+
 
 def main(place):
     data = get_data(place)
@@ -72,6 +80,6 @@ def main(place):
     if len(test[1]) == 4:
         sunset = test[0] + ':0' + test[1]
 
-    out = "Weather for " + location + ": " + weather_status + ", " + temp_F + "℉ (" + temp_C + "℃), feels like " + wind_chill_F + "℉ (" + wind_chill_C + "℃). Wind: " + wind_card + " at "+ wind_speed_mph + " mph (" + wind_speed_ms + " m/s). Sunrise at " + sunrise + ", sunset at " + sunset + "."
-    
+    out = "Weather for " + location + ": " + weather_status + ", " + temp_F + "°F (" + temp_C + "°C), feels like " + wind_chill_F + "°F (" + wind_chill_C + "°C). Wind: " + wind_card + " at "+ wind_speed_mph + " mph (" + wind_speed_ms + " m/s). Sunrise at " + sunrise + ", sunset at " + sunset + "."
+
     return out

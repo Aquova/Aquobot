@@ -87,6 +87,10 @@ async def on_message(message):
             tmp = message.content
             out = tmp[5:]
 
+        elif message.content.startswith('!forecast'):
+            q = message.content[9:]
+            out = Weather.forecast(q)
+
         elif message.content.startswith('!joke'):
             joke_list = Jokes.joke()
             pick_joke = random.choice(list(joke_list.keys()))
