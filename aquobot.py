@@ -11,7 +11,7 @@ sys.path.insert(0, './programs')
 import discord, wolframalpha
 import asyncio, json, subprocess, logging, random, sqlite3
 # Python programs I wrote, in ./programs
-import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather
+import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather, Upside
 
 # Handles logging to discord.log
 logger = logging.getLogger('discord')
@@ -247,6 +247,10 @@ async def on_message(message):
                     out = Weather.time(q)
                 sqlconn.commit()
                 sqlconn.close()
+
+            elif message.content.startswith('!upside'):
+                m = message.content[7:]
+                out = Upside.down(m)
 
             # Gives number of days until specified date
             elif message.content.startswith('!until'):
