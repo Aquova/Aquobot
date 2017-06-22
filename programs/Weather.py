@@ -59,6 +59,10 @@ def forecast(place):
         out = out + week[i]['day'] + " " + week[i]['date'] + ", " + week[i]['text'] + " with a high of " + week[i]['high'] + "°F (" + F2C(week[i]['high']) + "°C) " + '\n'
     return out
 
+def time(place):
+    data = get_data(place)
+    date = data['lastBuildDate']
+    return date
 
 def main(place):
     data = get_data(place)

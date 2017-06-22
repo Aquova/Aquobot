@@ -147,6 +147,9 @@ async def on_message(message):
                     if message.author.id != client.user.id:
                         out = "That is not a valid option, choose encode or decode."
 
+            elif message.content.startswith('!nood'):
+                out = "If you insist :smirk:" + '\n' + "https://cdn.discordapp.com/attachments/296752525615431680/327503078976651264/image.jpg"
+
             # Pins most recent message of specified user
             elif message.content.startswith('!pin'):
                 if message.content == '!pin':
@@ -218,6 +221,32 @@ async def on_message(message):
                 temp = int(raw_temp[2:7])
                 temp = round(((temp/1000) * 9 / 5) + 32, 1)
                 out = "Local Time: " + time + " Uptime: " + uptime + " RPi Temp: " + str(temp) + "ºF"
+
+            elif message.content.startswith('!time'):
+                sqlconn = sqlite3.connect('database.db')
+                author_id = int(message.author.id)
+                author_name = message.author.name
+                if message.content == '!time':
+                    user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
+                    try:
+                        query_location = user_loc.fetchone()[0]
+                    except TypeError:
+                        query_location = None
+
+                    if query_location == None:
+                        out = "!time [set] LOCATION"
+                    else:
+                        out = Weather.time(query_location)
+                elif message.content.startswith("!time set"):
+                    q = message.content[9:]
+                    params = (author_id, author_name, q)
+                    sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
+                    out = "Location set as %s" % q
+                else:
+                    q = message.content[5:]
+                    out = Weather.time(q)
+                sqlconn.commit()
+                sqlconn.close()
 
             # Gives number of days until specified date
             elif message.content.startswith('!until'):
