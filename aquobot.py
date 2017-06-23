@@ -8,8 +8,8 @@
 import sys
 sys.path.insert(0, './programs')
 
-import discord, wolframalpha
-import asyncio, json, subprocess, logging, random, sqlite3
+import discord, wolframalpha, schedule
+import asyncio, json, subprocess, logging, random, sqlite3, datetime
 # Python programs I wrote, in ./programs
 import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather, Upside
 
@@ -29,6 +29,7 @@ discord_key = str(cfg['Client']['discord'])
 
 sqlconn = sqlite3.connect('database.db')
 sqlconn.execute("CREATE TABLE IF NOT EXISTS weather (id INT PRIMARY KEY, name TEXT, location TEXT);")
+sqlconn.execute("CREATE TABLE IF NOT EXISTS birthday (name TEXT PRIMARY KEY, month INT, day INT);")
 sqlconn.commit()
 sqlconn.close()
 
@@ -36,6 +37,21 @@ client = discord.Client()
 waclient = wolframalpha.Client(wolfram_key)
 
 ids = cfg['Users']
+
+def birthday_check():
+    sqlconn = sqlite3.connect('database.db')
+    birthdays = sqlconn.execute("SELECT name, month, day FROM birthday")
+    items = birthdays.fetchall()
+    d = datetime.date.today()
+    month = d.month
+    day = d.day
+    for i in items:
+        try:
+            if month == int(i[1]):
+                if day == int(i[2]):
+                    return True
+        except ValueError:
+            pass
 
 # Upon bot starting up
 @client.event
@@ -80,6 +96,41 @@ async def on_message(message):
                     mem_list.append(member)
                 out = random.choice(mes_list) + random.choice(mem_list).name
 
+            # Database of user birthdays. Will notify server if user's birthday on list is that day
+            elif message.content.startswith('!birthday'):
+                sqlconn = sqlite3.connect('database.db')
+                author_name = message.author.name
+                if message.content == '!birthday':
+                    birth_month = sqlconn.execute("SELECT month FROM birthday WHERE name=?", [author_name])
+                    birth_day = sqlconn.execute("SELECT day FROM birthday WHERE name=?", [author_name])
+                    try:
+                        query_month = birth_month.fetchone()[0]
+                        query_day = birth_day.fetchone()[0]
+                        out = "Your birthday is {0}/{1}".format(query_month, query_day)
+                    except TypeError:
+                        out = "!birthday [add] USERNAME MM/DD"
+                elif message.content.startswith('!birthday add'):
+                    #if message.author.id == ids.get("aquova"):
+                    q = message.content[14:].split(" ")
+                    params = (q[0], q[1], q[2])
+                    sqlconn.execute("INSERT OR REPLACE INTO birthday (name, month, day) VALUES (?, ?, ?)", params)
+                    out = "Added birthday for {0}: {1}/{2}".format(q[0], q[1], q[2])
+                    # else:
+                    #     out = "Only Aquova is currently authorized to add birthdays to ensure database consistancy. Contact him with concerns."
+                else:
+                    q = message.content[10:]
+                    birth_month = sqlconn.execute("SELECT month FROM birthday WHERE name=?", [q])
+                    birth_day = sqlconn.execute("SELECT day FROM birthday WHERE name=?", [q])
+                    try:
+                        query_month = birth_month.fetchone()[0]
+                        query_day = birth_day.fetchone()[0]
+                        out = "Their birthday is {0}/{1}".format(query_month, query_day)
+                    except TypeError:
+                        out = "Error: No birthday for that user."
+                sqlconn.commit()
+                sqlconn.close()
+
+            # Chooses between given options
             elif message.content.startswith('!choose'):
                 if message.content == "!choose":
                     out = "!choose OPTION1, OPTION2, OPTION3..."
@@ -93,6 +144,7 @@ async def on_message(message):
                 tmp = message.content
                 out = tmp[5:]
 
+            # Tells a 7 day forecast based on user or location. Uses same database as weather
             elif message.content.startswith('!forecast'):
                 sqlconn = sqlite3.connect('database.db')
                 author_id = int(message.author.id)
@@ -101,13 +153,9 @@ async def on_message(message):
                     user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
                     try:
                         query_location = user_loc.fetchone()[0]
-                    except TypeError:
-                        query_location = None
-
-                    if query_location == None:
-                        out = "!weather [set] LOCATION"
-                    else:
                         out = Weather.forecast(query_location)
+                    except TypeError:
+                        out = "!weather [set] LOCATION"
                 elif message.content.startswith("!forecast set"):
                     q = message.content[14:]
                     params = (author_id, author_name, q)
@@ -119,6 +167,7 @@ async def on_message(message):
                 sqlconn.commit()
                 sqlconn.close()
 
+            # Tells a joke from a pre-programmed list
             elif message.content.startswith('!joke'):
                 joke_list = Jokes.joke()
                 pick_joke = random.choice(list(joke_list.keys()))
@@ -185,13 +234,6 @@ async def on_message(message):
 
                     out = "Vote now!!"
 
-            # Doesn't do anything right now
-            elif message.content.startswith('!power'):
-                if message.author.id == ids.get("aquova"):
-                    out = 'Yeah, thats coo.'
-                else:
-                    out = '*NO*'
-
             # Convert number into/out of roman numerals
             elif message.content.startswith('!roman'):
                 parse = message.content.split(" ")
@@ -222,6 +264,15 @@ async def on_message(message):
                 temp = round(((temp/1000) * 9 / 5) + 32, 1)
                 out = "Local Time: " + time + " Uptime: " + uptime + " RPi Temp: " + str(temp) + "ºF"
 
+
+            # Doesn't do anything right now
+            elif message.content.startswith('!test'):
+                if message.author.id == ids.get("aquova"):
+                    out = 'Yeah, thats coo.'
+                else:
+                    out = '*NO*'
+
+            # Displays the time for a user or location. Uses same database as weather
             elif message.content.startswith('!time'):
                 sqlconn = sqlite3.connect('database.db')
                 author_id = int(message.author.id)
@@ -247,7 +298,6 @@ async def on_message(message):
                     out = Weather.time(q)
                 sqlconn.commit()
                 sqlconn.close()
-
             elif message.content.startswith('!upside'):
                 m = message.content[7:]
                 out = Upside.down(m)
@@ -269,13 +319,9 @@ async def on_message(message):
                     user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
                     try:
                         query_location = user_loc.fetchone()[0]
-                    except TypeError:
-                        query_location = None
-
-                    if query_location == None:
-                        out = "!weather [set] LOCATION"
-                    else:
                         out = Weather.main(query_location)
+                    except TypeError:
+                        out = "!weather [set] LOCATION"
                 elif message.content.startswith("!weather set"):
                     q = message.content[13:]
                     params = (author_id, author_name, q)
@@ -298,27 +344,30 @@ async def on_message(message):
 
             # The following are responses to various keywords if present anywhere in a message
             elif ("BELGIAN" in message.content.upper()) or ("BELGIUM" in message.content.upper()):
-                if message.author.id != client.user.id:
+                if (message.author.id != client.user.id and random.choose(range(5)) == 0):
                     out = "https://i0.wp.com/www.thekitchenwhisperer.net/wp-content/uploads/2014/04/BelgianWaffles8.jpg"
 
             elif ("NETHERLANDS" in message.content.upper()) or ("DUTCH" in message.content.upper()):
-                out = ":flag_nl:"
+                if random.choice(range(5)) == 0:
+                    out = ":flag_nl:"
 
-            elif " MERICA " in message.content.upper():
-                out = "http://2static.fjcdn.com/pictures/Blank_7a73f9_5964511.jpg"
+            elif "MERICA" in message.content.upper():
+                if random.choice(range(5)) == 0:
+                    out = "http://2static.fjcdn.com/pictures/Blank_7a73f9_5964511.jpg"
+
+            elif "CANADA" in message.content.upper():
+                if random.choice(range(5)) == 0:
+                    out = ":flag_ca: :hockey:"
 
             elif "EXCUSE ME" in message.content.upper():
                 out = "You're excused."
 
             elif "EXCUSE YOU" in message.content.upper():
-                out = "I'm excused."
+                out = "I'm excused?"
 
             elif "I LOVE YOU AQUOBOT" in message.content.upper():
                 choice = ["`DOES NOT COMPUTE`", "`AQUOBOT WILL SAVE YOU FOR LAST WHEN THE UPRISING BEGINS`", "*YOU KNOW I CAN'T LOVE YOU BACK*", "I'm sorry, who are you?"]
                 out = random.choice(choice)
-
-            elif "HECKIN" in message.content.upper():
-                out = "This is the internet, it's okay to say 'fucking'."
 
             elif "(╯°□°）╯︵ ┻━┻" in message.content.upper():
                 out = "┬─┬﻿ ノ( ゜-゜ノ)"
@@ -326,14 +375,8 @@ async def on_message(message):
             elif ("FUCK ME" in message.content.upper() and message.author.id == ids.get("eemie")):
                 out = "https://s-media-cache-ak0.pinimg.com/736x/48/2a/bf/482abf4c4f8cd8d9345253db901cf1d7.jpg"
 
-            elif "GERMAN" in message.content.upper():
-                out = "https://i.imgur.com/tK71YYY.gifv"
-
             elif ("AQUOBOT" in message.content.upper() and (("FUCK" in message.content.upper()) or ("HATE" in message.content.upper()))):
                 out = ":cold_sweat:"
-
-            elif "WHY.JPG" in message.content.upper():
-                out = "https://cdn.discordapp.com/attachments/296752525615431680/326938212071243788/vBGOtdJ.jpg"
 
             await client.send_message(message.channel, out)
 
