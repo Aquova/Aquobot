@@ -29,7 +29,7 @@ discord_key = str(cfg['Client']['discord'])
 
 sqlconn = sqlite3.connect('database.db')
 sqlconn.execute("CREATE TABLE IF NOT EXISTS weather (id INT PRIMARY KEY, name TEXT, location TEXT);")
-sqlconn.execute("CREATE TABLE IF NOT EXISTS birthday (name TEXT PRIMARY KEY, month INT, day INT);")
+sqlconn.execute("CREATE TABLE IF NOT EXISTS birthday (id INT PRIMARY KEY, name TEXT, month TEXT, day INT);")
 sqlconn.commit()
 sqlconn.close()
 
@@ -98,25 +98,33 @@ async def on_message(message):
 
             # Database of user birthdays. Will notify server if user's birthday on list is that day
             elif message.content.startswith('!birthday'):
+                months = {'JANUARY':1, 'JAN':1, 'FEB':2, 'FEBRUARY':2, 'MARCH':3, 'MAR':3, 'APRIL':4, 'APR':4, 'MAY':5, 'JUNE':6, 'JUN':6, 'JULY':7, 'JUL':7, 'AUGUST':8, 'AUG':8, 'SEPTEMBER':9, 'SEPT':9, 'OCTOBER':10, 'OCT':10, 'NOVEMBER':11, 'NOV':11, 'DECEMBER':12, 'DEC':12}
                 sqlconn = sqlite3.connect('database.db')
                 author_name = message.author.name
+                author_id = message.author.id
                 if message.content == '!birthday':
-                    birth_month = sqlconn.execute("SELECT month FROM birthday WHERE name=?", [author_name])
-                    birth_day = sqlconn.execute("SELECT day FROM birthday WHERE name=?", [author_name])
+                    birth_month = sqlconn.execute("SELECT month FROM birthday WHERE id=?", [author_id])
+                    birth_day = sqlconn.execute("SELECT day FROM birthday WHERE id=?", [author_id])
                     try:
                         query_month = birth_month.fetchone()[0]
                         query_day = birth_day.fetchone()[0]
-                        out = "Your birthday is {0}/{1}".format(query_month, query_day)
+                        out = "Your birthday is {0} {1}".format(query_month, query_day)
                     except TypeError:
-                        out = "!birthday [add] USERNAME MM/DD"
+                        out = "!birthday [add] MM DD (or) DD MM"
                 elif message.content.startswith('!birthday add'):
-                    #if message.author.id == ids.get("aquova"):
                     q = message.content[14:].split(" ")
-                    params = (q[0], q[1], q[2])
-                    sqlconn.execute("INSERT OR REPLACE INTO birthday (name, month, day) VALUES (?, ?, ?)", params)
-                    out = "Added birthday for {0}: {1}/{2}".format(q[0], q[1], q[2])
-                    # else:
-                    #     out = "Only Aquova is currently authorized to add birthdays to ensure database consistancy. Contact him with concerns."
+                    if (q[0].upper() in months.keys() and (1 <= int(q[1]) and int(q[1]) <= 31)):
+                        params = (author_id, author_name, months[q[0].upper()], int(q[1]))
+                        sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day) VALUES (?, ?, ?, ?)", params)
+                        out = "Added birthday for {0}: {1} {2}".format(author_name, q[0], q[1])
+
+                    elif (q[1].upper() in months.keys() and (1 <= int(q[0]) and int(q[0]) <= 31)):
+                        params = (author_id, author_name, months[q[1].upper()], int(q[0]))
+                        sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day) VALUES (?, ?, ?, ?)", params)
+                        out = "Added birthday for {0}: {1} {2}".format(author_name, q[0], q[1])
+
+                    else:
+                        out = "Invalid birthday format."
                 else:
                     q = message.content[10:]
                     birth_month = sqlconn.execute("SELECT month FROM birthday WHERE name=?", [q])
@@ -124,9 +132,9 @@ async def on_message(message):
                     try:
                         query_month = birth_month.fetchone()[0]
                         query_day = birth_day.fetchone()[0]
-                        out = "Their birthday is {0}/{1}".format(query_month, query_day)
+                        out = "Their birthday is {0} {1}".format(query_month, query_day)
                     except TypeError:
-                        out = "Error: No birthday for that user."
+                        out = "Error: No birthday for that user (searches are case sensitive)."
                 sqlconn.commit()
                 sqlconn.close()
 
@@ -344,7 +352,7 @@ async def on_message(message):
 
             # The following are responses to various keywords if present anywhere in a message
             elif ("BELGIAN" in message.content.upper()) or ("BELGIUM" in message.content.upper()):
-                if (message.author.id != client.user.id and random.choose(range(5)) == 0):
+                if (message.author.id != client.user.id and random.choice(range(5)) == 0):
                     out = "https://i0.wp.com/www.thekitchenwhisperer.net/wp-content/uploads/2014/04/BelgianWaffles8.jpg"
 
             elif ("NETHERLANDS" in message.content.upper()) or ("DUTCH" in message.content.upper()):
