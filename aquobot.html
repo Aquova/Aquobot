@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Aquobot Commands</title>
+        <link href="aquobot.css" type="text/css" rel="stylesheet">
+        <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+        <link rel="icon" href="./favicon.ico" type="image/x-icon">
+    </head>
+    <body>
+        <div class="intro">
+            <h1>Aquobot</h1>
+            <p>Aquobot is a Discord bot designed to read various user inputs and respond, either with information or unfunny jokes.</p>
+            <p>Below are the commands Aquobot responds to, how the syntax should be used, and some examples for each.</p>
+            <p>The source code can be viewed <a href="http://github.com/Aquova/Aquobot">here.</a></p>
+            <br/>
+            <a href="http://aquova.github.io">Back to my website</a>
+            <hr/>
+        </div>
+
+        <div class="commands">
+            <h2>!alive</h2>
+            <p>Simply asks the bot to respond if active</p>
+            <p>Syntax: !alive</p>
+            <div class="syntax">
+                <p><b>@John</b> !alive</p>
+                <p><b>@Aquobot</b> Yes, I am here.</p>
+            </div>
+            <br/>
+
+            <h2>!choose</h2>
+            <p>Picks between a list of options, separated by commas</p>
+            <p>Syntax: !choose OPTION1, OPTION2, OPTION3, ...</p>
+            <div class="syntax">
+                <p><b>@magic</b> !choose eat, sleep, drink</p>
+                <p><b>@Aquobot</b> drink</p>
+            </div>
+            <br/>
+
+            <h2>!echo</h2>
+            <p>Repeats back what is said to it</p>
+            <p>Syntax: !echo PHRASE</p>
+            <div class="syntax">
+                <p><b>@Paul</b> !echo Aquobot is really cool.</p>
+                <p><b>@Aquobot</b> Aquobot is really cool.</p>
+            </div>
+            <br/>
+
+            <h2>!forecast</h2>
+            <p>Gives a 7 day forecast of a specified location</p>
+            <p>Syntax: !forecast CITY_NAME</p>
+            <div class="syntax">
+                <p><b>@Alfred</b> !forecast Cheyenne, WY</p>
+                <p><b>@Aquobot</b> Tue June 20 2017, Cloudy...</p>
+            </div>
+            <br/>
+
+            <h2>!joke</h2>
+            <p>Tells a joke</p>
+            <p>Syntax: !joke</p>
+            <div class="syntax">
+                <p><b>@Henry</b> !joke</p>
+                <p><b>@Aquobot</b> Why did the chicken cross the road? ...</p>
+            </div>
+            <br/>
+
+            <h2>!help</h2>
+            <p>Posts a link to this webpage for reference</p>
+            <p>Syntax: !help</p>
+            <div class="syntax">
+                <p><b>@George</b> !help</p>
+                <p><b>@Aquobot</b> http://aquova.github.io/aquobot.html</p>
+            </div>
+            <br/>
+
+            <h2>!mayan</h2>
+            <p>Converts date into the Mayan Long Count</p>
+            <p>Syntax: !mayan MM-DD-YYYY</p>
+            <div class="syntax">
+                <p><b>@Roger</b> !mayan 12-25-2017</p>
+                <p><b>@Aquobot</b> That date is 13.0.5.1.10 in the Mayan Long Count</p>
+            </div>
+            <br/>
+
+            <h2>!morse</h2>
+            <p>Convert a message into or out of morse code</p>
+            <p>Syntax: !morse ENCODE/DECODE MESSAGE</p>
+            <div class="syntax">
+                <p><b>@Henry</b> !morse encode hello</p>
+                <p><b>@Aquobot</b> .... . .-.. .-.. ---</p>
+            </div>
+            <br/>
+
+            <h2>!pin</h2>
+            <p>Pins the most recent post by the specified user</p>
+            <p>Syntax: !pin USERNAME</p>
+            <div class="syntax">
+                <p><b>@James</b> !pin Aquova</p>
+            </div>
+            <br/>
+
+            <h2>!poll</h2>
+            <p>Presents a poll for users, based on input separated by commas. Users can vote via Discord reactions.</p>
+            <p>Syntax: !poll TITLE, OPTION1, OPTION2, OPTION3, ...</p>
+            <div class="syntax">
+                <p><b>@Henry</b> !poll What is 2+2?, 3, 4, 5</p>
+                <p><b>@Aquobot</b> What is 2+2? <br/> 1. 3 <br/> 2. 4 <br/> 3. 5 <br/> [Discord reactions]</p>
+            </div>
+            <br/>
+
+            <h2>!roman</h2>
+            <p>Converts numbers to/from roman numerals</p>
+            <p>Syntax: !roman NUMBER/NUMERAL</p>
+            <div class="syntax">
+                <p><b>@eemie</b> !roman CMXII</p>
+                <p><b>@Aquobot</b> 912</p>
+            </div>
+            <br/>
+
+            <h2>!scrabble</h2>
+            <p>Calculates how many scrabble points a word is worth</p>
+            <p>Syntax: !scrabble WORD</p>
+            <div class="syntax">
+                <p><b>@Richard</b> !scrabble banana</p>
+                <p><b>@Aquobot</b> 8</p>
+            </div>
+            <br/>
+
+            <h2>!status</h2>
+            <p>Posts information about the bot, namely current time, uptime, and temp of the RPi.</p>
+            <p>Syntax: !status</p>
+            <div class="syntax">
+                <p><b>@Aquova</b> !status</p>
+                <p><b>@Aquobot</b> Local Time: 15:48:35 Uptime: 3:48 RPi Temp: 128.6ºF</p>
+            </div>
+            <br/>
+
+            <h2>!time</h2>
+            <p>Posts the current local time of the user, or of a specified location.</p>
+            <p>Syntax: !time [LOCATION]</p>
+            <div class="syntax">
+                <p><b>@Crumbledore</b> !time NYC</p>
+                <p><b>@Aquobot</b> Sat, 24 Jun 2017 11:26 AM EDT</p>
+            </div>
+            <br/>
+
+            <h2>!until</h2>
+            <p>Gives number of days until specified date</p>
+            <p>Syntax: !until MM-DD-YYYY</p>
+            <div class="syntax">
+                <p><b>@Roger</b> !until 12-25-2017</p>
+                <p><b>@Aquobot</b> 195 days</p>
+            </div>
+            <br/>
+
+            <h2>!weather</h2>
+            <p>Gives the current weather of a specified location</p>
+            <p>Syntax: !forecast CITY_NAME</p>
+            <div class="syntax">
+                <p><b>@Alfred</b> !forecast Cheyenne, WY</p>
+                <p><b>@Aquobot</b> Cloudy, 77F with wind speed of...</p>
+            </div>
+            <br/>
+
+            <h2>!wolfram</h2>
+            <p>Provides an answer to a WolframAlpha query (work in progress)</p>
+            <p>Syntax: !wolfram QUERY</p>
+            <div class="syntax">
+                <p><b>@Ringo</b> !wolfram time in NYC</p>
+                <p><b>@Aquobot</b> 3:15:40 pm EDT | Monday, June 12, 2017</p>
+            </div>
+        </div>
+    </body>
+</html>
