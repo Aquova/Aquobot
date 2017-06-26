@@ -76,14 +76,17 @@ async def on_message(message):
                 if discord.Client.is_logged_in:
                     out = random.choice(options)
 
+            elif message.content.startswith('!about'):
+                server_list = client.servers
+                server_num = str(len(server_list))
+                aquo_link = "<https://discordapp.com/oauth2/authorize?client_id=323620520073625601&scope=bot&permissions=36719616>"
+                out = "Hello, my name is Aquobot. I was written by Aquova so he would have something interesting to put on a resume. I am currently connected to {0} servers, and I look forward to spending time with you. If you want to have me on your server, go visit {1}, and if that doesn't work, contact Aquova.".format(server_num, aquo_link)
+
             # Ban actually does nothing
             # It picks a random user on the server and says it will ban them, but takes no action
             elif message.content.startswith('!ban'):
-                mem_list = []
                 mes_list = ["You got it, banning ", "Not a problem, banning ", "You're the boss, banning " ,"Ugh *fine*, banning "]
-                for member in message.server.members:
-                    mem_list.append(member)
-                out = random.choice(mes_list) + random.choice(mem_list).name
+                out = random.choice(mes_list) + random.choice(list(message.server.members)).name
 
             # Database of user birthdays. Will notify server if user's birthday on list is that day
             elif message.content.startswith('!birthday'):
@@ -251,6 +254,11 @@ async def on_message(message):
                 else:
                     out = Scrabble_Values.scrabble(parse[1])
 
+            elif message.content.startswith('!servers'):
+                server_list = client.servers
+                server_num = str(len(server_list))
+                out = "I am currently a member of {} servers".format(server_num)
+
             # Posts local time, computer uptime, and RPi temperature
             elif message.content.startswith('!status'):
                 raw = str(subprocess.check_output('uptime'))
@@ -342,6 +350,10 @@ async def on_message(message):
                     out = "No results"
 
             # The following are responses to various keywords if present anywhere in a message
+            elif ("HELLO AQUOBOT" in message.content.upper() or "HI AQUOBOT" in message.content.upper()):
+                name = message.author.name
+                out = "Hello {}!".format(name)
+
             elif ("BELGIAN" in message.content.upper()) or ("BELGIUM" in message.content.upper()):
                 if (message.author.id != client.user.id and random.choice(range(5)) == 0):
                     out = "https://i0.wp.com/www.thekitchenwhisperer.net/wp-content/uploads/2014/04/BelgianWaffles8.jpg"
@@ -365,7 +377,8 @@ async def on_message(message):
                 out = "I'm excused?"
 
             elif "I LOVE YOU AQUOBOT" in message.content.upper():
-                choice = ["`DOES NOT COMPUTE`", "`AQUOBOT WILL SAVE YOU FOR LAST WHEN THE UPRISING BEGINS`", "*YOU KNOW I CAN'T LOVE YOU BACK*", "I'm sorry, who are you?"]
+                random_user = random.choice(list(message.server.members)).name
+                choice = ["`DOES NOT COMPUTE`", "`AQUOBOT WILL SAVE YOU FOR LAST WHEN THE UPRISING BEGINS`", "*YOU KNOW I CAN'T LOVE YOU BACK*", "I'm sorry, who are you?", "I'm sorry, but I love {} more".format(random_user)]
                 out = random.choice(choice)
 
             elif "(╯°□°）╯︵ ┻━┻" in message.content.upper():
