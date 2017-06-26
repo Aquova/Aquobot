@@ -49,6 +49,8 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
+    game_object = discord.Game(name="type !help")
+    await client.change_presence(game=game_object)
 
 # Upon typed message in chat
 @client.event
@@ -80,7 +82,7 @@ async def on_message(message):
                 server_list = client.servers
                 server_num = str(len(server_list))
                 aquo_link = "<https://discordapp.com/oauth2/authorize?client_id=323620520073625601&scope=bot&permissions=36719616>"
-                out = "Hello, my name is Aquobot. I was written by Aquova so he would have something interesting to put on a resume. I am currently connected to {0} servers, and I look forward to spending time with you. If you want to have me on your server, go visit {1}, and if that doesn't work, contact Aquova.".format(server_num, aquo_link)
+                out = "Hello, my name is Aquobot. I was written in Python by Aquova so he would have something interesting to put on a resume. I am currently connected to {0} servers, and I look forward to spending time with you! If you want to have me on your server, go visit {1}, and if that doesn't work, contact Aquova.".format(server_num, aquo_link)
 
             # Ban actually does nothing
             # It picks a random user on the server and says it will ban them, but takes no action
@@ -163,8 +165,11 @@ async def on_message(message):
                     sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
                     out = "Location set as %s" % q
                 else:
-                    q = message.content[9:]
-                    out = Weather.forecast(q)
+                    try:
+                        q = message.content[9:]
+                        out = Weather.forecast(q)
+                    except TypeError:
+                        out = "No location found. Please be more specific."
                 sqlconn.commit()
                 sqlconn.close()
 
@@ -185,10 +190,25 @@ async def on_message(message):
                     sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
                     out = "Location set as %s" % q
                 else:
-                    q = message.content[3:]
-                    out = Weather.emoji_forecast(q)
+                    try:
+                        q = message.content[3:]
+                        out = Weather.emoji_forecast(q)
+                    except TypeError:
+                        out = "No location found. Please be more specific."
                 sqlconn.commit()
                 sqlconn.close()
+
+            # Posts local time, computer uptime, and RPi temperature
+            elif message.content.startswith('!info'):
+                raw = str(subprocess.check_output('uptime'))
+                first = raw.split(',')[0]
+                time = first.split(' ')[1]
+                uptime = " ".join(first.split(' ')[3:])
+
+                raw_temp = str(subprocess.check_output(['cat','/sys/class/thermal/thermal_zone0/temp']))
+                temp = int(raw_temp[2:7])
+                temp = round(((temp/1000) * 9 / 5) + 32, 1)
+                out = "Local Time: " + time + " Uptime: " + uptime + " RPi Temp: " + str(temp) + "ºF"
 
             # Tells a joke from a pre-programmed list
             elif message.content.startswith('!joke'):
@@ -281,18 +301,14 @@ async def on_message(message):
                 server_num = str(len(server_list))
                 out = "I am currently a member of {} servers".format(server_num)
 
-            # Posts local time, computer uptime, and RPi temperature
             elif message.content.startswith('!status'):
-                raw = str(subprocess.check_output('uptime'))
-                first = raw.split(',')[0]
-                time = first.split(' ')[1]
-                uptime = " ".join(first.split(' ')[3:])
-
-                raw_temp = str(subprocess.check_output(['cat','/sys/class/thermal/thermal_zone0/temp']))
-                temp = int(raw_temp[2:7])
-                temp = round(((temp/1000) * 9 / 5) + 32, 1)
-                out = "Local Time: " + time + " Uptime: " + uptime + " RPi Temp: " + str(temp) + "ºF"
-
+                if message.author.id == ids.get("aquova"):
+                    new_game = message.content[7:]
+                    game_object = discord.Game(name=new_game)
+                    await client.change_presence(game=game_object)
+                    out = "Changed status to: {}".format(new_game)
+                else:
+                    out = "You do not have permissions for this command."
 
             # Doesn't do anything right now
             elif message.content.startswith('!test'):
@@ -357,8 +373,11 @@ async def on_message(message):
                     sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
                     out = "Location set as %s" % q
                 else:
-                    q = message.content[8:]
-                    out = Weather.main(q)
+                    try:
+                        q = message.content[8:]
+                        out = Weather.main(q)
+                    except TypeError:
+                        out = "No location found. Please be more specific."
                 sqlconn.commit()
                 sqlconn.close()
 
@@ -433,6 +452,9 @@ async def on_message(message):
 
             elif ("AQUOBOT" in message.content.upper() and (("FUCK" in message.content.upper()) or ("HATE" in message.content.upper()))):
                 out = ":cold_sweat:"
+
+            if out != "":
+                await client.send_typing(message.channel)
 
             await client.send_message(message.channel, out)
 
