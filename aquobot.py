@@ -156,15 +156,37 @@ async def on_message(message):
                         query_location = user_loc.fetchone()[0]
                         out = Weather.forecast(query_location)
                     except TypeError:
-                        out = "!weather [set] LOCATION"
+                        out = "!forecast [set] LOCATION"
                 elif message.content.startswith("!forecast set"):
-                    q = message.content[14:]
+                    q = message.content[13:]
                     params = (author_id, author_name, q)
                     sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
                     out = "Location set as %s" % q
                 else:
                     q = message.content[9:]
                     out = Weather.forecast(q)
+                sqlconn.commit()
+                sqlconn.close()
+
+            elif message.content.startswith('!qf'):
+                sqlconn = sqlite3.connect('database.db')
+                author_id = int(message.author.id)
+                author_name = message.author.name
+                if message.content == '!qf':
+                    user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
+                    try:
+                        query_location = user_loc.fetchone()[0]
+                        out = Weather.emoji_forecast(query_location)
+                    except TypeError:
+                        out = "!qf [set] LOCATION"
+                elif message.content.startswith("!qf set"):
+                    q = message.content[7:]
+                    params = (author_id, author_name, q)
+                    sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
+                    out = "Location set as %s" % q
+                else:
+                    q = message.content[3:]
+                    out = Weather.emoji_forecast(q)
                 sqlconn.commit()
                 sqlconn.close()
 
@@ -337,6 +359,28 @@ async def on_message(message):
                 else:
                     q = message.content[8:]
                     out = Weather.main(q)
+                sqlconn.commit()
+                sqlconn.close()
+
+            elif message.content.startswith('!qw'):
+                sqlconn = sqlite3.connect('database.db')
+                author_id = int(message.author.id)
+                author_name = message.author.name
+                if message.content == '!qw':
+                    user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
+                    try:
+                        query_location = user_loc.fetchone()[0]
+                        out = Weather.emoji_weather(query_location)
+                    except TypeError:
+                        out = "!qw [set] LOCATION"
+                elif message.content.startswith("!qw set"):
+                    q = message.content[7:]
+                    params = (author_id, author_name, q)
+                    sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
+                    out = "Location set as %s" % q
+                else:
+                    q = message.content[3:]
+                    out = Weather.emoji_weather(q)
                 sqlconn.commit()
                 sqlconn.close()
 

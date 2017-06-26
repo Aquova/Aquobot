@@ -4,6 +4,58 @@
 
 import yweather, urllib, json, urllib.parse, urllib.request
 
+weather_emoji = {
+    0:':cloud_tornado:', 
+    1:':ocean: :umbrella:', 
+    2:':cyclone:', 
+    3:':thunder_cloud_rain:', 
+    4:':cloud_lightning:', 
+    5:':cloud_rain: :cloud_snow:', 
+    6:':cloud_rain: :cloud_snow:', 
+    7:':cloud_rain: :cloud_snow:',
+    8:':cloud_rain: :snowflake:',
+    9:':cloud_rain:',
+    10:':cloud_rain: :snowflake:',
+    11:':cloud_rain:',
+    12:':cloud_rain:',
+    13:':cloud_snow:',
+    14:':cloud_snow:',
+    15:':cloud_snow: :dash:',
+    16:':cloud_snow:',
+    17:':cloud_snow: :white_circle:',
+    18:':cloud_snow: :white_circle:',
+    19:':desert:', #This one is supposed to be dust, but it's the best I could do.
+    20:':fog:',
+    21:':foggy:',
+    22:':smoking:',
+    23:':dash:',
+    24:':dash:',
+    25:':snowman:',
+    26:':cloud:',
+    27:':white_sun_cloud: :night_with_stars:',
+    28:':white_sun_cloud:',
+    29:':white_sun_small_cloud: :night_with_stars:',
+    30:':white_sun_small_cloud:',
+    31:':full_moon:',
+    32:':sunny:',
+    33:':full_moon:',
+    34:':sunny:',
+    35:':cloud_rain: :white_circle:',
+    36:':fire:',
+    37:':thunder_cloud_rain:',
+    38:':thunder_cloud_rain:',
+    39:':thunder_cloud_rain:',
+    40:':white_sun_rain_cloud:',
+    41:':cloud_snow:',
+    42:':cloud_snow:',
+    43:':cloud_snow: :snowflake:',
+    44:':white_sun_small_cloud:',
+    45:':thunder_cloud_rain:',
+    46:':cloud_rain: :cloud_snow:',
+    47:':cloud_lightning:',
+    3200:':question:'
+}
+
 def get_woeid(place):
     client = yweather.Client()
     woeid = client.fetch_woeid(place)
@@ -63,6 +115,25 @@ def time(place):
     data = get_data(place)
     date = data['lastBuildDate']
     return date
+
+def emoji_weather(place):
+    data = get_data(place)
+    loc = data['title'][-2:]
+    flag_emoji = ":flag_{}:".format(loc.lower())
+    weather = data['item']['condition']['code']
+    out = flag_emoji + " " + weather_emoji[int(weather)]
+    return out
+
+def emoji_forecast(place):
+    data = get_data(place)
+    loc = data['title'][-2:]
+    week = data['item']['forecast']
+    out = ":flag_{}:".format(loc.lower()) + '\n'
+    for i in range(7):
+        value = int(week[i]['code'])
+        condition = weather_emoji[value]
+        out = out + week[i]['day'] + ": " + condition + '\n'
+    return out
 
 def main(place):
     data = get_data(place)
