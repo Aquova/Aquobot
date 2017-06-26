@@ -10,8 +10,9 @@ sys.path.insert(0, './programs')
 
 import discord, wolframalpha, schedule
 import asyncio, json, subprocess, logging, random, sqlite3, datetime
+
 # Python programs I wrote, in ./programs
-import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather, Upside
+import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather, Upside, Birthday
 
 # Handles logging to discord.log
 logger = logging.getLogger('discord')
@@ -27,31 +28,19 @@ with open('config.json') as json_data_file:
 wolfram_key = str(cfg['Client']['wolfram'])
 discord_key = str(cfg['Client']['discord'])
 
+client = discord.Client()
+waclient = wolframalpha.Client(wolfram_key)
+
 sqlconn = sqlite3.connect('database.db')
 sqlconn.execute("CREATE TABLE IF NOT EXISTS weather (id INT PRIMARY KEY, name TEXT, location TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS birthday (id INT PRIMARY KEY, name TEXT, month TEXT, day INT);")
 sqlconn.commit()
 sqlconn.close()
 
-client = discord.Client()
-waclient = wolframalpha.Client(wolfram_key)
-
 ids = cfg['Users']
 
-def birthday_check():
-    sqlconn = sqlite3.connect('database.db')
-    birthdays = sqlconn.execute("SELECT name, month, day FROM birthday")
-    items = birthdays.fetchall()
-    d = datetime.date.today()
-    month = d.month
-    day = d.day
-    for i in items:
-        try:
-            if month == int(i[1]):
-                if day == int(i[2]):
-                    return True
-        except ValueError:
-            pass
+# db_path = os.path.join(os.path.dirname(__file__), 'database.db')
+# today_bday = schedule.every().day.at("7:00").do(Birthday.birthday_check(db_path))
 
 # Upon bot starting up
 @client.event
@@ -99,6 +88,7 @@ async def on_message(message):
             # Database of user birthdays. Will notify server if user's birthday on list is that day
             elif message.content.startswith('!birthday'):
                 months = {'JANUARY':1, 'JAN':1, 'FEB':2, 'FEBRUARY':2, 'MARCH':3, 'MAR':3, 'APRIL':4, 'APR':4, 'MAY':5, 'JUNE':6, 'JUN':6, 'JULY':7, 'JUL':7, 'AUGUST':8, 'AUG':8, 'SEPTEMBER':9, 'SEPT':9, 'OCTOBER':10, 'OCT':10, 'NOVEMBER':11, 'NOV':11, 'DECEMBER':12, 'DEC':12}
+                reverse = {1:'January', 2:'February', 3:'March', 4:'April', 5:'May', 6:'June', 7:'July', 8:'August', 9:'September', 10:'October', 11:'November', 12:'December'}
                 sqlconn = sqlite3.connect('database.db')
                 author_name = message.author.name
                 author_id = message.author.id
@@ -132,7 +122,7 @@ async def on_message(message):
                     try:
                         query_month = birth_month.fetchone()[0]
                         query_day = birth_day.fetchone()[0]
-                        out = "Their birthday is {0} {1}".format(query_month, query_day)
+                        out = "Their birthday is {0} {1} (or {1} {0} if you prefer)".format(reverse[query_month], query_day)
                     except TypeError:
                         out = "Error: No birthday for that user (searches are case sensitive)."
                 sqlconn.commit()
@@ -210,10 +200,11 @@ async def on_message(message):
             # Pins most recent message of specified user
             elif message.content.startswith('!pin'):
                 if message.content == '!pin':
-                    out = '!pin USERNAME'
+                    out = '!pin @USERNAME'
                 else:
-                    name = message.content.split(" ")[1]
-                    user = discord.utils.get(message.server.members, name=name)
+                    id = message.content.split(" ")[1]
+                    id = id[3:-1] # This is a terrible way to do this. You should fix this sometime.
+                    user = discord.utils.get(message.server.members, id=id)
                     async for pin in client.logs_from(message.channel, limit=100):
                         if (pin.author == user and pin.content != message.content):
                             await client.pin_message(pin)
