@@ -143,9 +143,15 @@ async def on_message(message):
                     out = str(random.choice(choice))
 
             elif message.content.startswith('!ecco'):
-                q = message.content[6:]
-                Ecco.text(q)
-                await client.send_file(message.channel, fp='./programs/ecco.png')
+                if message.content == '!ecco':
+                    out = '!ecco PHRASE'
+                else:
+                    q = message.content[6:]
+                    valid = Ecco.text(q)
+                    if valid == 'ERROR':
+                        out = 'That phrase used an invalid character. Please try again.'
+                    else:
+                        await client.send_file(message.channel, fp='./programs/ecco.png')
 
             # Repeats back user message
             elif message.content.startswith('!echo'):
