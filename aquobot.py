@@ -145,7 +145,7 @@ async def on_message(message):
             elif message.content.startswith('!ecco'):
                 q = message.content[6:]
                 Ecco.text(q)
-                await client.send_file(message.channel, fp='./programs/out.png')
+                await client.send_file(message.channel, fp='./programs/ecco.png')
 
             # Repeats back user message
             elif message.content.startswith('!echo'):
