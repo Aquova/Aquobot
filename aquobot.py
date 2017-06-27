@@ -12,7 +12,7 @@ import discord, wolframalpha, schedule
 import asyncio, json, subprocess, logging, random, sqlite3, datetime
 
 # Python programs I wrote, in ./programs
-import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather, Upside, Birthday
+import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather, Upside, Birthday, Ecco
 
 # Handles logging to discord.log
 logger = logging.getLogger('discord')
@@ -141,6 +141,11 @@ async def on_message(message):
                     tmp = message.content[7:]
                     choice = tmp.split(",")
                     out = str(random.choice(choice))
+
+            elif message.content.startswith('!ecco'):
+                q = message.content[6:]
+                Ecco.text(q)
+                await client.send_file(message.channel, fp='./programs/out.png')
 
             # Repeats back user message
             elif message.content.startswith('!echo'):
