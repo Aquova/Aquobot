@@ -24,7 +24,7 @@ def text(sentence):
             if i == (len(words) - 1):
                 new_rows.append(new_line)
 
-    bg_path = os.path.join(os.path.dirname(__file__), 'EccoBackground', 'EccoBackground.png')
+    bg_path = os.path.join(os.path.dirname(__file__), 'EccoBackground.png')
     bg = Image.open(bg_path)
     row_num = 0
     y_pos = 132 - (len(new_rows) * y_margin // 2)
