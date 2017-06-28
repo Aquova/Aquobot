@@ -34,6 +34,7 @@ waclient = wolframalpha.Client(wolfram_key)
 sqlconn = sqlite3.connect('database.db')
 sqlconn.execute("CREATE TABLE IF NOT EXISTS weather (id INT PRIMARY KEY, name TEXT, location TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS birthday (id INT PRIMARY KEY, name TEXT, month TEXT, day INT);")
+sqlconn.execute("CREATE TABLE IF NOT EXISTS quotes (num INT PRIMARY KEY, quote TEXT, username TEXT, userid INT);")
 sqlconn.commit()
 sqlconn.close()
 
@@ -51,6 +52,22 @@ async def on_ready():
     print('------')
     game_object = discord.Game(name="type !help")
     await client.change_presence(game=game_object)
+
+@client.event
+async def on_reaction_add(reaction, user):
+    if reaction.emoji == '💬':
+        user_name = reaction.message.author.name
+        user_id = reaction.message.author.id
+        mes = reaction.message.content
+        sqlconn = sqlite3.connect('database.db')
+        count = sqlconn.execute("SELECT COUNT(*) FROM quotes")
+        num = count.fetchone()[0]
+        params = (num + 1, mes, user_name, user_id)
+        sqlconn.execute("INSERT INTO quotes (num, quote, username, userid) VALUES (?, ?, ?, ?)", params)
+        sqlconn.commit()
+        sqlconn.close()
+        out = 'Quote added from {0}: "{1}". (#{2})'.format(user_name, mes, str(num + 1))
+        await client.send_message(reaction.message.channel, out)
 
 # Upon typed message in chat
 @client.event
@@ -288,6 +305,19 @@ async def on_message(message):
                         await client.add_reaction(poll_message, num_emoji[j])
 
                     out = "Vote now!!"
+
+            elif message.content.startswith('!quote'):
+                sqlconn = sqlite3.connect('database.db')
+                count = sqlconn.execute("SELECT COUNT(*) FROM quotes")
+                num = count.fetchone()[0]
+                rand_num = random.choice(range(num)) + 1
+                rand_quote = sqlconn.execute("SELECT quote FROM quotes WHERE num=?", [rand_num])
+                rand_username = sqlconn.execute("SELECT username FROM quotes WHERE num=?", [rand_num])
+                quote = rand_quote.fetchone()[0]
+                username = rand_username.fetchone()[0]
+                #sqlconn.commit()
+                sqlconn.close()
+                out = 'From {0}: "{1}" (#{2})'.format(username, quote, str(rand_num))
 
             # Convert number into/out of roman numerals
             elif message.content.startswith('!roman'):
