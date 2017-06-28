@@ -34,7 +34,7 @@ waclient = wolframalpha.Client(wolfram_key)
 sqlconn = sqlite3.connect('database.db')
 sqlconn.execute("CREATE TABLE IF NOT EXISTS weather (id INT PRIMARY KEY, name TEXT, location TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS birthday (id INT PRIMARY KEY, name TEXT, month TEXT, day INT);")
-sqlconn.execute("CREATE TABLE IF NOT EXISTS quotes (num INT PRIMARY KEY, quote TEXT, username TEXT, userid INT);")
+sqlconn.execute("CREATE TABLE IF NOT EXISTS quotes (num INT PRIMARY KEY, quote TEXT, username TEXT, userid INT, messageid INT);")
 sqlconn.commit()
 sqlconn.close()
 
@@ -59,15 +59,22 @@ async def on_reaction_add(reaction, user):
         user_name = reaction.message.author.name
         user_id = reaction.message.author.id
         mes = reaction.message.content
-        sqlconn = sqlite3.connect('database.db')
-        count = sqlconn.execute("SELECT COUNT(*) FROM quotes")
-        num = count.fetchone()[0]
-        params = (num + 1, mes, user_name, user_id)
-        sqlconn.execute("INSERT INTO quotes (num, quote, username, userid) VALUES (?, ?, ?, ?)", params)
-        sqlconn.commit()
-        sqlconn.close()
-        out = 'Quote added from {0}: "{1}". (#{2})'.format(user_name, mes, str(num + 1))
-        await client.send_message(reaction.message.channel, out)
+        if mes != "":
+            mes_id = int(reaction.message.id)
+            sqlconn = sqlite3.connect('database.db')
+            repeat_check = sqlconn.execute("SELECT num FROM quotes WHERE messageid=?", [mes_id])
+            try:
+                repeat = repeat_check.fetchone()[0]
+                sqlconn.close()
+            except TypeError:
+                count = sqlconn.execute("SELECT COUNT(*) FROM quotes")
+                num = count.fetchone()[0]
+                params = (num + 1, mes, user_name, user_id, mes_id)
+                sqlconn.execute("INSERT INTO quotes (num, quote, username, userid, messageid) VALUES (?, ?, ?, ?, ?)", params)
+                sqlconn.commit()
+                sqlconn.close()
+                out = 'Quote added from {0}: "{1}". (#{2})'.format(user_name, mes, str(num + 1))
+                await client.send_message(reaction.message.channel, out)
 
 # Upon typed message in chat
 @client.event
