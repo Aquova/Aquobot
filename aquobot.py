@@ -12,7 +12,7 @@ import discord, wolframalpha, schedule
 import asyncio, json, subprocess, logging, random, sqlite3, datetime
 
 # Python programs I wrote, in ./programs
-import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather, Upside, Birthday, Ecco
+import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather, Upside, Birthday, Ecco, Select
 
 # Handles logging to discord.log
 logger = logging.getLogger('discord')
@@ -100,7 +100,7 @@ async def on_message(message):
             # Responds if active
             elif message.content.startswith('!alive'):
                 options = ['Nah.', 'Who wants to know?', ':robot: `yes`', "I wouldn't be responding if I were dead."]
-                if discord.Client.is_logged_in:
+                if discord.Client.is_logged_in: # Is this really necessary?
                     out = random.choice(options)
 
             elif message.content.startswith('!about'):
@@ -112,8 +112,7 @@ async def on_message(message):
             # Ban actually does nothing
             # It picks a random user on the server and says it will ban them, but takes no action
             elif message.content.startswith('!ban'):
-                mes_list = ["You got it, banning ", "Not a problem, banning ", "You're the boss, banning " ,"Ugh *fine*, banning "]
-                out = random.choice(mes_list) + random.choice(list(message.server.members)).name
+                out = Select.ban(message.server.members, message.author.name)
 
             # Database of user birthdays. Will notify server if user's birthday on list is that day
             elif message.content.startswith('!birthday'):
@@ -182,6 +181,19 @@ async def on_message(message):
             elif message.content.startswith('!echo'):
                 tmp = message.content
                 out = tmp[5:]
+
+            elif message.content.startswith('!fact'):
+                out = random.choice(Select.fact())
+
+            # elif message.content.startswith('!feedback'):
+            #     userid = message.author.id
+            #     username = message.author.id
+            #     userchannel = message.channel.id
+            #     userserver = message.channel.server.name
+            #     mes = message.content[10:]
+            #     fb = "A message from {0} for you sir: {1} (ID: {2}) (Server {3}) (Channel {4})".format(username, mes, userid, userserver, userchannel)
+            #     await client.send_message("feedback", fb)
+            #     out = "Message sent" 
 
             # Tells a 7 day forecast based on user or location. Uses same database as weather
             elif message.content.startswith('!forecast'):
