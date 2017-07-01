@@ -60,6 +60,7 @@ joke_list = {"What does a grape say when it's stepped on?":"Nothing, it just let
             "What's the definition of a will?":"It's a dead giveaway.",
             "Why is the vampire a vegan?":"A steak would kill him.",
             "What do you call an alligator wearing a vest?":"An investigator.",
+            "Who was the roundest member of King Arthur's Court?":"Circumference"
             }
 
 def joke():

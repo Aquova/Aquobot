@@ -35,6 +35,7 @@ sqlconn = sqlite3.connect('database.db')
 sqlconn.execute("CREATE TABLE IF NOT EXISTS weather (id INT PRIMARY KEY, name TEXT, location TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS birthday (id INT PRIMARY KEY, name TEXT, month TEXT, day INT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS quotes (num INT PRIMARY KEY, quote TEXT, username TEXT, userid INT, messageid INT);")
+sqlconn.execute("CREATE TABLE IF NOT EXISTS todo (id INT PRIMARY KEY, userid INT, username TEXT, message TEXT, t TEXT);")
 sqlconn.commit()
 sqlconn.close()
 
@@ -315,16 +316,34 @@ async def on_message(message):
 
             elif message.content.startswith('!quote'):
                 sqlconn = sqlite3.connect('database.db')
-                count = sqlconn.execute("SELECT COUNT(*) FROM quotes")
-                num = count.fetchone()[0]
-                rand_num = random.choice(range(num)) + 1
-                rand_quote = sqlconn.execute("SELECT quote FROM quotes WHERE num=?", [rand_num])
-                rand_username = sqlconn.execute("SELECT username FROM quotes WHERE num=?", [rand_num])
-                quote = rand_quote.fetchone()[0]
-                username = rand_username.fetchone()[0]
-                #sqlconn.commit()
+                if message.content == '!quote':
+                    count = sqlconn.execute("SELECT COUNT(*) FROM quotes WHERE quote IS NOT NULL")
+                    num = count.fetchone()[0]
+                    rand_num = random.choice(range(num)) + 1
+                    rand_quote = sqlconn.execute("SELECT quote FROM quotes WHERE num=?", [rand_num])
+                    rand_username = sqlconn.execute("SELECT username FROM quotes WHERE num=?", [rand_num])
+                    quote = rand_quote.fetchone()[0]
+                    username = rand_username.fetchone()[0]
+                    out = 'From {0}: "{1}" (#{2})'.format(username, quote, str(rand_num))
+                elif message.content.startswith('!quote remove'):
+                    try:
+                        num = int(message.content[14:])
+                        check_exists = sqlconn.execute("SELECT messageid FROM quotes WHERE num=?", [num])
+                        check_exists = check_exists.fetchone()[0]
+                        sqlconn.execute("INSERT OR REPLACE INTO quotes (num, quote, username, userid, messageid) VALUES (?, NULL, NULL, NULL, NULL)", [num])
+                        out = "Item {} removed".format(num)
+                    except ValueError:
+                        out = "That is not a number. Please specify the quote ID number you wish to remove."
+                    except TypeError:
+                        out = "There is no ID of that number."
+                # else:
+                #     mes = message.content[7:]
+                #     try:
+                #         mes = int(mes)
+                #     except ValueError:     
+                sqlconn.commit()
                 sqlconn.close()
-                out = 'From {0}: "{1}" (#{2})'.format(username, quote, str(rand_num))
+                
 
             # Convert number into/out of roman numerals
             elif message.content.startswith('!roman'):
@@ -348,6 +367,9 @@ async def on_message(message):
                 server_list = client.servers
                 server_num = str(len(server_list))
                 out = "I am currently a member of {} servers".format(server_num)
+                if (message.content == '!servers list' and (message.author.id == ids.get("aquova") or message.author.id == ids.get("eemie"))):
+                    for server in server_list:
+                        out += '\n' + server.name
 
             elif message.content.startswith('!status'):
                 if message.author.id == ids.get("aquova"):
@@ -374,13 +396,9 @@ async def on_message(message):
                     user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
                     try:
                         query_location = user_loc.fetchone()[0]
-                    except TypeError:
-                        query_location = None
-
-                    if query_location == None:
-                        out = "!time [set] LOCATION"
-                    else:
                         out = Weather.time(query_location)
+                    except TypeError:
+                        out = "!time [set] LOCATION"
                 elif message.content.startswith("!time set"):
                     q = message.content[9:]
                     params = (author_id, author_name, q)
@@ -391,6 +409,45 @@ async def on_message(message):
                     out = Weather.time(q)
                 sqlconn.commit()
                 sqlconn.close()
+
+            elif message.content.startswith('!todo'):
+                sqlconn = sqlite3.connect('database.db')
+                username = message.author.name
+                userid = message.author.id
+                timestamp = str(message.timestamp)
+                time = timestamp.split(".")[0] + " GMT" # Right now, time is given in GMT. Possibly change to use local time instead.
+                if message.content == '!todo':
+                    user_list = sqlconn.execute("SELECT * FROM todo WHERE userid=?", [userid])
+                    user_todos = user_list.fetchall()
+                    out = ""
+                    for item in user_todos:
+                        out += "{0} @ {1}. (#{2})".format(item[3], item[4], item[0]) + '\n'
+                elif message.content.startswith('!todo add'):
+                    num = sqlconn.execute("SELECT COUNT(*) FROM todo") # WHERE userid IS NOT NULL")
+                    num = num.fetchone()[0] + 1
+                    mes = message.content[10:]
+                    params = (num, userid, username, mes, time)
+                    sqlconn.execute("INSERT OR REPLACE INTO todo (id, userid, username, message, t) VALUES (?, ?, ?, ?, ?)", params)
+                    out = "Item added by {0}: {1} @ {2}. (#{3})".format(username, mes, time, num)
+                elif message.content.startswith('!todo remove'):
+                    try:
+                        remove_id = int(message.content[13:])
+                        check_user = sqlconn.execute("SELECT userid FROM todo WHERE id=?", [remove_id])
+                        check_user = str(check_user.fetchone()[0])
+                        if check_user == userid:
+                            sqlconn.execute("INSERT OR REPLACE INTO todo (id, userid, username, message, t) VALUES (?, NULL, NULL, NULL, NULL)", [remove_id])
+                            out = "Item {} removed".format(remove_id)
+                        else:
+                            out = "You are not allowed to remove other user's items."
+                    except TypeError:
+                        out = "There is no entry of that index value"
+                    except ValueError:
+                        out = "That's not a number. Please specify the index number of the item to remove."
+                else:
+                    out = "!todo [add/remove]"
+                sqlconn.commit()
+                sqlconn.close()
+
             elif message.content.startswith('!upside'):
                 m = message.content[7:]
                 out = Upside.down(m)
