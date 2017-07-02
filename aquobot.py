@@ -103,6 +103,7 @@ async def on_message(message):
                 if discord.Client.is_logged_in: # Is this really necessary?
                     out = random.choice(options)
 
+            # Gives brief overview of the bot
             elif message.content.startswith('!about'):
                 server_list = client.servers
                 server_num = str(len(server_list))
@@ -157,6 +158,10 @@ async def on_message(message):
                 sqlconn.commit()
                 sqlconn.close()
 
+            # Prints out the calendar for the month
+            elif message.content.startswith('!cal'):
+                out = "```bash" + '\n' + subprocess.run(['cal'], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
+            
             # Chooses between given options
             elif message.content.startswith('!choose'):
                 if message.content == "!choose":
@@ -166,6 +171,7 @@ async def on_message(message):
                     choice = tmp.split(",")
                     out = str(random.choice(choice))
 
+            # Responds with .png image of text in "Ecco the Dolphin" style
             elif message.content.startswith('!ecco'):
                 if message.content == '!ecco':
                     out = '!ecco PHRASE'
@@ -182,18 +188,32 @@ async def on_message(message):
                 tmp = message.content
                 out = tmp[5:]
 
+            # Gives one of several interesting facts
             elif message.content.startswith('!fact'):
                 out = random.choice(Select.fact())
 
-            # elif message.content.startswith('!feedback'):
-            #     userid = message.author.id
-            #     username = message.author.id
-            #     userchannel = message.channel.id
-            #     userserver = message.channel.server.name
-            #     mes = message.content[10:]
-            #     fb = "A message from {0} for you sir: {1} (ID: {2}) (Server {3}) (Channel {4})".format(username, mes, userid, userserver, userchannel)
-            #     await client.send_message("feedback", fb)
-            #     out = "Message sent" 
+            # Presents feedback to a special feedback channel, which authorized users can respond to
+            elif message.content.startswith('!feedback'):
+                if (message.author.id == ids.get("aquova") or message.author.id == ids.get("eemie")):
+                    if message.content == '!feedback':
+                        out = '!feedback CHANNEL_ID MESSAGE'
+                    else:
+                        m = message.content[10:]
+                        channel_id = m.split(" ")[0]
+                        mes = m[len(channel_id):]
+                        response_chan = client.get_channel(channel_id)
+                        await client.send_message(response_chan, mes)
+                        out = "Reply sent"
+                else:
+                    feedback_channel = client.get_channel(cfg['Servers']['feedback'])
+                    userid = message.author.id
+                    username = message.author.name
+                    userchannel = message.channel.id
+                    userserver = message.channel.server.id
+                    mes = message.content[10:]
+                    fb = "A message from {0} for you sir: '{1}' (User ID: {2}) (Server ID {3}) (Channel ID {4})".format(username, mes, userid, userserver, userchannel)
+                    await client.send_message(feedback_channel, fb)
+                    out = "Message sent" 
 
             # Tells a 7 day forecast based on user or location. Uses same database as weather
             elif message.content.startswith('!forecast'):
@@ -221,6 +241,7 @@ async def on_message(message):
                 sqlconn.commit()
                 sqlconn.close()
 
+            # Same as !forecast, but responds with emojis
             elif message.content.startswith('!qf'):
                 sqlconn = sqlite3.connect('database.db')
                 author_id = int(message.author.id)
@@ -287,6 +308,7 @@ async def on_message(message):
                     if message.author.id != client.user.id:
                         out = "That is not a valid option, choose encode or decode."
 
+            # Posts a pic of Aquobot's Raspberry Pi in all its glory
             elif message.content.startswith('!nood'):
                 out = "If you insist :smirk:" + '\n' + "https://cdn.discordapp.com/attachments/296752525615431680/327503078976651264/image.jpg"
 
@@ -326,6 +348,7 @@ async def on_message(message):
 
                     out = "Vote now!!"
 
+            # Users can add quotes to a database, and recall a random one
             elif message.content.startswith('!quote'):
                 sqlconn = sqlite3.connect('database.db')
                 if message.content == '!quote':
@@ -375,6 +398,7 @@ async def on_message(message):
                 else:
                     out = Scrabble_Values.scrabble(parse[1])
 
+            # Responds with the number of servers currently attached to
             elif message.content.startswith('!servers'):
                 server_list = client.servers
                 server_num = str(len(server_list))
@@ -383,6 +407,7 @@ async def on_message(message):
                     for server in server_list:
                         out += '\n' + server.name
 
+            # Can change "now playing" game title
             elif message.content.startswith('!status'):
                 if message.author.id == ids.get("aquova"):
                     new_game = message.content[7:]
@@ -392,7 +417,7 @@ async def on_message(message):
                 else:
                     out = "You do not have permissions for this command."
 
-            # Doesn't do anything right now
+            # Doesn't do anything right now, simply for testing
             elif message.content.startswith('!test'):
                 if message.author.id == ids.get("aquova"):
                     out = 'Yeah, thats coo.'
@@ -422,6 +447,7 @@ async def on_message(message):
                 sqlconn.commit()
                 sqlconn.close()
 
+            # Users can add/remove to their own todo list, and remove entries
             elif message.content.startswith('!todo'):
                 sqlconn = sqlite3.connect('database.db')
                 username = message.author.name
@@ -460,6 +486,7 @@ async def on_message(message):
                 sqlconn.commit()
                 sqlconn.close()
 
+            # Prints given text upside down
             elif message.content.startswith('!upside'):
                 m = message.content[7:]
                 out = Upside.down(m)
@@ -498,6 +525,7 @@ async def on_message(message):
                 sqlconn.commit()
                 sqlconn.close()
 
+            # Same as !weather, but prints emojis
             elif message.content.startswith('!qw'):
                 sqlconn = sqlite3.connect('database.db')
                 author_id = int(message.author.id)
