@@ -190,7 +190,7 @@ async def on_message(message):
 
             # Gives one of several interesting facts
             elif message.content.startswith('!fact'):
-                out = random.choice(Select.fact())
+                out = Select.fact()
 
             # Presents feedback to a special feedback channel, which authorized users can respond to
             elif message.content.startswith('!feedback'):
