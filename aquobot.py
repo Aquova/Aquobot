@@ -9,6 +9,7 @@ import sys
 sys.path.insert(0, './programs')
 
 import discord, wolframalpha, schedule
+from googletrans import Translator
 import asyncio, json, subprocess, logging, random, sqlite3, datetime
 
 # Python programs I wrote, in ./programs
@@ -485,6 +486,19 @@ async def on_message(message):
                     out = "!todo [add/remove]"
                 sqlconn.commit()
                 sqlconn.close()
+
+            elif message.content.startswith('!tr'):
+                if message.content == '!tr':
+                    out = '!tr SOURCE_LANG MESSAGE'
+                else:
+                    try:
+                        dest_lang = message.content.split(" ")[1]
+                        text = " ".join(message.content.split(" ")[2:])
+                        tr = Translator()
+                        new = tr.translate(text, dest=dest_lang)
+                        out = new.text
+                    except ValueError:
+                        out = "Invalid destination language."
 
             # Prints given text upside down
             elif message.content.startswith('!upside'):
