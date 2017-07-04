@@ -10,7 +10,7 @@ sys.path.insert(0, './programs')
 
 import discord, wolframalpha, schedule
 from googletrans import Translator
-import asyncio, json, subprocess, logging, random, sqlite3, datetime
+import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib
 
 # Python programs I wrote, in ./programs
 import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather, Upside, Birthday, Ecco, Select
@@ -41,6 +41,15 @@ sqlconn.commit()
 sqlconn.close()
 
 ids = cfg['Users']
+
+def get_xkcd(xkcd_json):
+    title = xkcd_json['title']
+    date = "{0}/{1}/{2}".format(xkcd_json['month'], xkcd_json['day'], xkcd_json['year'])
+    alt_text = xkcd_json['alt']
+    img_url = xkcd_json['img']
+    num = xkcd_json['num']
+    out = title + ", " + date + ", Comic #" + str(num) + '\n' + img_url + '\n' + "Alt text: " + alt_text
+    return out
 
 # db_path = os.path.join(os.path.dirname(__file__), 'database.db')
 # today_bday = schedule.every().day.at("7:00").do(Birthday.birthday_check(db_path))
@@ -570,6 +579,31 @@ async def on_message(message):
                     out = next(res.results).text
                 except AttributeError:
                     out = "No results"
+
+            elif message.content.startswith('!xkcd'):
+                xkcd_json_url = urllib.request.urlopen('https://xkcd.com/info.0.json')
+                xkcd_json = json.loads(xkcd_json_url.read())
+                max_comic = xkcd_json['num']
+                if message.content == '!xkcd':
+                    out = get_xkcd(xkcd_json)
+                elif (message.content.split(" ")[1] == 'random' or message.content.split(" ")[1] == 'rand'):
+                    num = random.randint(1, max_comic)
+                    new_url = 'https://xkcd.com/{}/info.0.json'.format(num)
+                    new_json_url = urllib.request.urlopen(new_url)
+                    xkcd_json = json.loads(new_json_url.read())
+                    out = get_xkcd(xkcd_json)
+                else:
+                    try:
+                        num = int(message.content.split(" ")[1])
+                        new_url = 'https://xkcd.com/{}/info.0.json'.format(num)
+                        new_json_url = urllib.request.urlopen(new_url)
+                        xkcd_json = json.loads(new_json_url.read())
+                        out = get_xkcd(xkcd_json)
+                    except ValueError:
+                        out = "Not a valid number." + '\n' + "!xkcd [comic #]"
+                    except urllib.error.HTTPError:
+                        out = "There's no comic with that index number."
+                
 
             # The following are responses to various keywords if present anywhere in a message
             elif ("HELLO AQUOBOT" in message.content.upper() or "HI AQUOBOT" in message.content.upper()):
