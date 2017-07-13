@@ -108,7 +108,7 @@ async def on_message(message):
                 out = ":gun:"
 
             elif message.content.startswith("/unshrug"):
-                out = "\_/¯(ツ)¯\\_"
+                out = "\_/¯(ツ)¯\\\_"
 
             # Responds if active
             elif message.content.startswith('!alive'):
