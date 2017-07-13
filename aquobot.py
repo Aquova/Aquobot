@@ -13,7 +13,7 @@ from googletrans import Translator
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib
 
 # Python programs I wrote, in ./programs
-import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather, Upside, Birthday, Ecco, Select
+import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather, Upside, Birthday, Ecco, Select, Checkers
 
 # Handles logging to discord.log
 logger = logging.getLogger('discord')
@@ -107,6 +107,9 @@ async def on_message(message):
             elif message.content.startswith("🔪"):
                 out = ":gun:"
 
+            elif message.content.startswith("/unshrug"):
+                out = "\_/¯(ツ)¯\\_"
+
             # Responds if active
             elif message.content.startswith('!alive'):
                 options = ['Nah.', 'Who wants to know?', ':robot: `yes`', "I wouldn't be responding if I were dead."]
@@ -171,6 +174,9 @@ async def on_message(message):
             # Prints out the calendar for the month
             elif message.content.startswith('!cal'):
                 out = "```bash" + '\n' + subprocess.run(['cal'], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
+
+            elif message.content.startswith('!checkers'):
+                out = Checkers.main()
             
             # Chooses between given options
             elif message.content.startswith('!choose'):
