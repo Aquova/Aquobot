@@ -103,13 +103,6 @@ async def on_message(message):
                     subprocess.call("./update.sh", shell=True)
                     sys.exit()
 
-            # Never bring a knife to a gunfight
-            elif message.content.startswith("🔪"):
-                out = ":gun:"
-
-            elif message.content.startswith("/unshrug"):
-                out = "\_/¯(ツ)¯\\\_"
-
             # Responds if active
             elif message.content.startswith('!alive'):
                 options = ['Nah.', 'Who wants to know?', ':robot: `yes`', "I wouldn't be responding if I were dead."]
@@ -609,8 +602,19 @@ async def on_message(message):
                         out = "Not a valid number." + '\n' + "!xkcd [comic #]"
                     except urllib.error.HTTPError:
                         out = "There's no comic with that index number."
-                
 
+            # Never bring a knife to a gunfight
+            elif message.content.startswith("🔪"):
+                out = ":gun:"
+
+            elif message.content.startswith("/unshrug"):
+                out = "\_/¯(ツ)¯\\\_"
+
+            elif (message.content.upper().startswith("DID SOMEONE SAY") or message.content.upper().startswith("DID SOMEBODY SAY")):
+                mes = message.content.split(" ")
+                sass = " ".join(mes[3:])
+                out = "*{}*".format(sass)
+            
             # The following are responses to various keywords if present anywhere in a message
             elif ("HELLO AQUOBOT" in message.content.upper() or "HI AQUOBOT" in message.content.upper()):
                 name = message.author.name
