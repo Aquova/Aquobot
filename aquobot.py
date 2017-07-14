@@ -11,7 +11,7 @@ sys.path.insert(0, './programs')
 import discord, wolframalpha, schedule
 from googletrans import Translator
 from google import google
-import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib
+import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, datetime
 
 # Python programs I wrote, in ./programs
 import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather, Upside, Birthday, Ecco, Select, Checkers
@@ -38,10 +38,13 @@ sqlconn.execute("CREATE TABLE IF NOT EXISTS weather (id INT PRIMARY KEY, name TE
 sqlconn.execute("CREATE TABLE IF NOT EXISTS birthday (id INT PRIMARY KEY, name TEXT, month TEXT, day INT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS quotes (num INT PRIMARY KEY, quote TEXT, username TEXT, userid INT, messageid INT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS todo (id INT PRIMARY KEY, userid INT, username TEXT, message TEXT, t TEXT);")
+sqlconn.execute("CREATE TABLE IF NOT EXISTS days (userid INT PRIMARY KEY, last TEXT);")
 sqlconn.commit()
 sqlconn.close()
 
 ids = cfg['Users']
+
+num_emoji = {0: "0⃣", 1:"1⃣", 2:"2⃣", 3:"3⃣", 4:"4⃣", 5:"5⃣", 6:"6⃣", 7:"7⃣", 8:"8⃣", 9:"9⃣"}
 
 def get_xkcd(xkcd_json):
     title = xkcd_json['title']
@@ -184,6 +187,38 @@ async def on_message(message):
                     tmp = remove_command(message.content)
                     choice = tmp.split(",")
                     out = str(random.choice(choice))
+
+            # This one is for me and Eemie
+            elif message.content.startswith('!days'):
+                if message.server.id == cfg['Servers']['Brickhouse']:
+                    if (message.author.id == ids.get("eemie") or message.author.id == ids.get("aquova")):
+                        sqlconn = sqlite3.connect('database.db')
+                        today = datetime.date.today()
+                        if message.content == '!days reset':
+                            params = [message.author.id, today]
+                            sqlconn.execute("INSERT OR REPLACE INTO days (userid, last) VALUES (?, ?)", params)
+                            out = "Date updated, you sly dog :smirk:"
+                        elif message.content.startswith('!days reset'):
+                            target = " ".join(message.content.split(" ")[2:])
+                            # MM/DD/YYYY
+                            m = int(target[:2])
+                            d = int(target[3:5])
+                            y = int(target[6:10])
+                            day = datetime.date(y, m, d)
+                            params = [message.author.id, day]
+                            sqlconn.execute("INSERT OR REPLACE INTO days (userid, last) VALUES (?, ?)", params)
+                            out = "Date updated, you sly dog :smirk:"
+                        else:
+                            last_day = sqlconn.execute("SELECT last FROM days WHERE userid=?", [message.author.id]).fetchone()[0]
+                            last_day = datetime.datetime.strptime(last_day, '%Y-%m-%d').date()
+                            delta = today - last_day
+                            num = str(delta).split(" ")[0]
+                            tmp = ""
+                            for digit in num:
+                                tmp = tmp + num_emoji[int(digit)]
+                            out = "It has been {} days since your last time! :confetti_ball:".format(tmp)
+                    sqlconn.commit()
+                    sqlconn.close()
 
             # Responds with .png image of text in "Ecco the Dolphin" style
             elif message.content.startswith('!ecco'):
@@ -328,8 +363,6 @@ async def on_message(message):
 
             # Produces a poll where users can vote via reactions
             elif message.content.startswith('!poll'):
-                num_emoji = {1:"1⃣", 2:"2⃣", 3:"3⃣", 4:"4⃣", 5:"5⃣",
-                                6:"6⃣", 7:"7⃣", 8:"8⃣", 9:"9⃣"}
                 if message.content == "!poll":
                     out = "!poll TITLE, OPTION1, OPTION2, OPTION3..."
                 else:
@@ -508,8 +541,18 @@ async def on_message(message):
                 else:
                     out = str(Days_Until.until(parse[1])) + " days"
 
+            # Returns with Wolfram Alpha result of query
+            # Needs to be before !weather
+            elif message.content.startswith('!wolfram'):
+                try:
+                    q = remove_command(message.content)
+                    res = waclient.query(q)
+                    out = next(res.results).text
+                except AttributeError:
+                    out = "No results"
+
             # Returns with the weather of a specified location
-            elif (message.content.startswith('!weather') or message.content.startswith('!w ')):
+            elif (message.content.startswith('!weather') or message.content.startswith('!w')):
                 sqlconn = sqlite3.connect('database.db')
                 author_id = int(message.author.id)
                 author_name = message.author.name
@@ -557,15 +600,6 @@ async def on_message(message):
                     out = Weather.emoji_weather(q)
                 sqlconn.commit()
                 sqlconn.close()
-
-            # Returns with Wolfram Alpha result of query
-            elif message.content.startswith('!wolfram'):
-                try:
-                    q = remove_command(message.content)
-                    res = waclient.query(q)
-                    out = next(res.results).text
-                except AttributeError:
-                    out = "No results"
 
             elif message.content.startswith('!xkcd'):
                 xkcd_json_url = urllib.request.urlopen('https://xkcd.com/info.0.json')
