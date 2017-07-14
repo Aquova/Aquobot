@@ -10,6 +10,7 @@ sys.path.insert(0, './programs')
 
 import discord, wolframalpha, schedule
 from googletrans import Translator
+from google import google
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib
 
 # Python programs I wrote, in ./programs
@@ -50,6 +51,10 @@ def get_xkcd(xkcd_json):
     num = xkcd_json['num']
     out = title + ", " + date + ", Comic #" + str(num) + '\n' + img_url + '\n' + "Alt text: " + alt_text
     return out
+
+def remove_command(m):
+    tmp = m.split(" ")[1:]
+    return " ".join(tmp)
 
 # db_path = os.path.join(os.path.dirname(__file__), 'database.db')
 # today_bday = schedule.every().day.at("7:00").do(Birthday.birthday_check(db_path))
@@ -176,7 +181,7 @@ async def on_message(message):
                 if message.content == "!choose":
                     out = "!choose OPTION1, OPTION2, OPTION3..."
                 else:
-                    tmp = message.content[7:]
+                    tmp = remove_command(message.content)
                     choice = tmp.split(",")
                     out = str(random.choice(choice))
 
@@ -185,7 +190,7 @@ async def on_message(message):
                 if message.content == '!ecco':
                     out = '!ecco PHRASE'
                 else:
-                    q = message.content[6:]
+                    q = remove_command(message.content)
                     valid = Ecco.text(q)
                     if valid == 'ERROR':
                         out = 'That phrase used an invalid character. Please try again.'
@@ -194,8 +199,7 @@ async def on_message(message):
 
             # Repeats back user message
             elif message.content.startswith('!echo'):
-                tmp = message.content
-                out = tmp[5:]
+                out = remove_command(message.content)
 
             # Gives one of several interesting facts
             elif message.content.startswith('!fact'):
@@ -207,7 +211,7 @@ async def on_message(message):
                     if message.content == '!feedback':
                         out = '!feedback CHANNEL_ID MESSAGE'
                     else:
-                        m = message.content[10:]
+                        m = remove_command(message.content)
                         channel_id = m.split(" ")[0]
                         mes = m[len(channel_id):]
                         response_chan = client.get_channel(channel_id)
@@ -219,17 +223,17 @@ async def on_message(message):
                     username = message.author.name
                     userchannel = message.channel.id
                     userserver = message.channel.server.id
-                    mes = message.content[10:]
+                    mes = remove_command(message.content)
                     fb = "A message from {0} for you sir: '{1}' (User ID: {2}) (Server ID {3}) (Channel ID {4})".format(username, mes, userid, userserver, userchannel)
                     await client.send_message(feedback_channel, fb)
                     out = "Message sent" 
 
             # Tells a 7 day forecast based on user or location. Uses same database as weather
-            elif message.content.startswith('!forecast'):
+            elif (message.content.startswith('!forecast') or message.content.startswith('!f')):
                 sqlconn = sqlite3.connect('database.db')
                 author_id = int(message.author.id)
                 author_name = message.author.name
-                if message.content == '!forecast':
+                if (message.content == '!forecast' or message.content == '!f'):
                     user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
                     try:
                         query_location = user_loc.fetchone()[0]
@@ -243,7 +247,7 @@ async def on_message(message):
                     out = "Location set as %s" % q
                 else:
                     try:
-                        q = message.content[9:]
+                        q = remove_command(message.content)
                         out = Weather.forecast(q)
                     except TypeError:
                         out = "No location found. Please be more specific."
@@ -269,24 +273,16 @@ async def on_message(message):
                     out = "Location set as %s" % q
                 else:
                     try:
-                        q = message.content[3:]
+                        q = remove_command(message.content)
                         out = Weather.emoji_forecast(q)
                     except TypeError:
                         out = "No location found. Please be more specific."
                 sqlconn.commit()
                 sqlconn.close()
 
-            # Posts local time, computer uptime, and RPi temperature
-            elif message.content.startswith('!info'):
-                raw = str(subprocess.check_output('uptime'))
-                first = raw.split(',')[0]
-                time = first.split(' ')[1]
-                uptime = " ".join(first.split(' ')[3:])
-
-                raw_temp = str(subprocess.check_output(['cat','/sys/class/thermal/thermal_zone0/temp']))
-                temp = int(raw_temp[2:7])
-                temp = round(((temp/1000) * 9 / 5) + 32, 1)
-                out = "Local Time: " + time + " Uptime: " + uptime + " RPi Temp: " + str(temp) + "ºF"
+            elif (message.content.startswith('!g') or message.content.startswith('!google')):
+                q = remove_command(message.content)
+                out = google.search(q)[0].link
 
             # Tells a joke from a pre-programmed list
             elif message.content.startswith('!joke'):
@@ -317,10 +313,6 @@ async def on_message(message):
                     if message.author.id != client.user.id:
                         out = "That is not a valid option, choose encode or decode."
 
-            # Posts a pic of Aquobot's Raspberry Pi in all its glory
-            elif message.content.startswith('!nood'):
-                out = "If you insist :smirk:" + '\n' + "https://cdn.discordapp.com/attachments/296752525615431680/327503078976651264/image.jpg"
-
             # Pins most recent message of specified user
             elif message.content.startswith('!pin'):
                 if message.content == '!pin':
@@ -341,7 +333,7 @@ async def on_message(message):
                 if message.content == "!poll":
                     out = "!poll TITLE, OPTION1, OPTION2, OPTION3..."
                 else:
-                    tmp = message.content[5:]
+                    tmp = remove_command(message.content)
                     options = tmp.split(",")
                     num = len(options) - 1
                     i = 0
@@ -379,12 +371,7 @@ async def on_message(message):
                     except ValueError:
                         out = "That is not a number. Please specify the quote ID number you wish to remove."
                     except TypeError:
-                        out = "There is no ID of that number."
-                # else:
-                #     mes = message.content[7:]
-                #     try:
-                #         mes = int(mes)
-                #     except ValueError:     
+                        out = "There is no ID of that number."    
                 sqlconn.commit()
                 sqlconn.close()
                 
@@ -419,7 +406,7 @@ async def on_message(message):
             # Can change "now playing" game title
             elif message.content.startswith('!status'):
                 if message.author.id == ids.get("aquova"):
-                    new_game = message.content[7:]
+                    new_game = remove_command(message.content)
                     game_object = discord.Game(name=new_game)
                     await client.change_presence(game=game_object)
                     out = "Changed status to: {}".format(new_game)
@@ -451,7 +438,7 @@ async def on_message(message):
                     sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
                     out = "Location set as %s" % q
                 else:
-                    q = message.content[5:]
+                    q = remove_command(message.content)
                     out = Weather.time(q)
                 sqlconn.commit()
                 sqlconn.close()
@@ -495,8 +482,8 @@ async def on_message(message):
                 sqlconn.commit()
                 sqlconn.close()
 
-            elif message.content.startswith('!tr'):
-                if message.content == '!tr':
+            elif (message.content.startswith('!tr') or message.content.startswith('!translate')):
+                if (message.content == '!tr' or message.content == '!translate'):
                     out = '!tr SOURCE_LANG MESSAGE'
                 else:
                     try:
@@ -510,7 +497,7 @@ async def on_message(message):
 
             # Prints given text upside down
             elif message.content.startswith('!upside'):
-                m = message.content[7:]
+                m = remove_command(message.content)
                 out = Upside.down(m)
 
             # Gives number of days until specified date
@@ -522,25 +509,26 @@ async def on_message(message):
                     out = str(Days_Until.until(parse[1])) + " days"
 
             # Returns with the weather of a specified location
-            elif message.content.startswith('!weather'):
+            elif (message.content.startswith('!weather') or message.content.startswith('!w')):
                 sqlconn = sqlite3.connect('database.db')
                 author_id = int(message.author.id)
                 author_name = message.author.name
-                if message.content == '!weather':
+                if (message.content == '!weather' or message.content == '!w'):
                     user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
                     try:
                         query_location = user_loc.fetchone()[0]
                         out = Weather.main(query_location)
                     except TypeError:
                         out = "!weather [set] LOCATION"
-                elif message.content.startswith("!weather set"):
-                    q = message.content[13:]
+                elif (message.content.startswith("!weather set") or message.content.startswith('!w set')):
+                    tmp = message.content.split(" ")[2:]
+                    q = " ".join(tmp)
                     params = (author_id, author_name, q)
                     sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
                     out = "Location set as %s" % q
                 else:
                     try:
-                        q = message.content[8:]
+                        q = remove_command(message.content)
                         out = Weather.main(q)
                     except TypeError:
                         out = "No location found. Please be more specific."
@@ -565,7 +553,7 @@ async def on_message(message):
                     sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
                     out = "Location set as %s" % q
                 else:
-                    q = message.content[3:]
+                    q = remove_command(message.content)
                     out = Weather.emoji_weather(q)
                 sqlconn.commit()
                 sqlconn.close()
@@ -573,7 +561,7 @@ async def on_message(message):
             # Returns with Wolfram Alpha result of query
             elif message.content.startswith('!wolfram'):
                 try:
-                    q = message.content[9:]
+                    q = remove_command(message.content)
                     res = waclient.query(q)
                     out = next(res.results).text
                 except AttributeError:
