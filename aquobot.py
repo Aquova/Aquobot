@@ -509,7 +509,7 @@ async def on_message(message):
                     out = str(Days_Until.until(parse[1])) + " days"
 
             # Returns with the weather of a specified location
-            elif (message.content.startswith('!weather') or message.content.startswith('!w')):
+            elif (message.content.startswith('!weather') or message.content.startswith('!w ')):
                 sqlconn = sqlite3.connect('database.db')
                 author_id = int(message.author.id)
                 author_name = message.author.name
