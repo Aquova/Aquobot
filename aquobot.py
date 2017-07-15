@@ -94,6 +94,8 @@ async def on_reaction_add(reaction, user):
                 sqlconn.close()
                 out = 'Quote added from {0}: "{1}". (#{2})'.format(user_name, mes, str(num + 1))
                 await client.send_message(reaction.message.channel, out)
+    elif reaction.emoji == '📌':
+        await client.pin_message(reaction.message)
 
 # Upon typed message in chat
 @client.event
