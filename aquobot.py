@@ -661,7 +661,7 @@ async def on_message(message):
 
             elif (message.content.upper().startswith("I'M") or message.content.upper().startswith('IM')):
                 if len(message.content.split(" ")) == 2:
-                    if message.content.split(" ").upper() == "AQUOBOT"
+                    if message.content.split(" ").upper() == "AQUOBOT":
                         out = "WHAT?! But if you're Aquobot... Then... Who am I? :cold_sweat:"
                     else:
                         out = "hi {} im aquobot".format(message.content.split(" ")[1].lower())
