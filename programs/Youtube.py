@@ -21,5 +21,8 @@ def search(phrase):
 		if search_result["id"]["kind"] == "youtube#video":
 			video_id = search_result["id"]["videoId"]
 			break
-	url = youtube_url + video_id
+	try:
+		url = youtube_url + video_id
+	except:
+		url = "No videos found with that search term."
 	return url

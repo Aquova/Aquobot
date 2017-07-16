@@ -565,10 +565,12 @@ async def on_message(message):
                     wikipedia.WikipediaPage(title=results[0])
                     out = wiki_url + results[0].replace(" ","_")
                 except wikipedia.exceptions.DisambiguationError as e:
-                # This prints out a UserWarning in terminal. 
-                # This is the library's problem and doesn't affect anything, but clutters up the terminal output.
                     out = wiki_url + e.options[0].replace(" ","_")
-
+                    # This prints out a UserWarning in terminal. 
+                    # This is the library's problem and doesn't affect anything, but clutters up the terminal output.
+                except IndexError:
+                    out = 'No article was found with that name'
+                    
             # Returns with the weather of a specified location
             elif (message.content.startswith('!weather') or message.content.startswith('!w')):
                 sqlconn = sqlite3.connect('database.db')
