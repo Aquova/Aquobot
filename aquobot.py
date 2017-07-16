@@ -659,6 +659,10 @@ async def on_message(message):
             elif message.content.startswith("/unshrug"):
                 out = "\_/¯(ツ)¯\\\_"
 
+            elif (message.content.upper().startswith("I'M") or message.content.upper().startswith('IM')):
+                if len(message.content.split(" ")) == 2:
+                    out = "hi {} im aquobot".format(message.content.split(" ")[1].lower())
+
             elif (message.content.upper().startswith("DID SOMEONE SAY") or message.content.upper().startswith("DID SOMEBODY SAY")):
                 mes = message.content.split(" ")
                 sass = " ".join(mes[3:])
