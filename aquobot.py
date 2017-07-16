@@ -14,7 +14,8 @@ from google import google
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, datetime
 
 # Python programs I wrote, in ./programs
-import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather, Upside, Birthday, Ecco, Select, Checkers, Youtube
+import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather
+import Upside, Birthday, Ecco, Select, Checkers, Youtube, Steam
 
 # Suppressing the UserWarning from the wikipedia module. Possibly a bad idea in the long run
 import warnings
@@ -452,6 +453,10 @@ async def on_message(message):
                 else:
                     out = "You do not have permissions for this command."
 
+            elif message.content.startswith('!steam'):
+                q = remove_command(message.content)
+                out = Steam.get_userinfo(q)
+
             # Doesn't do anything right now, simply for testing
             elif message.content.startswith('!test'):
                 if message.author.id == ids.get("aquova"):
@@ -548,7 +553,6 @@ async def on_message(message):
                     out = str(Days_Until.until(parse[1])) + " days"
 
             # Returns with Wolfram Alpha result of query
-            # Needs to be before !weather
             elif message.content.startswith('!wolfram'):
                 try:
                     q = remove_command(message.content)
@@ -566,12 +570,11 @@ async def on_message(message):
                     out = wiki_url + results[0].replace(" ","_")
                 except wikipedia.exceptions.DisambiguationError as e:
                     out = wiki_url + e.options[0].replace(" ","_")
-                    # This prints out a UserWarning in terminal. 
-                    # This is the library's problem and doesn't affect anything, but clutters up the terminal output.
                 except IndexError:
                     out = 'No article was found with that name'
                     
             # Returns with the weather of a specified location
+            # Needs to be the last 'w' command
             elif (message.content.startswith('!weather') or message.content.startswith('!w')):
                 sqlconn = sqlite3.connect('database.db')
                 author_id = int(message.author.id)
