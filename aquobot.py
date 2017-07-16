@@ -8,13 +8,17 @@
 import sys
 sys.path.insert(0, './programs')
 
-import discord, wolframalpha, schedule
+import discord, wolframalpha, schedule, wikipedia
 from googletrans import Translator
 from google import google
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, datetime
 
 # Python programs I wrote, in ./programs
-import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather, Upside, Birthday, Ecco, Select, Checkers
+import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather, Upside, Birthday, Ecco, Select, Checkers, Youtube
+
+# Suppressing the UserWarning from the wikipedia module. Possibly a bad idea in the long run
+import warnings
+warnings.filterwarnings('ignore', category=UserWarning, append=True)
 
 # Handles logging to discord.log
 logger = logging.getLogger('discord')
@@ -553,6 +557,18 @@ async def on_message(message):
                 except AttributeError:
                     out = "No results"
 
+            elif message.content.startswith('!wiki'):
+                q = remove_command(message.content)
+                wiki_url = 'https://en.wikipedia.org/wiki/'
+                results = wikipedia.search(q)
+                try:
+                    wikipedia.WikipediaPage(title=results[0])
+                    out = wiki_url + results[0].replace(" ","_")
+                except wikipedia.exceptions.DisambiguationError as e:
+                # This prints out a UserWarning in terminal. 
+                # This is the library's problem and doesn't affect anything, but clutters up the terminal output.
+                    out = wiki_url + e.options[0].replace(" ","_")
+
             # Returns with the weather of a specified location
             elif (message.content.startswith('!weather') or message.content.startswith('!w')):
                 sqlconn = sqlite3.connect('database.db')
@@ -602,6 +618,10 @@ async def on_message(message):
                     out = Weather.emoji_weather(q)
                 sqlconn.commit()
                 sqlconn.close()
+
+            elif (message.content.startswith('!youtube') or message.content.startswith('!yt')):
+                q = remove_command(message.content)
+                out = Youtube.search(q)
 
             elif message.content.startswith('!xkcd'):
                 xkcd_json_url = urllib.request.urlopen('https://xkcd.com/info.0.json')
