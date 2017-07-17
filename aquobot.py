@@ -15,7 +15,7 @@ import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, da
 
 # Python programs I wrote, in ./programs
 import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather
-import Upside, Birthday, Ecco, Select, Checkers, Youtube, Steam
+import Upside, Birthday, Ecco, Select, Checkers, Youtube, Steam, Whatpulse
 
 # Suppressing the UserWarning from the wikipedia module. Possibly a bad idea in the long run
 import warnings
@@ -44,6 +44,7 @@ sqlconn.execute("CREATE TABLE IF NOT EXISTS birthday (id INT PRIMARY KEY, name T
 sqlconn.execute("CREATE TABLE IF NOT EXISTS quotes (num INT PRIMARY KEY, quote TEXT, username TEXT, userid INT, messageid INT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS todo (id INT PRIMARY KEY, userid INT, username TEXT, message TEXT, t TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS days (userid INT PRIMARY KEY, last TEXT);")
+sqlconn.execute("CREATE TABLE IF NOT EXISTS whatpulse (userid INT PRIMARY KEY, username TEXT);")
 sqlconn.commit()
 sqlconn.close()
 
@@ -105,6 +106,10 @@ async def on_reaction_add(reaction, user):
 # Upon typed message in chat
 @client.event
 async def on_message(message):
+    if (message.channel.id == cfg['Servers']['aquobot-DM'] and message.author.id != cfg['Users']['aquobot']):
+        secret = "User {0} (ID {1}) sent this DM: {2}".format(message.author.name,message.author.id,message.content)
+        DM_channel = client.get_channel(cfg['Servers']['DM-channel'])
+        await client.send_message(DM_channel, secret)
     if message.author.id != client.user.id:
         try:
             out = ""
@@ -562,27 +567,24 @@ async def on_message(message):
                     out = "No results"
 
             elif (message.content.startswith('!whatpulse') or message.content.startswith('!wp')):
-                q = remove_command(message.content)
-                user_url = "http://api.whatpulse.org/user.php?user={}&format=json".format(q)
-                result = urllib.request.urlopen(user_url).read().decode('utf8')
-                data = json.loads(result)
-                try:
-                    username = data['AccountName']
-                    country = data['Country']
-                    key_presses = data['Keys']
-                    clicks = data['Clicks']
-                    downloaded = data['Download']
-                    uploaded = data['Upload']
-                    date_joined = data['DateJoined']
-                    if data['Team'] == "0":
-                        team = "None"
-                    else:
-                        team = data["Team"]["Name"]
-
-                    out = "User: {0} | Date Joined: {1} | Country: {2} | Key presses: {3} | Clicks: {4} | Total downloaded: {5} | Total uploaded: {6} | Team: {7}".format(username,date_joined,country,key_presses,clicks,downloaded,uploaded,team)
-                    out += '\n' + "http://whatpulse.org/{}".format(username)
-                except KeyError:
-                    out = "There is no user by that name"
+                sqlconn = sqlite3.connect('database.db')
+                if len(message.content.split(" ")) == 1:
+                    userinfo = sqlconn.execute("SELECT username FROM whatpulse WHERE userid=?", [message.author.id,])
+                    try:
+                        q = userinfo.fetchone()[0]
+                        out = Whatpulse.main(q)
+                    except TypeError:
+                        out = "!whatpulse USERNAME"
+                elif message.content.split(" ")[1].upper() == "ADD":
+                    username = " ".join(message.content.split(" ")[2:])
+                    params = [message.author.id, username]
+                    sqlconn.execute("INSERT OR REPLACE INTO whatpulse (userid, username) VALUES (?, ?)", params)
+                    out = "User added"
+                else:
+                    q = remove_command(message.content)
+                    out = Whatpulse.main(q)
+                sqlconn.commit()
+                sqlconn.close()
 
             elif message.content.startswith('!wiki'):
                 q = remove_command(message.content)
