@@ -575,7 +575,7 @@ async def on_message(message):
                         out = Whatpulse.main(q)
                     except TypeError:
                         out = "!whatpulse USERNAME"
-                elif message.content.split(" ")[1].upper() == "ADD":
+                elif message.content.split(" ")[1].upper() == "SET":
                     username = " ".join(message.content.split(" ")[2:])
                     params = [message.author.id, username]
                     sqlconn.execute("INSERT OR REPLACE INTO whatpulse (userid, username) VALUES (?, ?)", params)
