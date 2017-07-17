@@ -78,6 +78,11 @@ async def on_ready():
     game_object = discord.Game(name="type !help")
     await client.change_presence(game=game_object)
 
+    global channel_id_list
+    channel_id_list = []
+    for i in client.get_all_channels():
+        channel_id_list.append(i.id)
+
 @client.event
 async def on_reaction_add(reaction, user):
     if reaction.emoji == '💬':
@@ -106,7 +111,7 @@ async def on_reaction_add(reaction, user):
 # Upon typed message in chat
 @client.event
 async def on_message(message):
-    if (message.channel.id == cfg['Servers']['aquobot-DM'] and message.author.id != cfg['Users']['aquobot']):
+    if message.channel.id not in channel_id_list:
         secret = "User {0} (ID {1}) sent this DM: {2}".format(message.author.name,message.author.id,message.content)
         DM_channel = client.get_channel(cfg['Servers']['DM-channel'])
         await client.send_message(DM_channel, secret)
@@ -574,7 +579,7 @@ async def on_message(message):
                         q = userinfo.fetchone()[0]
                         out = Whatpulse.main(q)
                     except TypeError:
-                        out = "!whatpulse USERNAME"
+                        out = "!whatpulse [set] USERNAME"
                 elif message.content.split(" ")[1].upper() == "SET":
                     username = " ".join(message.content.split(" ")[2:])
                     params = [message.author.id, username]
