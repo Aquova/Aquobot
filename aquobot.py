@@ -108,6 +108,23 @@ async def on_reaction_add(reaction, user):
     elif reaction.emoji == '📌':
         await client.pin_message(reaction.message)
 
+@client.event
+async def on_server_join(server):
+    serv_name = server.name
+    serv_id = server.id
+    serv_owner_name = server.owner.name
+    serv_owner_id = server.owner.id
+    default_channel = server.default_channel
+    mems = server.member_count
+    await client.send_message(default_channel, "Thank you for adding me to your server! Type '!help' for a list of commands")
+    await client.send_message(cfg['Servers']['general'], "Aquobot has been added to {0} (ID: {1}) Owned by {2} ({3}). Server has {4} members.".format(serv_name, serv_id, serv_owner_name, serv_owner_id, mems))
+
+@client.event
+async def on_server_remove(server):
+    serv_name = server.name
+    serv_id = server.id
+    await client.send_message(cfg['Servers']['general'], "Aquobot has been removed from {0} (ID {1}). How rude.".format(serv_name, serv_id))
+
 # Upon typed message in chat
 @client.event
 async def on_message(message):
@@ -115,6 +132,7 @@ async def on_message(message):
         secret = "User {0} (ID {1}) sent this DM: {2}".format(message.author.name,message.author.id,message.content)
         DM_channel = client.get_channel(cfg['Servers']['DM-channel'])
         await client.send_message(DM_channel, secret)
+        
     if message.author.id != client.user.id:
         try:
             out = ""
@@ -332,7 +350,7 @@ async def on_message(message):
                 sqlconn.commit()
                 sqlconn.close()
 
-            elif (message.content.startswith('!g') or message.content.startswith('!google')):
+            elif message.content.startswith('!g'):
                 q = remove_command(message.content)
                 out = google.search(q)[0].link
 
