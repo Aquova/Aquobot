@@ -1,9 +1,11 @@
-# The Aquobot program for Discord
-# The only Discord bot that utilizes the Mayan calendar!
-# http://github.com/Aquova/Aquobot
+"""
+The Aquobot program for Discord
+The only Discord bot that utilizes the Mayan calendar!
+http://github.com/Aquova/Aquobot
 
-# Written by Austin Bricker, 2017
-# Requires Python 3.5+ to run
+Written by Austin Bricker, 2017
+Requires Python 3.5+ to run
+"""
 
 import sys
 sys.path.insert(0, './programs')
@@ -11,7 +13,8 @@ sys.path.insert(0, './programs')
 import discord, wolframalpha, schedule, wikipedia
 from googletrans import Translator
 from google import google
-import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, datetime
+from geopy.geocoders import Nominatim
+import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib
 
 # Python programs I wrote, in ./programs
 import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather
@@ -353,6 +356,20 @@ async def on_message(message):
             elif message.content.startswith('!g'):
                 q = remove_command(message.content)
                 out = google.search(q)[0].link
+
+            elif message.content.startswith('!iss'):
+                geo = Nominatim()
+                iss_json_url = urllib.request.urlopen('http://api.open-notify.org/iss-now.json')
+                iss_json = json.loads(iss_json_url.read())
+                latitude = iss_json['iss_position']['latitude']
+                longitude = iss_json['iss_position']['longitude']
+                location = geo.reverse("{0}, {1}".format(latitude,longitude))
+                time = datetime.datetime.fromtimestamp(iss_json['timestamp'])
+                out = "At {0} the International Space Station is located at {1}, {2}".format(time, latitude, longitude)
+                try:
+                    out += ", located at {}".format(location)
+                except TypeError:
+                    pass
 
             # Tells a joke from a pre-programmed list
             elif message.content.startswith('!joke'):
