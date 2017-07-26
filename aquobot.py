@@ -724,7 +724,7 @@ async def on_message(message):
             elif message.content.startswith("/unshrug"):
                 out = "\_/¯(ツ)¯\\\_"
 
-            elif (message.content.upper().startswith("I'M") or message.content.upper().startswith('IM')):
+            elif message.content.split(" ")[0].upper() == "I'M" or message.content.split(" ")[0].upper() == "IM":
                 if len(message.content.split(" ")) == 2:
                     if message.content.split(" ")[1].upper() == "AQUOBOT":
                         out = "WHAT?! But if you're Aquobot... Then... Who am I? :cold_sweat:"
