@@ -6,8 +6,8 @@ from apiclient.errors import HttpError
 from oauth2client.tools import argparser
 import json
 
-with open('config.json') as json_data_file:
-    cfg = json.load(json_data_file)
+with open("config.json") as json_data_file:
+	cfg = json.load(json_data_file)
 
 DEVELOPER_KEY = cfg['Client']['google']
 YOUTUBE_API_SERVICE_NAME = "youtube"

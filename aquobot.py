@@ -10,7 +10,7 @@ Requires Python 3.5+ to run
 import sys
 sys.path.insert(0, './programs')
 
-import discord, wolframalpha, schedule, wikipedia
+import discord, wolframalpha, schedule, wikipedia, requests
 from googletrans import Translator
 from google import google
 from geopy.geocoders import Nominatim
@@ -48,6 +48,7 @@ sqlconn.execute("CREATE TABLE IF NOT EXISTS quotes (num INT PRIMARY KEY, quote T
 sqlconn.execute("CREATE TABLE IF NOT EXISTS todo (id INT PRIMARY KEY, userid INT, username TEXT, message TEXT, t TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS days (userid INT PRIMARY KEY, last TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS whatpulse (userid INT PRIMARY KEY, username TEXT);")
+sqlconn.execute("CREATE TABLE IF NOT EXISTS anime (userid INT PRIMARY KEY, username TEXT);")
 sqlconn.commit()
 sqlconn.close()
 
@@ -378,6 +379,36 @@ async def on_message(message):
                 out = joke_list[pick_joke]
                 await client.send_message(message.channel, pick_joke)
                 await asyncio.sleep(5)
+
+            elif (message.content.startswith('!myanimelist') or message.content.startswith('!mal')):
+                sqlconn = sqlite3.connect('database.db')
+                if len(message.content.split(" ")) == 1:
+                    userinfo = sqlconn.execute("SELECT username FROM anime WHERE userid=?", [message.author.id,])
+                    try:
+                        q = userinfo.fetchone()[0]
+                        url = "https://myanimelist.net/profile/" + q
+                        r = requests.get(url)
+                        if r.status_code != 404:
+                            out = "Here's your account you weeaboo trash!" + '\n' + url
+                        else:
+                            out = "No user found by that name"
+                    except TypeError:
+                        out = "!mal [set] USERNAME"
+                elif message.content.split(" ")[1].upper() == "SET":
+                    username = " ".join(message.content.split(" ")[2:])
+                    params = [message.author.id, username]
+                    sqlconn.execute("INSERT OR REPLACE INTO anime (userid, username) VALUES (?, ?)", params)
+                    out = "You too huh? :flag_jp:"
+                else:
+                    q = remove_command(message.content)
+                    url = "https://myanimelist.net/profile/" + q
+                    r = requests.get(url)
+                    if r.status_code != 404:
+                        out = "Here's your account you weeaboo trash!" + '\n' + url
+                    else:
+                        out = "No user found by that name"
+                sqlconn.commit()
+                sqlconn.close()
 
             # Converts time into the Mayan calendar, why not
             elif message.content.startswith('!mayan'):
