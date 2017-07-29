@@ -396,9 +396,14 @@ async def on_message(message):
                         out = "!mal [set] USERNAME"
                 elif message.content.split(" ")[1].upper() == "SET":
                     username = " ".join(message.content.split(" ")[2:])
-                    params = [message.author.id, username]
-                    sqlconn.execute("INSERT OR REPLACE INTO anime (userid, username) VALUES (?, ?)", params)
-                    out = "You too huh? :flag_jp:"
+                    url = "https://myanimelist.net/profile/" + username
+                    r = requests.get(url)
+                    if r.status_code != 404:
+                        params = [message.author.id, username]
+                        sqlconn.execute("INSERT OR REPLACE INTO anime (userid, username) VALUES (?, ?)", params)
+                        out = "You too huh? :flag_jp:"
+                    else:
+                        out = "No user found by that name, did you misspell it?"
                 else:
                     q = remove_command(message.content)
                     url = "https://myanimelist.net/profile/" + q
