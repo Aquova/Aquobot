@@ -10,10 +10,11 @@ Requires Python 3.5+ to run
 import sys
 sys.path.insert(0, './programs')
 
-import discord, wolframalpha, schedule, wikipedia, requests
+import discord, wolframalpha, schedule, wikipedia, requests, aiohttp
 from googletrans import Translator
-from google import google
 from geopy.geocoders import Nominatim
+from google import google
+import lxml.etree as ET
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib
 
 # Python programs I wrote, in ./programs
@@ -371,6 +372,26 @@ async def on_message(message):
                     out += ", located at {}".format(location)
                 except TypeError:
                     pass
+
+            elif message.content.startswith('!img'):
+                q = remove_command(message.content)
+                params = {'q': q, 
+                    'safe': 'on', 
+                    'lr': 'lang_en', 
+                    'hl': 'en',
+                    'tbm': 'isch'
+                }
+
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:54.0) Gecko/20100101 Firefox/54.0'
+                }
+
+                async with aiohttp.ClientSession() as session:
+                    async with session.get('https://google.com/search', params=params, headers=headers) as resp:
+                        root = ET.fromstring(await resp.text(), ET.HTMLParser())
+                        foo = root.xpath(".//div[@class='rg_meta notranslate']")[0].text
+                        result = json.loads(foo)
+                        out = result['tu']
 
             # Tells a joke from a pre-programmed list
             elif message.content.startswith('!joke'):
