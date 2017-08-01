@@ -45,7 +45,7 @@ waclient = wolframalpha.Client(wolfram_key)
 sqlconn = sqlite3.connect('database.db')
 sqlconn.execute("CREATE TABLE IF NOT EXISTS weather (id INT PRIMARY KEY, name TEXT, location TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS birthday (id INT PRIMARY KEY, name TEXT, month TEXT, day INT);")
-sqlconn.execute("CREATE TABLE IF NOT EXISTS quotes (num INT PRIMARY KEY, quote TEXT, username TEXT, userid INT, messageid INT);")
+sqlconn.execute("CREATE TABLE IF NOT EXISTS quotes (num INT PRIMARY KEY, quote TEXT, username TEXT, userid INT, messageid INT, serverid INT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS todo (id INT PRIMARY KEY, userid INT, username TEXT, message TEXT, t TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS days (userid INT PRIMARY KEY, last TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS whatpulse (userid INT PRIMARY KEY, username TEXT);")
@@ -94,6 +94,7 @@ async def on_reaction_add(reaction, user):
         user_name = reaction.message.author.name
         user_id = reaction.message.author.id
         mes = reaction.message.content
+        server_id = reaction.message.server.id
         if mes != "":
             mes_id = int(reaction.message.id)
             sqlconn = sqlite3.connect('database.db')
@@ -104,8 +105,8 @@ async def on_reaction_add(reaction, user):
             except TypeError:
                 count = sqlconn.execute("SELECT COUNT(*) FROM quotes")
                 num = count.fetchone()[0]
-                params = (num + 1, mes, user_name, user_id, mes_id)
-                sqlconn.execute("INSERT INTO quotes (num, quote, username, userid, messageid) VALUES (?, ?, ?, ?, ?)", params)
+                params = (num + 1, mes, user_name, user_id, mes_id, server_id)
+                sqlconn.execute("INSERT INTO quotes (num, quote, username, userid, messageid, serverid) VALUES (?, ?, ?, ?, ?, ?)", params)
                 sqlconn.commit()
                 sqlconn.close()
                 out = 'Quote added from {0}: "{1}". (#{2})'.format(user_name, mes, str(num + 1))
@@ -494,21 +495,37 @@ async def on_message(message):
             # Users can add quotes to a database, and recall a random one
             elif message.content.startswith('!quote'):
                 sqlconn = sqlite3.connect('database.db')
+                mes_server = message.server.id
                 if message.content == '!quote':
-                    count = sqlconn.execute("SELECT COUNT(*) FROM quotes WHERE quote IS NOT NULL")
-                    num = count.fetchone()[0]
-                    rand_num = random.choice(range(num)) + 1
-                    rand_quote = sqlconn.execute("SELECT quote FROM quotes WHERE num=?", [rand_num])
-                    rand_username = sqlconn.execute("SELECT username FROM quotes WHERE num=?", [rand_num])
-                    quote = rand_quote.fetchone()[0]
+                    valid = sqlconn.execute("SELECT quote FROM quotes WHERE serverid=?", [mes_server])
+                    quotes = valid.fetchall()
+                    quote = random.choice(quotes)
+                    rand_username = sqlconn.execute("SELECT username FROM quotes WHERE quote=?", [quote[0]])
                     username = rand_username.fetchone()[0]
-                    out = 'From {0}: "{1}" (#{2})'.format(username, quote, str(rand_num))
+                    rand_num = sqlconn.execute("SELECT num FROM quotes WHERE quote=?", [quote[0]])
+                    num = rand_num.fetchone()[0]
+                    out = 'From {0}: "{1}" (#{2})'.format(username, quote[0], str(num))
+                elif len(message.content.split(" ")) == 2:
+                    try:
+                        num = int(remove_command(message.content))
+                        fetched_quote = sqlconn.execute("SELECT quote FROM quotes WHERE num=?", [num])
+                        fetched_username = sqlconn.execute("SELECT username FROM quotes WHERE num=?", [num])
+                        quote = fetched_quote.fetchone()[0]
+                        username = fetched_username.fetchone()[0]
+                        if quote != None:
+                            out = 'From {0}: "{1}" (#{2})'.format(username, quote, str(num))
+                        else:
+                            out = "There is no quote of that number"
+                    except ValueError:
+                        out = "That is not a number. Please try again"
+                    except TypeError:
+                        out = "There is no quote of that number"
                 elif message.content.startswith('!quote remove'):
                     try:
                         num = int(message.content[14:])
                         check_exists = sqlconn.execute("SELECT messageid FROM quotes WHERE num=?", [num])
                         check_exists = check_exists.fetchone()[0]
-                        sqlconn.execute("INSERT OR REPLACE INTO quotes (num, quote, username, userid, messageid) VALUES (?, NULL, NULL, NULL, NULL)", [num])
+                        sqlconn.execute("INSERT OR REPLACE INTO quotes (num, quote, username, userid, messageid, serverid) VALUES (?, NULL, NULL, NULL, NULL, NULL)", [num])
                         out = "Item {} removed".format(num)
                     except ValueError:
                         out = "That is not a number. Please specify the quote ID number you wish to remove."
@@ -517,7 +534,6 @@ async def on_message(message):
                 sqlconn.commit()
                 sqlconn.close()
                 
-
             # Convert number into/out of roman numerals
             elif message.content.startswith('!roman'):
                 parse = message.content.split(" ")
