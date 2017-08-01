@@ -163,7 +163,7 @@ async def on_message(message):
                 server_list = client.servers
                 server_num = str(len(server_list))
                 aquo_link = "<https://discordapp.com/oauth2/authorize?client_id=323620520073625601&scope=bot&permissions=36719616>"
-                out = "Hello, my name is Aquobot. I was written in Python by Aquova so he would have something interesting to put on a resume. I am currently connected to {0} servers, and I look forward to spending time with you! If you want to have me on your server, go visit {1}, and if that doesn't work, contact Aquova.".format(server_num, aquo_link)
+                out = "Hello, my name is Aquobot. I was written in Python by Aquova so he would have something interesting to put on a resume. I am currently connected to {0} servers, and I look forward to spending time with you! If you want to have me on your server, go visit {1}, and ~~when~~ if that doesn't work, contact Aquova.".format(server_num, aquo_link)
 
             # Ban actually does nothing
             # It picks a random user on the server and says it will ban them, but takes no action
@@ -497,14 +497,17 @@ async def on_message(message):
                 sqlconn = sqlite3.connect('database.db')
                 mes_server = message.server.id
                 if message.content == '!quote':
-                    valid = sqlconn.execute("SELECT quote FROM quotes WHERE serverid=?", [mes_server])
-                    quotes = valid.fetchall()
-                    quote = random.choice(quotes)
-                    rand_username = sqlconn.execute("SELECT username FROM quotes WHERE quote=?", [quote[0]])
-                    username = rand_username.fetchone()[0]
-                    rand_num = sqlconn.execute("SELECT num FROM quotes WHERE quote=?", [quote[0]])
-                    num = rand_num.fetchone()[0]
-                    out = 'From {0}: "{1}" (#{2})'.format(username, quote[0], str(num))
+                    try:
+                        valid = sqlconn.execute("SELECT quote FROM quotes WHERE serverid=?", [mes_server])
+                        quotes = valid.fetchall()
+                        quote = random.choice(quotes)
+                        rand_username = sqlconn.execute("SELECT username FROM quotes WHERE quote=?", [quote[0]])
+                        username = rand_username.fetchone()[0]
+                        rand_num = sqlconn.execute("SELECT num FROM quotes WHERE quote=?", [quote[0]])
+                        num = rand_num.fetchone()[0]
+                        out = 'From {0}: "{1}" (#{2})'.format(username, quote[0], str(num))
+                    except TypeError:
+                        out = "This server has no quotes in the database. React to a message with :speech_balloon: to add quotes."
                 elif len(message.content.split(" ")) == 2:
                     try:
                         num = int(remove_command(message.content))
