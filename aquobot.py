@@ -833,11 +833,15 @@ async def on_message(message):
                 out = "\_/¯(ツ)¯\\\_"
 
             elif message.content.split(" ")[0].upper() == "I'M" or message.content.split(" ")[0].upper() == "IM":
+                rand_num = random.choice(range(10))
                 if len(message.content.split(" ")) == 2:
                     if message.content.split(" ")[1].upper() == "AQUOBOT":
                         out = "WHAT?! But if you're Aquobot... Then... Who am I? :cold_sweat:"
                     else:
-                        out = "hi {} im aquobot".format(message.content.split(" ")[1].lower())
+                        if rand_num <= 2:
+                            out = "hi {} im aquobot".format(message.content.split(" ")[1].lower())
+                        else if rand_num == 3:
+                            out = "...\nAquova says I need to cut down on the dad jokes... :sob:"
 
             elif (message.content.upper().startswith("DID SOMEONE SAY") or message.content.upper().startswith("DID SOMEBODY SAY")):
                 mes = message.content.split(" ")
