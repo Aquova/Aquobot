@@ -361,18 +361,45 @@ async def on_message(message):
                 out = google.search(q)[0].link
 
             elif message.content.startswith('!iss'):
+                sqlconn = sqlite3.connect('database.db')
                 geo = Nominatim()
                 iss_json_url = urllib.request.urlopen('http://api.open-notify.org/iss-now.json')
                 iss_json = json.loads(iss_json_url.read())
                 latitude = iss_json['iss_position']['latitude']
                 longitude = iss_json['iss_position']['longitude']
                 location = geo.reverse("{0}, {1}".format(latitude,longitude))
+
+                if float(latitude) >= 0:
+                    latitude += "° N"
+                else:
+                    latitude = str(-1 * float(latitude)) + "° S"
+
+                if float(longitude) >= 0:
+                    longitude += "° E"
+                else:
+                    longitude = str(-1 * float(longitude)) + "° W"
+
                 time = datetime.datetime.fromtimestamp(iss_json['timestamp'])
-                out = "At {0} the International Space Station is located at {1}, {2}".format(time, latitude, longitude)
+                out = "Right now ({0}), the International Space Station is located at {1}, {2}".format(time, latitude, longitude)
                 try:
                     out += ", located at {}".format(location)
                 except TypeError:
                     pass
+
+                # Check if user's location is stored, and add info
+                user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [message.author.id])
+                try:
+                    user_location = user_loc.fetchone()[0]
+                    location = geo.geocode(user_location)
+                    user_lat = location.latitude
+                    user_long = location.longitude
+                    pass_url = urllib.request.urlopen("http://api.open-notify.org/iss-pass.json?lat={0}&lon={1}".format(user_lat,user_long))
+                    pass_json = json.loads(pass_url.read())
+                    risetime = datetime.datetime.fromtimestamp(pass_json['response'][0]['risetime'])
+                    duration = pass_json['response'][0]['duration']
+                    out += '\nThe ISS will next pass over your location at {0} for {1} seconds'.format(risetime, duration)
+                except TypeError:
+                    out += "\nAdd your location to the database with !w add LOCATION to get more information!"
 
             elif message.content.startswith('!img'):
                 q = remove_command(message.content)
@@ -796,6 +823,11 @@ async def on_message(message):
             # Never bring a knife to a gunfight
             elif message.content.startswith("🔪"):
                 out = ":gun:"
+
+            elif message.content.startswith('🔫'):
+                await client.send_message(message.channel, ":knife:")
+                await asyncio.sleep(1)
+                out = "Oh, wait. :cold_sweat:"
 
             elif message.content.startswith("/unshrug"):
                 out = "\_/¯(ツ)¯\\\_"
