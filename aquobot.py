@@ -840,7 +840,7 @@ async def on_message(message):
                     else:
                         if rand_num <= 2:
                             out = "hi {} im aquobot".format(message.content.split(" ")[1].lower())
-                        else if rand_num == 3:
+                        elif rand_num == 3:
                             out = "...\nAquova says I need to cut down on the dad jokes... :sob:"
 
             elif (message.content.upper().startswith("DID SOMEONE SAY") or message.content.upper().startswith("DID SOMEBODY SAY")):
