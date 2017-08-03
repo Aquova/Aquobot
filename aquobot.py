@@ -833,15 +833,12 @@ async def on_message(message):
                 out = "\_/¯(ツ)¯\\\_"
 
             elif message.content.split(" ")[0].upper() == "I'M" or message.content.split(" ")[0].upper() == "IM":
-                rand_num = random.choice(range(10))
                 if len(message.content.split(" ")) == 2:
                     if message.content.split(" ")[1].upper() == "AQUOBOT":
                         out = "WHAT?! But if you're Aquobot... Then... Who am I? :cold_sweat:"
                     else:
-                        if rand_num <= 2:
+                        if random.choice(range(100)) == 0:
                             out = "hi {} im aquobot".format(message.content.split(" ")[1].lower())
-                        elif rand_num == 3:
-                            out = "...\nAquova says I need to cut down on the dad jokes... :sob:"
 
             elif (message.content.upper().startswith("DID SOMEONE SAY") or message.content.upper().startswith("DID SOMEBODY SAY")):
                 mes = message.content.split(" ")
@@ -854,26 +851,28 @@ async def on_message(message):
                 out = "Hello {}!".format(name)
 
             elif ("BELGIAN" in message.content.upper()) or ("BELGIUM" in message.content.upper()):
-                if (message.author.id != client.user.id and random.choice(range(5)) == 0):
+                if (message.author.id != client.user.id and random.choice(range(20)) == 0):
                     out = "https://i0.wp.com/www.thekitchenwhisperer.net/wp-content/uploads/2014/04/BelgianWaffles8.jpg"
 
             elif ("NETHERLANDS" in message.content.upper()) or ("DUTCH" in message.content.upper()):
-                if random.choice(range(5)) == 0:
+                if random.choice(range(20)) == 0:
                     out = ":flag_nl:"
 
             elif "MERICA" in message.content.upper():
-                if random.choice(range(5)) == 0:
+                if random.choice(range(20)) == 0:
                     out = "http://2static.fjcdn.com/pictures/Blank_7a73f9_5964511.jpg"
 
             elif "CANADA" in message.content.upper():
-                if random.choice(range(5)) == 0:
+                if random.choice(range(20)) == 0:
                     out = ":flag_ca: :hockey:"
 
             elif "EXCUSE ME" in message.content.upper():
-                out = "You're excused."
+                if random.choice(range(10)) == 0:
+                    out = "You're excused."
 
             elif "EXCUSE YOU" in message.content.upper():
-                out = "I'm excused?"
+                if random.choice(range(10)) == 0:
+                    out = "I'm excused?"
 
             elif "I LOVE YOU AQUOBOT" in message.content.upper():
                 random_user = random.choice(list(message.server.members)).name
