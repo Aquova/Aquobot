@@ -275,7 +275,7 @@ async def on_message(message):
 
             # Repeats back user message
             elif message.content.startswith('!echo'):
-                out = remove_command(message.content)
+                out = remove_command(message.content)    
 
             # Gives one of several interesting facts
             elif message.content.startswith('!fact'):
@@ -429,6 +429,60 @@ async def on_message(message):
                 await client.send_message(message.channel, pick_joke)
                 await asyncio.sleep(5)
 
+            elif (message.content.startswith('!lovecalc') or message.content.startswith('!lc')):
+                name_a = message.content.split(" ")[1]
+                name_b = message.content.split(" ")[2]
+                love_url = 'https://love-calculator.p.mashape.com/getPercentage?fname={}&sname={}'.format(name_a, name_b)
+
+                headers={
+                    "X-Mashape-Key": cfg['Client']['mashape'],
+                    "Accept": "application/json"
+                }
+
+                r = requests.get(love_url, headers=headers)
+                results = json.loads(r.text)
+                out = "{} and {} are {}% compatible. {}".format(name_a, name_b, results['percentage'], results['result'])  
+
+            elif message.content.startswith('!mathfact'):
+                if message.content == '!mathfact':
+                    out = '!mathfact NUMBER'
+                else:
+                    num = message.content.split(" ")[1]
+                    try:
+                        foo = int(num)
+                        fact_url = "https://numbersapi.p.mashape.com/{}/math?fragment=true&json=true".format(num)
+                        headers={
+                            "X-Mashape-Key": cfg['Client']['mashape'],
+                            "Accept": "text/plain"
+                        }
+
+                        r = requests.get(fact_url, headers=headers)
+                        results = json.loads(r.text)
+                        out = "{} is {}".format(num, results['text'])
+                    except TypeError:
+                        out = "That is not a number, please try again."      
+
+            # Converts time into the Mayan calendar, why not
+            elif message.content.startswith('!mayan'):
+                parse = message.content.split(" ")
+                if (message.content == '!mayan'):
+                    out = '!until MM-DD-YYYY/TODAY'
+                else:
+                    out = "That date is " + str(Mayan.mayan(parse[1])) + " in the Mayan Long Count"
+
+            # Converts message into/out of morse code
+            elif message.content.startswith('!morse'):
+                parse = message.content.split(" ")
+                if message.content == '!morse':
+                    out = '!morse ENCODE/DECODE MESSAGE'
+                elif parse[1].upper() == 'ENCODE':
+                    out = Morse.encode(" ".join(parse[2:]))
+                elif parse[1].upper() == 'DECODE':
+                    out = Morse.decode(" ".join(parse[2:]))
+                else:
+                    if message.author.id != client.user.id:
+                        out = "That is not a valid option, choose encode or decode."
+
             elif (message.content.startswith('!myanimelist') or message.content.startswith('!mal')):
                 sqlconn = sqlite3.connect('database.db')
                 if len(message.content.split(" ")) == 1:
@@ -463,27 +517,6 @@ async def on_message(message):
                         out = "No user found by that name"
                 sqlconn.commit()
                 sqlconn.close()
-
-            # Converts time into the Mayan calendar, why not
-            elif message.content.startswith('!mayan'):
-                parse = message.content.split(" ")
-                if (message.content == '!mayan'):
-                    out = '!until MM-DD-YYYY/TODAY'
-                else:
-                    out = "That date is " + str(Mayan.mayan(parse[1])) + " in the Mayan Long Count"
-
-            # Converts message into/out of morse code
-            elif message.content.startswith('!morse'):
-                parse = message.content.split(" ")
-                if message.content == '!morse':
-                    out = '!morse ENCODE/DECODE MESSAGE'
-                elif parse[1].upper() == 'ENCODE':
-                    out = Morse.encode(" ".join(parse[2:]))
-                elif parse[1].upper() == 'DECODE':
-                    out = Morse.decode(" ".join(parse[2:]))
-                else:
-                    if message.author.id != client.user.id:
-                        out = "That is not a valid option, choose encode or decode."
 
             # Pins most recent message of specified user
             elif message.content.startswith('!pin'):
@@ -590,6 +623,18 @@ async def on_message(message):
                 if (message.content == '!servers list' and (message.author.id == ids.get("aquova") or message.author.id == ids.get("eemie"))):
                     for server in server_list:
                         out += '\n' + server.name
+
+            elif message.content.startswith('!spellcheck'):
+                q = remove_command(message.content).replace(" ","+")
+                sc_url = 'https://montanaflynn-spellcheck.p.mashape.com/check/?text=' + q
+                headers={
+                    "X-Mashape-Key": cfg['Client']['mashape'],
+                    "Accept": "text/plain"
+                }
+
+                r = requests.get(sc_url, headers=headers)
+                results = json.loads(r.text)
+                out = "Suggestion: {}".format(results['suggestion'])
 
             # Can change "now playing" game title
             elif message.content.startswith('!status'):
