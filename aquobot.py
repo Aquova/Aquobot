@@ -690,9 +690,12 @@ async def on_message(message):
                 if message.content == '!todo':
                     user_list = sqlconn.execute("SELECT * FROM todo WHERE userid=?", [userid])
                     user_todos = user_list.fetchall()
-                    out = ""
-                    for item in user_todos:
-                        out += "{0} @ {1}. (#{2})".format(item[3], item[4], item[0]) + '\n'
+                    if user_todos == []:
+                        out = "You have not added anything to your todo list.\nAdd items with '!todo add item'"
+                    else:
+                        out = ""
+                        for item in user_todos:
+                            out += "{0} @ {1}. (#{2})".format(item[3], item[4], item[0]) + '\n'
                 elif message.content.startswith('!todo add'):
                     num = sqlconn.execute("SELECT COUNT(*) FROM todo") # WHERE userid IS NOT NULL")
                     num = num.fetchone()[0] + 1
