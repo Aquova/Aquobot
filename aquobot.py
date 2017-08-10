@@ -144,7 +144,7 @@ async def on_message(message):
             out = ""
             # !help links to website with command list
             if message.content.startswith("!help"):
-                out = "http://aquova.github.io/aquobot.html"
+                out = "http://aquova.github.io/Aquobot"
 
             # Updates bot to most recent version
             elif message.content.startswith("!update"):
