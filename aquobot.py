@@ -936,6 +936,12 @@ async def on_message(message):
             elif ("AQUOBOT" in message.content.upper() and (("FUCK" in message.content.upper()) or ("HATE" in message.content.upper()))):
                 out = ":cold_sweat:"
 
+            elif ("!jade" in message.content.upper() and message.author.id == ids.get("Magically Clueless")):
+                out = "https://cdn.discordapp.com/attachments/247817964093440000/345574342526107660/unknown.png"
+                
+            elif ("!lex" in message.content.upper() and message.author.id == ids.get("lunalex")):
+                out = "https://cdn.discordapp.com/attachments/247817964093440000/345573868351651840/Screenshot_20170225-181217.jpg"
+                
             if out != "":
                 await client.send_typing(message.channel)
 
