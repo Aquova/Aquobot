@@ -940,7 +940,7 @@ async def on_message(message):
                 out = "http://i.imgur.com/vCDF2aO.png"
                 
             elif ("!lex" in message.content.upper() and message.author.id == ids.get("lunalex")):
-                out = "https://cdn.discordapp.com/attachments/247817964093440000/345573868351651840/Screenshot_20170225-181217.jpg"
+                out = "https://i.imgur.com/yB8wssv.jpg"
                 
             if out != "":
                 await client.send_typing(message.channel)
