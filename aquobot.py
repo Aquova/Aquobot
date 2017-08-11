@@ -936,10 +936,10 @@ async def on_message(message):
             elif ("AQUOBOT" in message.content.upper() and (("FUCK" in message.content.upper()) or ("HATE" in message.content.upper()))):
                 out = ":cold_sweat:"
 
-            elif "!jade" in message.content.upper():
+            elif message.content.startswith('!jade'):
                 out = "http://i.imgur.com/vCDF2aO.png"
                 
-            elif "!lex" in message.content.upper():
+            elif message.content.startswith('!lex'):
                 out = "https://i.imgur.com/yB8wssv.jpg"
                 
             if out != "":
