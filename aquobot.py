@@ -243,6 +243,18 @@ async def on_message(message):
                             out = "Invalid birthday format. The format needs to be !birthday set MONTH DAY"
                     except ValueError:
                         out = "Invalid birthday format. The format needs to be !birthday set MONTH DAY"
+                elif message.content.startswith('!birthday list'):
+                    birth_ids = sqlconn.execute("SELECT id FROM birthday").fetchall()
+                    out = ""
+                    ids = [x.id for x in message.server.members]
+                    for user in birth_ids:
+                        if str(user[0]) in ids:
+                            birth_month = sqlconn.execute("SELECT month FROM birthday WHERE id=?", [user[0]]).fetchone()[0]
+                            birth_day = sqlconn.execute("SELECT day FROM birthday WHERE id=?", [user[0]]).fetchone()[0]
+                            birth_name = sqlconn.execute("SELECT name FROM birthday WHERE id=?", [user[0]]).fetchone()[0]
+                            out += "{0}'s birthday is on {1} {2}\n".format(birth_name, reverse[int(birth_month)], birth_day)
+                    if out == "":
+                        out = "There are no birthdays entered for anyone on this server."
                 else:
                     q = remove_command(message.content)
                     birth_month = sqlconn.execute("SELECT month FROM birthday WHERE name=?", [q])
