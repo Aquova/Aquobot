@@ -10,7 +10,7 @@ Requires Python 3.5+ to run
 import sys
 sys.path.insert(0, './programs')
 
-import discord, wolframalpha, schedule, wikipedia, requests, aiohttp
+import discord, wolframalpha, wikipedia, requests, aiohttp
 from googletrans import Translator
 from geopy.geocoders import Nominatim
 from google import google
@@ -19,7 +19,7 @@ import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib
 
 # Python programs I wrote, in ./programs
 import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather
-import Upside, Birthday, Ecco, Select, Checkers, Youtube, Steam, Whatpulse
+import Upside, Ecco, Select, Checkers, Youtube, Steam, Whatpulse
 
 # Suppressing the UserWarning from the wikipedia module. Possibly a bad idea in the long run
 import warnings
@@ -44,7 +44,7 @@ waclient = wolframalpha.Client(wolfram_key)
 
 sqlconn = sqlite3.connect('database.db')
 sqlconn.execute("CREATE TABLE IF NOT EXISTS weather (id INT PRIMARY KEY, name TEXT, location TEXT);")
-sqlconn.execute("CREATE TABLE IF NOT EXISTS birthday (id INT PRIMARY KEY, name TEXT, month TEXT, day INT);")
+sqlconn.execute("CREATE TABLE IF NOT EXISTS birthday (id INT PRIMARY KEY, name TEXT, month TEXT, day INT, server_id INT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS quotes (num INT PRIMARY KEY, quote TEXT, username TEXT, userid INT, messageid INT, serverid INT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS todo (id INT PRIMARY KEY, userid INT, username TEXT, message TEXT, t TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS days (userid INT PRIMARY KEY, last TEXT);")
@@ -70,8 +70,36 @@ def remove_command(m):
     tmp = m.split(" ")[1:]
     return " ".join(tmp)
 
-# db_path = os.path.join(os.path.dirname(__file__), 'database.db')
-# today_bday = schedule.every().day.at("7:00").do(Birthday.birthday_check(db_path))
+async def check_birthday():
+    sqlconn = sqlite3.connect('database.db')
+    birth_names = sqlconn.execute("SELECT name FROM birthday").fetchone()
+    birth_months = sqlconn.execute("SELECT month FROM birthday").fetchone()
+    birth_days = sqlconn.execute("SELECT day FROM birthday").fetchone()
+    birth_ids = sqlconn.execute("SELECT id FROM birthday").fetchone()
+
+    d = datetime.date.today()
+    month = d.month
+    day = d.day
+    today_bdays = []
+    for i in len(birth_names) - 1:
+        try:
+            if (month == int(birth_months[i]) and day == int(birth_days[i])):
+                today_bdays.append(i)
+        except ValueError as e:
+            print("Error handled: " + e)
+            pass
+
+    # Oh dear.
+    if today_bdays != []:
+        for j in today_bdays:
+            for server in client.servers
+                if birth_ids[j] in members.id:
+                    out = "Today is {0}'s birthday! Everybody wish them a happy birthday! :birthday:".format(birth_names[j])
+                    await client.send_message(server.default_channel, out)
+
+    sqlconn.commit()
+    sqlconn.close()
+    asyncio.sleep(86400) # One day in seconds
 
 # Upon bot starting up
 @client.event
@@ -177,31 +205,31 @@ async def on_message(message):
                 sqlconn = sqlite3.connect('database.db')
                 author_name = message.author.name
                 author_id = message.author.id
+                server_id = message.server.id
                 if message.content == '!birthday':
                     birth_month = sqlconn.execute("SELECT month FROM birthday WHERE id=?", [author_id])
                     birth_day = sqlconn.execute("SELECT day FROM birthday WHERE id=?", [author_id])
                     try:
                         query_month = birth_month.fetchone()[0]
                         query_day = birth_day.fetchone()[0]
-                        out = "Your birthday is {0} {1}".format(query_month, query_day)
+                        out = "Your birthday is {0} {1}".format(reverse[int(query_month)], query_day)
                     except TypeError:
-                        out = "!birthday [add] MM DD (or) DD MM"
-                elif message.content.startswith('!birthday add'):
-                    q = message.content[14:].split(" ")
-                    if (q[0].upper() in months.keys() and (1 <= int(q[1]) and int(q[1]) <= 31)):
-                        params = (author_id, author_name, months[q[0].upper()], int(q[1]))
-                        sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day) VALUES (?, ?, ?, ?)", params)
-                        out = "Added birthday for {0}: {1} {2}".format(author_name, q[0], q[1])
-
-                    elif (q[1].upper() in months.keys() and (1 <= int(q[0]) and int(q[0]) <= 31)):
-                        params = (author_id, author_name, months[q[1].upper()], int(q[0]))
-                        sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day) VALUES (?, ?, ?, ?)", params)
-                        out = "Added birthday for {0}: {1} {2}".format(author_name, q[0], q[1])
-
+                        out = "!birthday [set] MONTH DAY"
+                elif message.content.startswith('!birthday set'):
+                    q = message.content.split(" ")[2:]
+                    if (1 <= int(q[1]) and int(q[1]) <= 31):
+                        if q[0].upper() in months.keys():
+                            params = (author_id, author_name, months[q[0].upper()], int(q[1]), server_id)
+                            sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day) VALUES (?, ?, ?, ?, ?)", params)
+                        elif (1 <= int(q[0]) and int(q[0]) <= 12):
+                            params = (author_id, author_name, int(q[0]), int(q[1]), server_id)
+                            sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day) VALUES (?, ?, ?, ?, ?)", params)
+                        else:
+                            out = "Invalid birthday format."
                     else:
                         out = "Invalid birthday format."
                 else:
-                    q = message.content[10:]
+                    q = remove_command(message.content)
                     birth_month = sqlconn.execute("SELECT month FROM birthday WHERE name=?", [q])
                     birth_day = sqlconn.execute("SELECT day FROM birthday WHERE name=?", [q])
                     try:
@@ -868,59 +896,13 @@ async def on_message(message):
                     except urllib.error.HTTPError:
                         out = "There's no comic with that index number."
 
-            # Never bring a knife to a gunfight
-            elif message.content.startswith("🔪"):
-                out = ":gun:"
-
-            elif message.content.startswith('🔫'):
-                await client.send_message(message.channel, ":knife:")
-                await asyncio.sleep(1)
-                out = "Oh, wait. :cold_sweat:"
-
-            elif message.content.startswith("/unshrug"):
-                out = "\_/¯(ツ)¯\\\_"
-
-            elif message.content.split(" ")[0].upper() == "I'M" or message.content.split(" ")[0].upper() == "IM":
-                if len(message.content.split(" ")) == 2:
-                    if message.content.split(" ")[1].upper() == "AQUOBOT":
-                        out = "WHAT?! But if you're Aquobot... Then... Who am I? :cold_sweat:"
-                    else:
-                        if random.choice(range(100)) == 0:
-                            out = "hi {} im aquobot".format(message.content.split(" ")[1].lower())
-
-            elif (message.content.upper().startswith("DID SOMEONE SAY") or message.content.upper().startswith("DID SOMEBODY SAY")):
-                mes = message.content.split(" ")
-                sass = " ".join(mes[3:])
-                out = "*{}*".format(sass)
-            
             # The following are responses to various keywords if present anywhere in a message
             elif ("HELLO AQUOBOT" in message.content.upper() or "HI AQUOBOT" in message.content.upper()):
                 name = message.author.name
                 out = "Hello {}!".format(name)
 
-            elif ("BELGIAN" in message.content.upper()) or ("BELGIUM" in message.content.upper()):
-                if (message.author.id != client.user.id and random.choice(range(20)) == 0):
-                    out = "https://i0.wp.com/www.thekitchenwhisperer.net/wp-content/uploads/2014/04/BelgianWaffles8.jpg"
-
-            elif ("NETHERLANDS" in message.content.upper()) or ("DUTCH" in message.content.upper()):
-                if random.choice(range(20)) == 0:
-                    out = ":flag_nl:"
-
-            elif "MERICA" in message.content.upper():
-                if random.choice(range(20)) == 0:
-                    out = "http://2static.fjcdn.com/pictures/Blank_7a73f9_5964511.jpg"
-
-            elif "CANADA" in message.content.upper():
-                if random.choice(range(20)) == 0:
-                    out = ":flag_ca: :hockey:"
-
-            elif "EXCUSE ME" in message.content.upper():
-                if random.choice(range(10)) == 0:
-                    out = "You're excused."
-
-            elif "EXCUSE YOU" in message.content.upper():
-                if random.choice(range(10)) == 0:
-                    out = "I'm excused?"
+            elif message.content.startswith("/unshrug"):
+                out = "\_/¯(ツ)¯\\\_"
 
             elif "I LOVE YOU AQUOBOT" in message.content.upper():
                 random_user = random.choice(list(message.server.members)).name
@@ -941,6 +923,53 @@ async def on_message(message):
                 
             elif message.content.startswith('!lex'):
                 out = "https://i.imgur.com/yB8wssv.jpg"
+
+            if message.server.id != cfg['Servers']['Magic']:
+                # Never bring a knife to a gunfight
+                elif message.content.startswith("🔪"):
+                    out = ":gun:"
+
+                elif message.content.startswith('🔫'):
+                    await client.send_message(message.channel, ":knife:")
+                    await asyncio.sleep(1)
+                    out = "Oh, wait. :cold_sweat:"
+
+                elif message.content.split(" ")[0].upper() == "I'M" or message.content.split(" ")[0].upper() == "IM":
+                    if len(message.content.split(" ")) == 2:
+                        if message.content.split(" ")[1].upper() == "AQUOBOT":
+                            out = "WHAT?! But if you're Aquobot... Then... Who am I? :cold_sweat:"
+                        else:
+                            if random.choice(range(100)) == 0:
+                                out = "hi {} im aquobot".format(message.content.split(" ")[1].lower())
+
+                elif (message.content.upper().startswith("DID SOMEONE SAY") or message.content.upper().startswith("DID SOMEBODY SAY")):
+                    mes = message.content.split(" ")
+                    sass = " ".join(mes[3:])
+                    out = "*{}*".format(sass)
+
+                elif ("BELGIAN" in message.content.upper()) or ("BELGIUM" in message.content.upper()):
+                    if (message.author.id != client.user.id and random.choice(range(20)) == 0):
+                        out = "https://i0.wp.com/www.thekitchenwhisperer.net/wp-content/uploads/2014/04/BelgianWaffles8.jpg"
+
+                elif ("NETHERLANDS" in message.content.upper()) or ("DUTCH" in message.content.upper()):
+                    if random.choice(range(20)) == 0:
+                        out = ":flag_nl:"
+
+                elif "MERICA" in message.content.upper():
+                    if random.choice(range(20)) == 0:
+                        out = "http://2static.fjcdn.com/pictures/Blank_7a73f9_5964511.jpg"
+
+                elif "CANADA" in message.content.upper():
+                    if random.choice(range(20)) == 0:
+                        out = ":flag_ca: :hockey:"
+
+                elif "EXCUSE ME" in message.content.upper():
+                    if random.choice(range(10)) == 0:
+                        out = "You're excused."
+
+                elif "EXCUSE YOU" in message.content.upper():
+                    if random.choice(range(10)) == 0:
+                        out = "I'm excused?"
                 
             if out != "":
                 await client.send_typing(message.channel)
