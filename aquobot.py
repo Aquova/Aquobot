@@ -926,7 +926,7 @@ async def on_message(message):
 
             if message.server.id != cfg['Servers']['Magic']:
                 # Never bring a knife to a gunfight
-                elif message.content.startswith("🔪"):
+                if message.content.startswith("🔪"):
                     out = ":gun:"
 
                 elif message.content.startswith('🔫'):
