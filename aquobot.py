@@ -92,7 +92,7 @@ async def check_birthday():
     # Oh dear.
     if today_bdays != []:
         for j in today_bdays:
-            for server in client.servers
+            for server in client.servers:
                 if birth_ids[j] in members.id:
                     out = "Today is {0}'s birthday! Everybody wish them a happy birthday! :birthday:".format(birth_names[j])
                     await client.send_message(server.default_channel, out)
