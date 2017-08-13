@@ -227,18 +227,21 @@ async def on_message(message):
                         out = "!birthday [set] MONTH (in words) DAY"
                 elif message.content.startswith('!birthday set'):
                     q = message.content.split(" ")[2:]
-                    if (1 <= int(q[1]) and int(q[1]) <= 31):
-                        if q[0].upper() in months.keys():
-                            params = (author_id, author_name, months[q[0].upper()], int(q[1]), server_id)
-                            sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day, server_id) VALUES (?, ?, ?, ?, ?)", params)
-                            out = "{0}'s birthday now set as {1}/{2}".format(author_name, months[q[0].upper()], q[1])
-                        elif (1 <= int(q[0]) and int(q[0]) <= 12):
-                            params = (author_id, author_name, int(q[0]), int(q[1]), server_id)
-                            sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day) VALUES (?, ?, ?, ?, ?)", params)
-                            out = "{0}'s birthday now set as {1}/{2}".format(author_name, q[0], q[1])
+                    try:
+                        if (1 <= int(q[1]) and int(q[1]) <= 31):
+                            if q[0].upper() in months.keys():
+                                params = (author_id, author_name, months[q[0].upper()], int(q[1]), server_id)
+                                sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day, server_id) VALUES (?, ?, ?, ?, ?)", params)
+                                out = "{0}'s birthday now set as {1}/{2}".format(author_name, months[q[0].upper()], q[1])
+                            elif (1 <= int(q[0]) and int(q[0]) <= 12):
+                                params = (author_id, author_name, int(q[0]), int(q[1]), server_id)
+                                sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day) VALUES (?, ?, ?, ?, ?)", params)
+                                out = "{0}'s birthday now set as {1}/{2}".format(author_name, q[0], q[1])
+                            else:
+                                out = "Invalid birthday format. The format needs to be !birthday set MONTH (in words) DAY"
                         else:
                             out = "Invalid birthday format. The format needs to be !birthday set MONTH (in words) DAY"
-                    else:
+                    except ValueError:
                         out = "Invalid birthday format. The format needs to be !birthday set MONTH (in words) DAY"
                 else:
                     q = remove_command(message.content)
