@@ -72,7 +72,6 @@ def remove_command(m):
 
 async def check_birthday():
     sqlconn = sqlite3.connect('database.db')
-    birth_names = sqlconn.execute("SELECT name FROM birthday").fetchone()
     birth_months = sqlconn.execute("SELECT month FROM birthday").fetchone()
     birth_days = sqlconn.execute("SELECT day FROM birthday").fetchone()
     birth_ids = sqlconn.execute("SELECT id FROM birthday").fetchone()
@@ -81,25 +80,29 @@ async def check_birthday():
     month = d.month
     day = d.day
     today_bdays = []
-    for i in len(birth_names) - 1:
-        try:
-            if (month == int(birth_months[i]) and day == int(birth_days[i])):
-                today_bdays.append(i)
-        except ValueError as e:
-            print("Error handled: " + e)
-            pass
+    if birth_ids != None:
+        for i in range(0, len(birth_ids)):
+            try:
+                if (month == int(birth_months[i]) and day == int(birth_days[i])):
+                    today_bdays.append(birth_ids[i])
+            except ValueError as e:
+                print("Error handled: " + e)
+                pass
+    else:
+        print("birth_names is null apparently")
 
     # Oh dear.
     if today_bdays != []:
         for j in today_bdays:
             for server in client.servers:
-                if birth_ids[j] in members.id:
-                    out = "Today is {0}'s birthday! Everybody wish them a happy birthday! :birthday:".format(birth_names[j])
-                    await client.send_message(server.default_channel, out)
+                ids = [x.id for x in server.members]
+                if str(j) in ids:
+                    birth_name = sqlconn.execute("SELECT name FROM birthday WHERE id=?", [j]).fetchone()[0]
+                    mess = "Today is {0}'s birthday! Everybody wish them a happy birthday! :birthday:".format(birth_name)
+                    await client.send_message(server.default_channel, mess)
 
     sqlconn.commit()
     sqlconn.close()
-    asyncio.sleep(86400) # One day in seconds
 
 # Upon bot starting up
 @client.event
@@ -112,9 +115,16 @@ async def on_ready():
     await client.change_presence(game=game_object)
 
     global channel_id_list
-    channel_id_list = []
-    for i in client.get_all_channels():
-        channel_id_list.append(i.id)
+    channel_id_list = [x.id for x in client.get_all_channels()]
+    # channel_id_list = []
+    # for i in client.get_all_channels():
+    #     channel_id_list.append(i.id)
+
+    while True:
+        await check_birthday()
+        await asyncio.sleep(86400) # One day in seconds - 86400
+    
+
 
 @client.event
 async def on_reaction_add(reaction, user):
@@ -214,20 +224,22 @@ async def on_message(message):
                         query_day = birth_day.fetchone()[0]
                         out = "Your birthday is {0} {1}".format(reverse[int(query_month)], query_day)
                     except TypeError:
-                        out = "!birthday [set] MONTH DAY"
+                        out = "!birthday [set] MONTH (in words) DAY"
                 elif message.content.startswith('!birthday set'):
                     q = message.content.split(" ")[2:]
                     if (1 <= int(q[1]) and int(q[1]) <= 31):
                         if q[0].upper() in months.keys():
                             params = (author_id, author_name, months[q[0].upper()], int(q[1]), server_id)
-                            sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day) VALUES (?, ?, ?, ?, ?)", params)
+                            sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day, server_id) VALUES (?, ?, ?, ?, ?)", params)
+                            out = "{0}'s birthday now set as {1}/{2}".format(author_name, months[q[0].upper()], q[1])
                         elif (1 <= int(q[0]) and int(q[0]) <= 12):
                             params = (author_id, author_name, int(q[0]), int(q[1]), server_id)
                             sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day) VALUES (?, ?, ?, ?, ?)", params)
+                            out = "{0}'s birthday now set as {1}/{2}".format(author_name, q[0], q[1])
                         else:
-                            out = "Invalid birthday format."
+                            out = "Invalid birthday format. The format needs to be !birthday set MONTH (in words) DAY"
                     else:
-                        out = "Invalid birthday format."
+                        out = "Invalid birthday format. The format needs to be !birthday set MONTH (in words) DAY"
                 else:
                     q = remove_command(message.content)
                     birth_month = sqlconn.execute("SELECT month FROM birthday WHERE name=?", [q])
@@ -235,7 +247,7 @@ async def on_message(message):
                     try:
                         query_month = birth_month.fetchone()[0]
                         query_day = birth_day.fetchone()[0]
-                        out = "Their birthday is {0} {1} (or {1} {0} if you prefer)".format(reverse[query_month], query_day)
+                        out = "Their birthday is {0} {1}".format(reverse[int(query_month)], query_day)
                     except TypeError:
                         out = "Error: No birthday for that user (searches are case sensitive)."
                 sqlconn.commit()
