@@ -224,7 +224,7 @@ async def on_message(message):
                         query_day = birth_day.fetchone()[0]
                         out = "Your birthday is {0} {1}".format(reverse[int(query_month)], query_day)
                     except TypeError:
-                        out = "!birthday [set] MONTH (in words) DAY"
+                        out = "!birthday [set] MONTH DAY"
                 elif message.content.startswith('!birthday set'):
                     q = message.content.split(" ")[2:]
                     try:
@@ -238,11 +238,11 @@ async def on_message(message):
                                 sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day) VALUES (?, ?, ?, ?, ?)", params)
                                 out = "{0}'s birthday now set as {1}/{2}".format(author_name, q[0], q[1])
                             else:
-                                out = "Invalid birthday format. The format needs to be !birthday set MONTH (in words) DAY"
+                                out = "Invalid birthday format. The format needs to be !birthday set MONTH DAY"
                         else:
-                            out = "Invalid birthday format. The format needs to be !birthday set MONTH (in words) DAY"
+                            out = "Invalid birthday format. The format needs to be !birthday set MONTH DAY"
                     except ValueError:
-                        out = "Invalid birthday format. The format needs to be !birthday set MONTH (in words) DAY"
+                        out = "Invalid birthday format. The format needs to be !birthday set MONTH DAY"
                 else:
                     q = remove_command(message.content)
                     birth_month = sqlconn.execute("SELECT month FROM birthday WHERE name=?", [q])
