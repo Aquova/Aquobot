@@ -42,8 +42,6 @@ discord_key = str(cfg['Client']['discord'])
 client = discord.Client()
 waclient = wolframalpha.Client(wolfram_key)
 
-ids = cfg['Users']
-
 sqlconn = sqlite3.connect('database.db')
 sqlconn.execute("CREATE TABLE IF NOT EXISTS weather (id INT PRIMARY KEY, name TEXT, location TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS birthday (id INT PRIMARY KEY, name TEXT, month TEXT, day INT, server_id INT);")
@@ -186,7 +184,7 @@ async def on_message(message):
 
             # Updates bot to most recent version
             elif message.content.startswith("!update"):
-                if (message.author.id == ids.get("eemie") or message.author.id == ids.get("aquova")):
+                if (message.author.id == cfg['Users']['eemie'] or message.author.id == cfg['Users']['aquova']):
                     subprocess.call("./update.sh", shell=True)
                     sys.exit()
 
@@ -287,7 +285,7 @@ async def on_message(message):
             # This one is for me and Eemie
             elif message.content.startswith('!days'):
                 if message.server.id == cfg['Servers']['Brickhouse']:
-                    if (message.author.id == ids.get("eemie") or message.author.id == ids.get("aquova")):
+                    if (message.author.id == cfg['Users']['eemie'] or message.author.id == cfg['Users']['aquova']):
                         sqlconn = sqlite3.connect('database.db')
                         today = datetime.date.today()
                         if message.content == '!days reset':
@@ -338,7 +336,7 @@ async def on_message(message):
 
             # Presents feedback to a special feedback channel, which authorized users can respond to
             elif message.content.startswith('!feedback'):
-                if (message.author.id == ids.get("aquova") or message.author.id == ids.get("eemie")):
+                if (message.author.id == cfg['Users']['aquova'] or message.author.id == cfg['Users']['eemie']):
                     if message.content == '!feedback':
                         out = '!feedback CHANNEL_ID MESSAGE'
                     else:
@@ -675,7 +673,7 @@ async def on_message(message):
                 server_list = client.servers
                 server_num = str(len(server_list))
                 out = "I am currently a member of {} servers".format(server_num)
-                if (message.content == '!servers list' and (message.author.id == ids.get("aquova") or message.author.id == ids.get("eemie"))):
+                if (message.content == '!servers list' and (message.author.id == cfg['Users']['aquova'] or message.author.id == cfg['Users']['eemie'])):
                     for server in server_list:
                         out += '\n' + server.name
 
@@ -693,7 +691,7 @@ async def on_message(message):
 
             # Can change "now playing" game title
             elif message.content.startswith('!status'):
-                if message.author.id == ids.get("aquova"):
+                if message.author.id == cfg['Users']['aquova']:
                     new_game = remove_command(message.content)
                     game_object = discord.Game(name=new_game)
                     await client.change_presence(game=game_object)
@@ -707,7 +705,7 @@ async def on_message(message):
 
             # Doesn't do anything right now, simply for testing
             elif message.content.startswith('!test'):
-                if message.author.id == ids.get("aquova"):
+                if message.author.id == cfg['Users']['aquova']:
                     out = 'Yeah, thats coo.'
                 else:
                     out = '*NO*'
@@ -939,7 +937,7 @@ async def on_message(message):
             elif "(╯°□°）╯︵ ┻━┻" in message.content.upper():
                 out = "┬─┬﻿ ノ( ゜-゜ノ)"
 
-            elif ("FUCK ME" in message.content.upper() and message.author.id == ids.get("eemie")):
+            elif ("FUCK ME" in message.content.upper() and message.author.id == cfg['Users']['eemie']):
                 out = "https://s-media-cache-ak0.pinimg.com/736x/48/2a/bf/482abf4c4f8cd8d9345253db901cf1d7.jpg"
 
             elif ("AQUOBOT" in message.content.upper() and (("FUCK" in message.content.upper()) or ("HATE" in message.content.upper()))):
