@@ -109,16 +109,15 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
+    # TODO: Fix game changing, as it's now broken
     game_object = discord.Game(name="type !help")
     await client.change_presence(game=game_object)
 
     global channel_id_list
     channel_id_list = [x.id for x in client.get_all_channels()]
-    # channel_id_list = []
-    # for i in client.get_all_channels():
-    #     channel_id_list.append(i.id)
 
     while True:
+        print("Checking birthday")
         await check_birthday()
         await asyncio.sleep(86400) # One day in seconds - 86400
     
