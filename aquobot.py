@@ -7,6 +7,8 @@ Written by Austin Bricker, 2017
 Requires Python 3.5+ to run
 """
 
+# [{'type': 'rich', 'title': 'UserInfo for aquova#1296', 'thumbnail': {'width': 128, 'url': 'https://cdn.discordapp.com/avatars/254640676233412610/607d184b2a5bca4caf030260f6948e68.png?size=128', 'proxy_url': 'https://images-ext-1.discordapp.net/external/Y9EQDyJlYC8vxypB626QKzwI-FkFBOjae-tvxZzm1ZY/%3Fsize%3D128/https/cdn.discordapp.com/avatars/254640676233412610/607d184b2a5bca4caf030260f6948e68.png', 'height': 128}, 'footer': {'text': 'the above info guaranteed or your money back!*'}, 'fields': [{'value': '03 Dec 2016 04:11:08 PM UTC', 'name': 'created', 'inline': True}, {'value': '29 May 2017 04:17:42 PM UTC', 'name': 'joined', 'inline': True}, {'value': 'everyone, sexy, ex husband?????????', 'name': 'roles', 'inline': False}, {'value': '254640676233412610', 'name': 'Id', 'inline': True}], 'description': 'aka Dominant Rigger'}], 'channel_id': '248773055705382912'}}
+
 import sys
 sys.path.insert(0, './programs')
 
@@ -119,6 +121,7 @@ async def on_ready():
     while True:
         print("Checking birthday")
         await check_birthday()
+        print("Done checking, now sleeping.")
         await asyncio.sleep(86400) # One day in seconds - 86400
     
 
@@ -175,6 +178,7 @@ async def on_message(message):
         await client.send_message(DM_channel, secret)
         
     if message.author.id != client.user.id:
+        print(message.content)
         try:
             out = ""
             # !help links to website with command list
@@ -197,7 +201,7 @@ async def on_message(message):
             elif message.content.startswith('!about'):
                 server_list = client.servers
                 server_num = str(len(server_list))
-                aquo_link = "<https://discordapp.com/oauth2/authorize?client_id=323620520073625601&scope=bot&permissions=36719616>"
+                aquo_link = "<https://discordapp.com/oauth2/authorize?client_id=323620520073625601&scope=bot&permissions=2117594231>"
                 out = "Hello, my name is Aquobot. I was written in Python by Aquova so he would have something interesting to put on a resume. I am currently connected to {0} servers, and I look forward to spending time with you! If you want to have me on your server, go visit {1}, and ~~when~~ if that doesn't work, contact Aquova.".format(server_num, aquo_link)
 
             # Ban actually does nothing
@@ -408,6 +412,17 @@ async def on_message(message):
                 sqlconn.commit()
                 sqlconn.close()
 
+            elif (message.content.startswith('!getavatar') or message.content.startswith('!ga')):
+                if len(message.content.split(" ")) == 1:
+                    out = message.author.avatar_url
+                else:
+                    q = remove_command(message.content)
+                    mem = discord.utils.get(message.server.members, name=q)
+                    try:
+                        out = mem.avatar_url
+                    except AttributeError:
+                        out = "There is no user by that name, please try again. (Usernames are case sensitive)."
+
             elif message.content.startswith('!g'):
                 q = remove_command(message.content)
                 out = google.search(q)[0].link
@@ -544,7 +559,7 @@ async def on_message(message):
                         url = "https://myanimelist.net/profile/" + q
                         r = requests.get(url)
                         if r.status_code != 404:
-                            out = "Here's your account you weeaboo trash!" + '\n' + url
+                            out = "Here's your account! ~~you weeb~~" + '\n' + url
                         else:
                             out = "No user found by that name"
                     except TypeError:
