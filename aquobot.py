@@ -178,7 +178,6 @@ async def on_message(message):
         await client.send_message(DM_channel, secret)
         
     if message.author.id != client.user.id:
-        print(message.content)
         try:
             out = ""
             # !help links to website with command list
