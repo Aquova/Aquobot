@@ -832,6 +832,33 @@ async def on_message(message):
                     except ValueError:
                         out = "Invalid destination language."
 
+            elif message.content.startswith('!twitch'):
+                if message.content == '!twitch':
+                    out = '!twitch USERNAME'
+                else:
+                    q = remove_command(message.content)
+                    twitch_url = 'https://api.twitch.tv/kraken/users?login={}'.format(q)
+
+                    headers={
+                        "Client-ID": cfg['Client']['twitch'],
+                        "Accept": "application/vnd.twitchtv.v5+json"
+                    }
+
+                    r = requests.get(twitch_url, headers=headers)
+                    results = json.loads(r.text)
+                    if results['_total'] == 0:
+                        out = "There is no user by that name."
+                    else:
+                        username = results['users'][0]['name']
+                        user_url = 'https://www.twitch.tv/' + username
+                        embed = discord.Embed(title=results['users'][0]['display_name'], type='rich', description=user_url)
+                        embed.add_field(name='ID', value=results['users'][0]['_id'])
+                        embed.add_field(name='Bio', value=results['users'][0]['bio'])
+                        embed.add_field(name='Account Created', value=results['users'][0]['created_at'][:10])
+                        embed.add_field(name='Last Updated', value=results['users'][0]['updated_at'][:10])
+                        embed.set_thumbnail(url=results['users'][0]['logo'])
+                        await client.send_message(message.channel, embed=embed)
+
             # Prints given text upside down
             elif message.content.startswith('!upside'):
                 m = remove_command(message.content)
