@@ -856,7 +856,10 @@ async def on_message(message):
                         embed.add_field(name='Bio', value=results['users'][0]['bio'])
                         embed.add_field(name='Account Created', value=results['users'][0]['created_at'][:10])
                         embed.add_field(name='Last Updated', value=results['users'][0]['updated_at'][:10])
-                        embed.set_thumbnail(url=results['users'][0]['logo'])
+                        if results['users'][0]['logo'] == None:
+                            embed.set_thumbnail(url='https://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_70x70.png')
+                        else:
+                            embed.set_thumbnail(url=results['users'][0]['logo'])
                         await client.send_message(message.channel, embed=embed)
 
             # Prints given text upside down
