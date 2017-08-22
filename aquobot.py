@@ -273,6 +273,7 @@ async def on_message(message):
                 out = "```bash" + '\n' + subprocess.run(['cal'], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
 
             elif message.content.startswith('!checkers'):
+                # Prints out board, but that's it
                 out = Checkers.main()
             
             # Chooses between given options
@@ -411,14 +412,20 @@ async def on_message(message):
                 sqlconn.commit()
                 sqlconn.close()
 
-            elif (message.content.startswith('!getavatar') or message.content.startswith('!ga')):
+            elif message.content.startswith('!getavatar'):
                 if len(message.content.split(" ")) == 1:
-                    out = message.author.avatar_url
+                    url = message.author.avatar_url
+                    em = discord.Embed()
+                    em.set_image(url=url)
+                    await client.send_message(message.channel, embed=em)
                 else:
                     q = remove_command(message.content)
                     mem = discord.utils.get(message.server.members, name=q)
                     try:
-                        out = mem.avatar_url
+                        url = mem.avatar_url
+                        em = discord.Embed()
+                        em.set_image(url=url)
+                        await client.send_message(message.channel, embed=em)
                     except AttributeError:
                         out = "There is no user by that name, please try again. (Usernames are case sensitive)."
 
@@ -485,7 +492,11 @@ async def on_message(message):
                         root = ET.fromstring(await resp.text(), ET.HTMLParser())
                         foo = root.xpath(".//div[@class='rg_meta notranslate']")[0].text
                         result = json.loads(foo)
-                        out = result['tu']
+                        # out = result['tu']
+                        url = result['tu']
+                        em = discord.Embed()
+                        em.set_image(url=url)
+                        await client.send_message(message.channel, embed=em)
 
             # Tells a joke from a pre-programmed list
             elif message.content.startswith('!joke'):
@@ -558,7 +569,7 @@ async def on_message(message):
                         url = "https://myanimelist.net/profile/" + q
                         r = requests.get(url)
                         if r.status_code != 404:
-                            out = "Here's your account! ~~you weeb~~" + '\n' + url
+                            out = "Here's your account! ~~You weeb~~" + '\n' + url
                         else:
                             out = "No user found by that name"
                     except TypeError:
@@ -703,6 +714,7 @@ async def on_message(message):
                 out = "Suggestion: {}".format(results['suggestion'])
 
             # Can change "now playing" game title
+            # Isn't currently working, for reasons unknown
             elif message.content.startswith('!status'):
                 if message.author.id == cfg['Users']['aquova']:
                     new_game = remove_command(message.content)
@@ -713,8 +725,27 @@ async def on_message(message):
                     out = "You do not have permissions for this command."
 
             elif message.content.startswith('!steam'):
-                q = remove_command(message.content)
-                out = Steam.get_userinfo(q)
+                if len(message.content.split(" ")) == 1:
+                    out = "!steam USERNAME"
+                else:
+                    q = remove_command(message.content)
+                    info = Steam.get_userinfo(q)
+                    if isinstance(info, list):
+                        embed = discord.Embed(title=info[0], type='rich', description=info[2])
+                        embed.add_field(name='User ID', value=info[1])
+                        embed.set_thumbnail(url=info[3])
+                        embed.add_field(name='Last Logged Off', value=info[4])
+                        embed.add_field(name='Profile Created', value=info[5])
+                        embed.add_field(name='Games Owned', value=info[6])
+                        if len(info) > 8:
+                            embed.add_field(name='Games Played Last 2 Weeks', value=info[7])
+                            recent_info = "{0} ({1} hours, {2} hours total)".format(info[8], info[9], info[10])
+                            embed.add_field(name='Most Played Last 2 Weeks', value=recent_info)
+
+                        await client.send_message(message.channel, embed=embed)
+                    else:
+                        out = info
+                    # out = Steam.get_userinfo(q) <- The old method
 
             # Doesn't do anything right now, simply for testing
             elif message.content.startswith('!test'):
@@ -829,7 +860,19 @@ async def on_message(message):
                     userinfo = sqlconn.execute("SELECT username FROM whatpulse WHERE userid=?", [message.author.id,])
                     try:
                         q = userinfo.fetchone()[0]
-                        out = Whatpulse.main(q)
+                        info = Whatpulse.main(q)
+                        if isinstance(info, list):
+                            embed = discord.Embed(title=info[0], type='rich', description=info[8])
+                            embed.add_field(name='Date Joined', value=info[1])
+                            embed.add_field(name='Country', value=info[2])
+                            embed.add_field(name='Key Presses', value=info[3])
+                            embed.add_field(name='Clicks', value=info[4])
+                            embed.add_field(name='Downloaded', value=info[5])
+                            embed.add_field(name='Uploaded', value=info[6])
+                            embed.add_field(name='Team', value=info[7])
+                            await client.send_message(message.channel, embed=embed)
+                        else:
+                            out = info
                     except TypeError:
                         out = "!whatpulse [set] USERNAME"
                 elif message.content.split(" ")[1].upper() == "SET":
@@ -839,7 +882,19 @@ async def on_message(message):
                     out = "User added"
                 else:
                     q = remove_command(message.content)
-                    out = Whatpulse.main(q)
+                    info = Whatpulse.main(q)
+                    if isinstance(info, list):
+                        embed = discord.Embed(title=info[0], type='rich', description=info[8])
+                        embed.add_field(name='Date Joined', value=info[1])
+                        embed.add_field(name='Country', value=info[2])
+                        embed.add_field(name='Key Presses', value=info[3])
+                        embed.add_field(name='Clicks', value=info[4])
+                        embed.add_field(name='Downloaded', value=info[5])
+                        embed.add_field(name='Uploaded', value=info[6])
+                        embed.add_field(name='Team', value=info[7])
+                        await client.send_message(message.channel, embed=embed)
+                    else:
+                        out = info
                 sqlconn.commit()
                 sqlconn.close()
 

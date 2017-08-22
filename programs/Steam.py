@@ -27,6 +27,7 @@ def get_userinfo(q):
 		date_created = user_data['response']['players'][0]['timecreated']
 		date_created_readable = datetime.datetime.fromtimestamp(date_created)
 		profile_url = user_data['response']['players'][0]['profileurl']
+		avatar = user_data['response']['players'][0]['avatarmedium']
 	except IndexError:
 		return "No user found with that name."
 
@@ -43,11 +44,17 @@ def get_userinfo(q):
 		recent_game = recent_data['response']['games'][0]['name']
 		recent_game_2weeks = round(recent_data['response']['games'][0]['playtime_2weeks'] / 60, 1)
 		recent_game_total = round(recent_data['response']['games'][0]['playtime_forever'] / 60, 1)
-		recent_string = "Played {0} game(s) during the past 2 weeks | Most played last 2 weeks: {1} ({2} hours, {3} hours total)".format(recent_total,recent_game,recent_game_2weeks,recent_game_total)
+		# recent_string = "Played {0} game(s) during the past 2 weeks | Most played last 2 weeks: {1} ({2} hours, {3} hours total)".format(recent_total,recent_game,recent_game_2weeks,recent_game_total)
+		recent_list = [recent_total, recent_game,recent_game_2weeks, recent_game_total]
 	except KeyError:
-		recent_string = "Played 0 games during the past 2 weeks"
+		# recent_string = "Played 0 games during the past 2 weeks"
+		recent_list = ["Played 0 games during the past 2 weeks"]
 
 
-	output = "User {0} | Userid: {1} | Last online: {2} | Profile created: {3} | Total # of games: {4} | ".format(username,userid,last_logoff_readable,date_created_readable,game_total) + recent_string
-	output += '\n' + profile_url
+	output = [username, userid, profile_url, avatar, last_logoff_readable, date_created_readable, game_total] + recent_list
 	return output
+
+	# Old Steam output:
+	# output = "User {0} | Userid: {1} | Last online: {2} | Profile created: {3} | Total # of games: {4} | ".format(username,userid,last_logoff_readable,date_created_readable,game_total) + recent_string
+	# output += '\n' + profile_url
+	# return output

@@ -16,8 +16,14 @@ def main(q):
 			team = "None"
 		else:
 			team = data["Team"]["Name"]
-		out = "User: {0} | Date Joined: {1} | Country: {2} | Key presses: {3} | Clicks: {4} | Total downloaded: {5} | Total uploaded: {6} | Team: {7}".format(username,date_joined,country,key_presses,clicks,downloaded,uploaded,team)
-		out += '\n' + "http://whatpulse.org/{}".format(username)
+
+		url = "http://whatpulse.org/{}".format(username)
+		out = [username, date_joined, country, key_presses, clicks, downloaded, uploaded, team, url]
+
+		# Old method
+		# out = "User: {0} | Date Joined: {1} | Country: {2} | Key presses: {3} | Clicks: {4} | Total downloaded: {5} | Total uploaded: {6} | Team: {7}".format(username,date_joined,country,key_presses,clicks,downloaded,uploaded,team)
+		# out += '\n' + "http://whatpulse.org/{}".format(username)
 	except KeyError:
 		out = "There is no user by that name"
+		
 	return out
