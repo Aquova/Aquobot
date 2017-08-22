@@ -4,6 +4,8 @@ A Discord bot written with Python
 
 https://github.com/Aquova/Aquobot
 
+http://aquova.github.io/Aquobot
+
 Written by Austin Bricker (Aquova), 2017
 
 https://twitter.com/Aquova_
@@ -18,4 +20,4 @@ To add Aquobot to a Discord server, make sure you have 'Manager Server' permissi
 
 -- Commands --
 
-For a full command list with examples, type '!help' or visit http://aquova.github.io/aquobot.html/
+For a full command list with examples, type '!help' or visit http://aquova.github.io/Aquobot
