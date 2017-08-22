@@ -826,6 +826,11 @@ async def on_message(message):
                     try:
                         dest_lang = message.content.split(" ")[1]
                         text = " ".join(message.content.split(" ")[2:])
+                        if text == '^':
+                            async for mes in client.logs_from(message.channel, limit=10):
+                                if mes.content != message.content:
+                                    text = mes.content
+                                    break
                         tr = Translator()
                         new = tr.translate(text, dest=dest_lang)
                         out = new.text
