@@ -414,18 +414,19 @@ async def on_message(message):
 
             elif message.content.startswith('!getavatar'):
                 if len(message.content.split(" ")) == 1:
-                    url = message.author.avatar_url
-                    em = discord.Embed()
-                    em.set_image(url=url)
-                    await client.send_message(message.channel, embed=em)
+                    out = message.author.avatar_url
+                    # To embed image:
+                    # em = discord.Embed()
+                    # em.set_image(url=url)
+                    # await client.send_message(message.channel, embed=em)
                 else:
                     q = remove_command(message.content)
                     mem = discord.utils.get(message.server.members, name=q)
                     try:
-                        url = mem.avatar_url
-                        em = discord.Embed()
-                        em.set_image(url=url)
-                        await client.send_message(message.channel, embed=em)
+                        out = mem.avatar_url
+                        # em = discord.Embed()
+                        # em.set_image(url=url)
+                        # await client.send_message(message.channel, embed=em)
                     except AttributeError:
                         out = "There is no user by that name, please try again. (Usernames are case sensitive)."
 
@@ -492,11 +493,12 @@ async def on_message(message):
                         root = ET.fromstring(await resp.text(), ET.HTMLParser())
                         foo = root.xpath(".//div[@class='rg_meta notranslate']")[0].text
                         result = json.loads(foo)
-                        # out = result['tu']
-                        url = result['tu']
-                        em = discord.Embed()
-                        em.set_image(url=url)
-                        await client.send_message(message.channel, embed=em)
+                        out = result['tu']
+                        # For embeded image:
+                        # url = result['tu']
+                        # em = discord.Embed()
+                        # em.set_image(url=url)
+                        # await client.send_message(message.channel, embed=em)
 
             # Tells a joke from a pre-programmed list
             elif message.content.startswith('!joke'):
