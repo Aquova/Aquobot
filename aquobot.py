@@ -270,8 +270,8 @@ async def on_message(message):
 
             # Prints out the calendar for the month
             elif message.content.startswith('!cal'):
-                out = "```bash" + '\n' + subprocess.run(['cal'], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
-                out = out.replace("_","") # Incase the date is highlighted in bash
+                # This command doesn't work under OS X, as the -h flag isn't supported (for some reason)
+                out = "```bash" + '\n' + subprocess.run(['cal', '-h'], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
 
             elif message.content.startswith('!checkers'):
                 # Prints out board, but that's it
