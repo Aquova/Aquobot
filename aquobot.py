@@ -21,7 +21,7 @@ import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib
 
 # Python programs I wrote, in ./programs
 import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather
-import Upside, Ecco, Select, Checkers, Youtube, Steam, Whatpulse
+import Upside, Ecco, Select, Checkers, Youtube, Steam, Whatpulse, Slots
 
 # Suppressing the UserWarning from the wikipedia module. Possibly a bad idea in the long run
 import warnings
@@ -52,6 +52,7 @@ sqlconn.execute("CREATE TABLE IF NOT EXISTS todo (id INT PRIMARY KEY, userid INT
 sqlconn.execute("CREATE TABLE IF NOT EXISTS days (userid INT PRIMARY KEY, last TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS whatpulse (userid INT PRIMARY KEY, username TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS anime (userid INT PRIMARY KEY, username TEXT);")
+sqlconn.execute("CREATE TABLE IF NOT EXISTS slots (userid INT PRIMARY KEY, value INT);")
 sqlconn.commit()
 sqlconn.close()
 
@@ -709,6 +710,29 @@ async def on_message(message):
                 if (message.content == '!servers list' and (message.author.id == cfg['Users']['aquova'] or message.author.id == cfg['Users']['eemie'])):
                     for server in server_list:
                         out += '\n' + server.name
+
+            elif message.content.startswith('!slots'):
+                sqlconn = sqlite3.connect('database.db')
+                money = sqlconn.execute("SELECT value FROM slots WHERE userid=?", [message.author.id])
+                try:
+                    user_money = money.fetchone()[0]
+                except TypeError:
+                    user_money = 0
+
+                if message.content == '!slots info':
+                    out = "Play slots with Aquobot! Type '!slots' to bet your hard earned cash against chance!"
+                elif message.content == '!slots points':
+                    out = "You have {} points".format(user_money)
+                else:
+                    earned, phrase, rolls = Slots.main()
+                    user_money += earned
+                    out = "You got {0}-{1}-{2}, so you earned {3} points. {4} You now have {5} points".format(rolls[0], rolls[1], rolls[2], earned, phrase, user_money)
+
+                    params = [message.author.id, user_money]
+                    sqlconn.execute("INSERT OR REPLACE INTO slots (userid, value) VALUES (?, ?)", params)
+
+                sqlconn.commit()
+                sqlconn.close()
 
             elif message.content.startswith('!spellcheck'):
                 q = remove_command(message.content).replace(" ","+")
