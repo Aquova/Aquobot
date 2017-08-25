@@ -124,7 +124,13 @@ async def on_ready():
         print("Done checking, now sleeping.")
         await asyncio.sleep(86400) # One day in seconds - 86400
     
+@client.event
+async def on_channel_create(channel):
+    channel_id_list.append(channel.id)
 
+@client.event
+async def on_channel_delete(channel):
+    channel_id_list.remove(channel.id)
 
 @client.event
 async def on_reaction_add(reaction, user):
