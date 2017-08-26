@@ -11,10 +11,10 @@ def main():
 	for i in range(reels):
 		roll.append(random.choice(symbols))
 
-	if roll[0] == 'jackpot':
-		if roll[1] == 'jackpot':
+	if roll[0] == 'Jackpot':
+		if roll[1] == 'Jackpot':
 			# Two Jackpots plus...
-			if roll[2] == 'jackpot':
+			if roll[2] == 'Jackpot':
 				win = 150
 			elif roll[2] == 'Black':
 				win = -100
