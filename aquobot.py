@@ -7,8 +7,6 @@ Written by Austin Bricker, 2017
 Requires Python 3.5+ to run
 """
 
-# [{'type': 'rich', 'title': 'UserInfo for aquova#1296', 'thumbnail': {'width': 128, 'url': 'https://cdn.discordapp.com/avatars/254640676233412610/607d184b2a5bca4caf030260f6948e68.png?size=128', 'proxy_url': 'https://images-ext-1.discordapp.net/external/Y9EQDyJlYC8vxypB626QKzwI-FkFBOjae-tvxZzm1ZY/%3Fsize%3D128/https/cdn.discordapp.com/avatars/254640676233412610/607d184b2a5bca4caf030260f6948e68.png', 'height': 128}, 'footer': {'text': 'the above info guaranteed or your money back!*'}, 'fields': [{'value': '03 Dec 2016 04:11:08 PM UTC', 'name': 'created', 'inline': True}, {'value': '29 May 2017 04:17:42 PM UTC', 'name': 'joined', 'inline': True}, {'value': 'everyone, sexy, ex husband?????????', 'name': 'roles', 'inline': False}, {'value': '254640676233412610', 'name': 'Id', 'inline': True}], 'description': 'aka Dominant Rigger'}], 'channel_id': '248773055705382912'}}
-
 import sys
 sys.path.insert(0, './programs')
 
@@ -52,7 +50,7 @@ sqlconn.execute("CREATE TABLE IF NOT EXISTS todo (id INT PRIMARY KEY, userid INT
 sqlconn.execute("CREATE TABLE IF NOT EXISTS days (userid INT PRIMARY KEY, last TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS whatpulse (userid INT PRIMARY KEY, username TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS anime (userid INT PRIMARY KEY, username TEXT);")
-sqlconn.execute("CREATE TABLE IF NOT EXISTS slots (userid INT PRIMARY KEY, value INT);")
+sqlconn.execute("CREATE TABLE IF NOT EXISTS points (userid INT PRIMARY KEY, value INT);")
 sqlconn.commit()
 sqlconn.close()
 
@@ -66,6 +64,20 @@ def get_xkcd(xkcd_json):
     num = xkcd_json['num']
     out = title + ", " + date + ", Comic #" + str(num) + '\n' + img_url + '\n' + "Alt text: " + alt_text
     return out
+
+def hand_value(hand):
+    total = 0
+    for card in hand:
+        if (card == 'K' or card == 'Q' or card == 'J'):
+            total += 10
+        elif card == 'A':
+            if total + 11 >= 21:
+                total += 1
+            else:
+                total += 11
+        else:
+            total += int(card)
+    return total
 
 def remove_command(m):
     tmp = m.split(" ")[1:]
@@ -272,6 +284,78 @@ async def on_message(message):
                         out = "Their birthday is {0} {1}".format(reverse[int(query_month)], query_day)
                     except TypeError:
                         out = "Error: No birthday for that user (searches are case sensitive)."
+                sqlconn.commit()
+                sqlconn.close()
+
+            elif message.content.startswith('!blackjack'):
+                sqlconn = sqlite3.connect('database.db')
+                money = sqlconn.execute("SELECT value FROM points WHERE userid=?", [message.author.id])
+                try:
+                    user_money = money.fetchone()[0]
+                except TypeError:
+                    user_money = 0
+
+                await client.send_message(message.channel, "Alright {}, time to play Blackjack!".format(message.author.name))
+                deck = [str(i) for i in range(2, 11)] * 4
+                deck.extend([i for i in ['K', 'Q', 'J', 'A']] * 4)
+                deck = random.sample(deck,len(deck))
+                dealer = []
+                player = []
+                player.append(deck.pop())
+                player.append(deck.pop())
+                dealer.append(deck.pop())
+                dealer.append(deck.pop())
+                await client.send_message(message.channel, "Okay {}, you've drawn a {} and {}, for a total of {}".format(message.author.name, player[0], player[1], hand_value(player)))
+                
+                if hand_value(player) == 21:
+                    user_money += 150
+                    await client.send_message(message.channel, "{}: Blackjack!! You win! You now have {} points!".format(message.author.name, user_money))
+                    params = [message.author.id, user_money]
+                    sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)
+                elif hand_value(dealer) == 21:
+                    user_money -= 100
+                    await client.send_message(message.channel, "{}: The dealer has a Blackjack, you lose. You now have {} points".format(message.author.name,user_money))
+                    params = [message.author.id, user_money]
+                    sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)
+                else:
+                    while (hand_value(dealer) < 21 and hand_value(player) < 21):
+                        await client.send_message(message.channel, "{}: Would you like to 'hit' or 'stand'?".format(message.author.name))
+                        msg = await client.wait_for_message(author=message.author, timeout=10)
+                        if msg == None:
+                            await client.send_message(message.channel, "{}: I'm sorry, but you have taken too long to respond".format(message.author.name))
+                            break
+                        elif msg.content.upper() == 'STAND':
+                            while hand_value(dealer) < 17:
+                                dealer.append(deck.pop())
+                            break
+                        elif msg.content.upper() == 'HIT':
+                            new_card = deck.pop()
+                            player.append(new_card)
+                            await client.send_message(message.channel, "{}: You drew a {}, your new total is {}".format(message.author.name,new_card, hand_value(player)))
+                            if hand_value(player) > 21:
+                                break
+                            else:
+                                continue
+                        else:
+                            await client.send_message(message.channel, "{}: That's not a valid answer, try again.".format(message.author.name))
+                            continue
+
+                    if hand_value(dealer) > 21:
+                        user_money += 50
+                        await client.send_message(message.channel, "{}: The dealer has gone over 21, you win! You now have {} points".format(message.author.name,user_money))
+                    elif hand_value(player) > 21:
+                        user_money -= 50
+                        await client.send_message(message.channel, "{}: You have gone over 21, you lose.. You now have {} points".format(message.author.name,user_money))
+                    elif hand_value(dealer) >= hand_value(player):
+                        user_money -= 50
+                        await client.send_message(message.channel, "{}: The dealer had {} while you had {}, you lose. You now have {} points".format(message.author.name,hand_value(dealer), hand_value(player), user_money))
+                    else:
+                        user_money += 50
+                        await client.send_message(message.channel, "{}: The dealer has {}, but you have {}! You win! You now have {} points".format(message.author.name,hand_value(dealer), hand_value(player), user_money))
+
+                    params = [message.author.id, user_money]
+                    sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)
+
                 sqlconn.commit()
                 sqlconn.close()
 
@@ -639,6 +723,19 @@ async def on_message(message):
 
                     out = "Vote now!!"
 
+            elif message.content.startswith('!points'):
+                sqlconn = sqlite3.connect('database.db')
+                money = sqlconn.execute("SELECT value FROM points WHERE userid=?", [message.author.id])
+                try:
+                    user_money = money.fetchone()[0]
+                except TypeError:
+                    user_money = 0
+
+                out = "You have {} points".format(user_money)
+
+                sqlconn.commit()
+                sqlconn.close()
+
             # Users can add quotes to a database, and recall a random one
             elif message.content.startswith('!quote'):
                 sqlconn = sqlite3.connect('database.db')
@@ -713,7 +810,7 @@ async def on_message(message):
 
             elif message.content.startswith('!slots'):
                 sqlconn = sqlite3.connect('database.db')
-                money = sqlconn.execute("SELECT value FROM slots WHERE userid=?", [message.author.id])
+                money = sqlconn.execute("SELECT value FROM points WHERE userid=?", [message.author.id])
                 try:
                     user_money = money.fetchone()[0]
                 except TypeError:
@@ -721,15 +818,13 @@ async def on_message(message):
 
                 if message.content == '!slots info':
                     out = "Play slots with Aquobot! Type '!slots' to bet your hard earned cash against chance!"
-                elif message.content == '!slots points':
-                    out = "You have {} points".format(user_money)
                 else:
                     earned, phrase, rolls = Slots.main()
                     user_money += earned
                     out = "You got {0}-{1}-{2}, so you earned {3} points. {4} You now have {5} points".format(rolls[0], rolls[1], rolls[2], earned, phrase, user_money)
 
                     params = [message.author.id, user_money]
-                    sqlconn.execute("INSERT OR REPLACE INTO slots (userid, value) VALUES (?, ?)", params)
+                    sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)
 
                 sqlconn.commit()
                 sqlconn.close()
