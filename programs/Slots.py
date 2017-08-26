@@ -43,7 +43,7 @@ def main():
 	elif roll[0] == roll[1] == roll[2] == 'Black':
 		win = -100
 	elif roll[0] == 'Bar' or roll[1] == 'Bar' or roll[2] == 'Bar':
-		win = 2
+		win = 10
 	else:
 		win = 0
 
