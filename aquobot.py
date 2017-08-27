@@ -19,7 +19,7 @@ import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib
 
 # Python programs I wrote, in ./programs
 import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather
-import Upside, Ecco, Select, Checkers, Youtube, Steam, Whatpulse, Slots
+import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots
 
 # Suppressing the UserWarning from the wikipedia module. Possibly a bad idea in the long run
 import warnings
@@ -328,7 +328,7 @@ async def on_message(message):
                                 await client.send_message(message.channel, "{}: Would you like to 'hit', 'stand', or 'double down' ('dd')?".format(message.author.name))
                             else:
                                 await client.send_message(message.channel, "{}: Would you like to 'hit' or 'stand'?".format(message.author.name))
-                                
+
                             msg = await client.wait_for_message(author=message.author, timeout=10)
                             if msg == None:
                                 await client.send_message(message.channel, "{}: I'm sorry, but you have taken too long to respond".format(message.author.name))
