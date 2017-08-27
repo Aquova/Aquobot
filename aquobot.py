@@ -322,8 +322,13 @@ async def on_message(message):
                         sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)
                     else:
                         dd = 1 # Double down multplier
+                        first = True # Is it the first draw? (For double down)
                         while (hand_value(dealer) < 21 and hand_value(player) < 21):
-                            await client.send_message(message.channel, "{}: Would you like to 'hit', 'stand', or 'double down' ('dd')?".format(message.author.name))
+                            if first:
+                                await client.send_message(message.channel, "{}: Would you like to 'hit', 'stand', or 'double down' ('dd')?".format(message.author.name))
+                            else:
+                                await client.send_message(message.channel, "{}: Would you like to 'hit' or 'stand'?".format(message.author.name))
+                                
                             msg = await client.wait_for_message(author=message.author, timeout=10)
                             if msg == None:
                                 await client.send_message(message.channel, "{}: I'm sorry, but you have taken too long to respond".format(message.author.name))
@@ -333,6 +338,7 @@ async def on_message(message):
                                     dealer.append(deck.pop())
                                 break
                             elif msg.content.upper() == 'HIT':
+                                first = False
                                 new_card = deck.pop()
                                 player.append(new_card)
                                 await client.send_message(message.channel, "{}: You drew a {}, your new total is {}".format(message.author.name,new_card, hand_value(player)))
@@ -340,7 +346,7 @@ async def on_message(message):
                                     break
                                 else:
                                     continue
-                            elif (msg.content.upper() == 'DOUBLE DOWN' or msg.content.upper() == 'DD'):
+                            elif ((msg.content.upper() == 'DOUBLE DOWN' or msg.content.upper() == 'DD') and first == True):
                                 new_card = deck.pop()
                                 player.append(new_card)
                                 dd = 2
@@ -379,10 +385,6 @@ async def on_message(message):
                 # This command doesn't work under OS X, as the -h flag isn't supported (for some reason)
                 out = "```bash" + '\n' + subprocess.run(['cal', '-h'], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
 
-            elif message.content.startswith('!checkers'):
-                # Prints out board, but that's it
-                out = Checkers.main()
-            
             # Chooses between given options
             elif message.content.startswith('!choose'):
                 if message.content == "!choose":

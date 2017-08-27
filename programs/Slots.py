@@ -33,7 +33,7 @@ def main():
 		elif roll[1] == roll[2] == 'Black':
 			win = -100
 		else:
-			win = 0
+			win = -5
 	elif roll[0] == roll[1] == roll[2] == 'Blue':
 		win = 30
 	elif roll[0] == roll[1] == roll[2] == 'Yellow':
@@ -42,10 +42,10 @@ def main():
 		win = 20
 	elif roll[0] == roll[1] == roll[2] == 'Black':
 		win = -100
-	elif roll[0] == 'Bar' or roll[1] == 'Bar' or roll[2] == 'Bar':
+	elif (roll[0] == 'Bar' and roll[1] == 'Bar') or (roll[0] == 'Bar' and roll[2] == 'Bar') or (roll[1] == 'Bar' and roll[2] == 'Bar'):
 		win = 10
 	else:
-		win = -2
+		win = -5
 
 	if win == 150:
 		phrase = 'JACKPOT!!'
