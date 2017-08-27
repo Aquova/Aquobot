@@ -53,9 +53,9 @@ def main():
 		phrase = 'Great job!'
 	elif 2 <= win < 40:
 		phrase = "Well, it's better than nothing."
-	elif win == -2:
+	elif -5 <= win < 2:
 		phrase = "Try again!"
-	elif win < -5:
+	else:
 		phrase = 'Oooo, bad luck!'
 
 	return (win, phrase, roll)
