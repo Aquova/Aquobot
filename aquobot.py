@@ -288,76 +288,91 @@ async def on_message(message):
                 sqlconn.close()
 
             elif message.content.startswith('!blackjack'):
-                sqlconn = sqlite3.connect('database.db')
-                money = sqlconn.execute("SELECT value FROM points WHERE userid=?", [message.author.id])
-                try:
-                    user_money = money.fetchone()[0]
-                except TypeError:
-                    user_money = 0
-
-                await client.send_message(message.channel, "Alright {}, time to play Blackjack!".format(message.author.name))
-                deck = [str(i) for i in range(2, 11)] * 4
-                deck.extend([i for i in ['K', 'Q', 'J', 'A']] * 4)
-                deck = random.sample(deck,len(deck))
-                dealer = []
-                player = []
-                player.append(deck.pop())
-                player.append(deck.pop())
-                dealer.append(deck.pop())
-                dealer.append(deck.pop())
-                await client.send_message(message.channel, "Okay {}, you've drawn a {} and {}, for a total of {}".format(message.author.name, player[0], player[1], hand_value(player)))
-                
-                if hand_value(player) == 21:
-                    user_money += 150
-                    await client.send_message(message.channel, "{}: Blackjack!! You win! You now have {} points!".format(message.author.name, user_money))
-                    params = [message.author.id, user_money]
-                    sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)
-                elif hand_value(dealer) == 21:
-                    user_money -= 100
-                    await client.send_message(message.channel, "{}: The dealer has a Blackjack, you lose. You now have {} points".format(message.author.name,user_money))
-                    params = [message.author.id, user_money]
-                    sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)
+                if message.content == '!blackjack rules':
+                    out = 'https://en.wikipedia.org/wiki/Blackjack#Player_decisions'
                 else:
-                    while (hand_value(dealer) < 21 and hand_value(player) < 21):
-                        await client.send_message(message.channel, "{}: Would you like to 'hit' or 'stand'?".format(message.author.name))
-                        msg = await client.wait_for_message(author=message.author, timeout=10)
-                        if msg == None:
-                            await client.send_message(message.channel, "{}: I'm sorry, but you have taken too long to respond".format(message.author.name))
-                            break
-                        elif msg.content.upper() == 'STAND':
-                            while hand_value(dealer) < 17:
-                                dealer.append(deck.pop())
-                            break
-                        elif msg.content.upper() == 'HIT':
-                            new_card = deck.pop()
-                            player.append(new_card)
-                            await client.send_message(message.channel, "{}: You drew a {}, your new total is {}".format(message.author.name,new_card, hand_value(player)))
-                            if hand_value(player) > 21:
-                                break
-                            else:
-                                continue
-                        else:
-                            await client.send_message(message.channel, "{}: That's not a valid answer, try again.".format(message.author.name))
-                            continue
+                    sqlconn = sqlite3.connect('database.db')
+                    money = sqlconn.execute("SELECT value FROM points WHERE userid=?", [message.author.id])
+                    try:
+                        user_money = money.fetchone()[0]
+                    except TypeError:
+                        user_money = 0
 
-                    if hand_value(dealer) > 21:
-                        user_money += 50
-                        await client.send_message(message.channel, "{}: The dealer has gone over 21, you win! You now have {} points".format(message.author.name,user_money))
-                    elif hand_value(player) > 21:
-                        user_money -= 50
-                        await client.send_message(message.channel, "{}: You have gone over 21, you lose.. You now have {} points".format(message.author.name,user_money))
-                    elif hand_value(dealer) >= hand_value(player):
-                        user_money -= 50
-                        await client.send_message(message.channel, "{}: The dealer had {} while you had {}, you lose. You now have {} points".format(message.author.name,hand_value(dealer), hand_value(player), user_money))
+                    await client.send_message(message.channel, "Alright {}, time to play Blackjack!".format(message.author.name))
+                    deck = [str(i) for i in range(2, 11)] * 4
+                    deck.extend([i for i in ['K', 'Q', 'J', 'A']] * 4)
+                    deck = random.sample(deck,len(deck))
+                    dealer = []
+                    player = []
+                    player.append(deck.pop())
+                    player.append(deck.pop())
+                    dealer.append(deck.pop())
+                    dealer.append(deck.pop())
+                    await client.send_message(message.channel, "Okay {}, you've drawn a {} and {}, for a total of {}".format(message.author.name, player[0], player[1], hand_value(player)))
+                    
+                    if hand_value(player) == 21:
+                        user_money += 150
+                        await client.send_message(message.channel, "{}: Blackjack!! You win! You now have {} points!".format(message.author.name, user_money))
+                        params = [message.author.id, user_money]
+                        sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)
+                    elif hand_value(dealer) == 21:
+                        user_money -= 100
+                        await client.send_message(message.channel, "{}: The dealer has a Blackjack, you lose. You now have {} points".format(message.author.name,user_money))
+                        params = [message.author.id, user_money]
+                        sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)
                     else:
-                        user_money += 50
-                        await client.send_message(message.channel, "{}: The dealer has {}, but you have {}! You win! You now have {} points".format(message.author.name,hand_value(dealer), hand_value(player), user_money))
+                        dd = 1 # Double down multplier
+                        while (hand_value(dealer) < 21 and hand_value(player) < 21):
+                            await client.send_message(message.channel, "{}: Would you like to 'hit', 'stand', or 'double down' ('dd')?".format(message.author.name))
+                            msg = await client.wait_for_message(author=message.author, timeout=10)
+                            if msg == None:
+                                await client.send_message(message.channel, "{}: I'm sorry, but you have taken too long to respond".format(message.author.name))
+                                break
+                            elif msg.content.upper() == 'STAND':
+                                while hand_value(dealer) < 17:
+                                    dealer.append(deck.pop())
+                                break
+                            elif msg.content.upper() == 'HIT':
+                                new_card = deck.pop()
+                                player.append(new_card)
+                                await client.send_message(message.channel, "{}: You drew a {}, your new total is {}".format(message.author.name,new_card, hand_value(player)))
+                                if hand_value(player) > 21:
+                                    break
+                                else:
+                                    continue
+                            elif (msg.content.upper() == 'DOUBLE DOWN' or msg.content.upper() == 'DD'):
+                                new_card = deck.pop()
+                                player.append(new_card)
+                                dd = 2
+                                await client.send_message(message.channel, "{}: You've chosen to double down! You get one more card, and the bets are doubled.\nYou drew a {}, your new total is {}".format(message.author.name,new_card, hand_value(player)))
+                                if hand_value(player) > 21:
+                                    break
+                                else:
+                                    while hand_value(dealer) < 17:
+                                        dealer.append(deck.pop())
+                                    break
+                            else:
+                                await client.send_message(message.channel, "{}: That's not a valid answer, try again.".format(message.author.name))
+                                continue
 
-                    params = [message.author.id, user_money]
-                    sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)
+                        if hand_value(dealer) > 21:
+                            user_money += 50 * dd
+                            await client.send_message(message.channel, "{}: The dealer has gone over 21, you win! You now have {} points".format(message.author.name,user_money))
+                        elif hand_value(player) > 21:
+                            user_money -= 50 * dd
+                            await client.send_message(message.channel, "{}: You have gone over 21, you lose.. You now have {} points".format(message.author.name,user_money))
+                        elif hand_value(dealer) >= hand_value(player):
+                            user_money -= 50 * dd
+                            await client.send_message(message.channel, "{}: The dealer had {} while you had {}, you lose. You now have {} points".format(message.author.name,hand_value(dealer), hand_value(player), user_money))
+                        else:
+                            user_money += 50 * dd
+                            await client.send_message(message.channel, "{}: The dealer has {}, but you have {}! You win! You now have {} points".format(message.author.name,hand_value(dealer), hand_value(player), user_money))
 
-                sqlconn.commit()
-                sqlconn.close()
+                        params = [message.author.id, user_money]
+                        sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)
+
+                    sqlconn.commit()
+                    sqlconn.close()
 
             # Prints out the calendar for the month
             elif message.content.startswith('!cal'):

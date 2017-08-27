@@ -45,7 +45,7 @@ def main():
 	elif roll[0] == 'Bar' or roll[1] == 'Bar' or roll[2] == 'Bar':
 		win = 10
 	else:
-		win = 0
+		win = -2
 
 	if win == 150:
 		phrase = 'JACKPOT!!'
@@ -53,9 +53,9 @@ def main():
 		phrase = 'Great job!'
 	elif 2 <= win < 40:
 		phrase = "Well, it's better than nothing."
-	elif win == 0:
+	elif win == -2:
 		phrase = "Try again!"
-	elif win < 0:
+	elif win < -5:
 		phrase = 'Oooo, bad luck!'
 
 	return (win, phrase, roll)
