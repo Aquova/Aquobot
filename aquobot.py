@@ -289,7 +289,7 @@ async def on_message(message):
 
             elif message.content.startswith('!blackjack'):
                 if message.content == '!blackjack rules':
-                    out = 'https://en.wikipedia.org/wiki/Blackjack#Player_decisions'
+                    out = '<https://en.wikipedia.org/wiki/Blackjack#Player_decisions>'
                 else:
                     sqlconn = sqlite3.connect('database.db')
                     money = sqlconn.execute("SELECT value FROM points WHERE userid=?", [message.author.id])

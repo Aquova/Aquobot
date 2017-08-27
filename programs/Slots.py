@@ -42,8 +42,8 @@ def main():
 		win = 20
 	elif roll[0] == roll[1] == roll[2] == 'Black':
 		win = -100
-	elif (roll[0] == 'Bar' and roll[1] == 'Bar') or (roll[0] == 'Bar' and roll[2] == 'Bar') or (roll[1] == 'Bar' and roll[2] == 'Bar'):
-		win = 10
+	elif roll[0] == 'Bar' or roll[1] == 'Bar' or roll[2] == 'Bar':
+		win = 5
 	else:
 		win = -5
 
@@ -51,9 +51,9 @@ def main():
 		phrase = 'JACKPOT!!'
 	elif 40 <= win < 150:
 		phrase = 'Great job!'
-	elif 2 <= win < 40:
+	elif 0 <= win < 40:
 		phrase = "Well, it's better than nothing."
-	elif -5 <= win < 2:
+	elif -5 <= win < 0:
 		phrase = "Try again!"
 	else:
 		phrase = 'Oooo, bad luck!'
