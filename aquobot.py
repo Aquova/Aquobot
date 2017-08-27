@@ -71,7 +71,7 @@ def hand_value(hand):
         if (card == 'K' or card == 'Q' or card == 'J'):
             total += 10
         elif card == 'A':
-            if total + 11 >= 21:
+            if total + 11 > 21:
                 total += 1
             else:
                 total += 11
