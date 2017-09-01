@@ -1196,53 +1196,6 @@ async def on_message(message):
                 
             elif message.content.startswith('!lex'):
                 out = "https://i.imgur.com/yB8wssv.jpg"
-
-            if message.server.id != cfg['Servers']['Magic']:
-                # Never bring a knife to a gunfight
-                if message.content.startswith("🔪"):
-                    out = ":gun:"
-
-                elif message.content.startswith('🔫'):
-                    await client.send_message(message.channel, ":knife:")
-                    await asyncio.sleep(1)
-                    out = "Oh, wait. :cold_sweat:"
-
-                elif message.content.split(" ")[0].upper() == "I'M" or message.content.split(" ")[0].upper() == "IM":
-                    if len(message.content.split(" ")) == 2:
-                        if message.content.split(" ")[1].upper() == "AQUOBOT":
-                            out = "WHAT?! But if you're Aquobot... Then... Who am I? :cold_sweat:"
-                        else:
-                            if random.choice(range(100)) == 0:
-                                out = "hi {} im aquobot".format(message.content.split(" ")[1].lower())
-
-                elif (message.content.upper().startswith("DID SOMEONE SAY") or message.content.upper().startswith("DID SOMEBODY SAY")):
-                    mes = message.content.split(" ")
-                    sass = " ".join(mes[3:])
-                    out = "*{}*".format(sass)
-
-                elif ("BELGIAN" in message.content.upper()) or ("BELGIUM" in message.content.upper()):
-                    if (message.author.id != client.user.id and random.choice(range(20)) == 0):
-                        out = "https://i0.wp.com/www.thekitchenwhisperer.net/wp-content/uploads/2014/04/BelgianWaffles8.jpg"
-
-                elif ("NETHERLANDS" in message.content.upper()) or ("DUTCH" in message.content.upper()):
-                    if random.choice(range(20)) == 0:
-                        out = ":flag_nl:"
-
-                elif "MERICA" in message.content.upper():
-                    if random.choice(range(20)) == 0:
-                        out = "http://2static.fjcdn.com/pictures/Blank_7a73f9_5964511.jpg"
-
-                elif "CANADA" in message.content.upper():
-                    if random.choice(range(20)) == 0:
-                        out = ":flag_ca: :hockey:"
-
-                elif "EXCUSE ME" in message.content.upper():
-                    if random.choice(range(10)) == 0:
-                        out = "You're excused."
-
-                elif "EXCUSE YOU" in message.content.upper():
-                    if random.choice(range(10)) == 0:
-                        out = "I'm excused?"
                 
             if out != "":
                 await client.send_typing(message.channel)
