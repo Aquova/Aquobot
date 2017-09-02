@@ -585,29 +585,27 @@ async def on_message(message):
                     out += "\nAdd your location to the database with !w add LOCATION to get more information!"
 
             elif message.content.startswith('!img'):
-                q = remove_command(message.content)
-                params = {'q': q, 
-                    'safe': 'on', 
-                    'lr': 'lang_en', 
-                    'hl': 'en',
-                    'tbm': 'isch'
-                }
+                if message.content == '!img':
+                    out = "!img QUERY"
+                else:
+                    q = remove_command(message.content)
+                    params = {'q': q, 
+                        'safe': 'on', 
+                        'lr': 'lang_en', 
+                        'hl': 'en',
+                        'tbm': 'isch'
+                    }
 
-                headers = {
-                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:54.0) Gecko/20100101 Firefox/54.0'
-                }
+                    headers = {
+                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:54.0) Gecko/20100101 Firefox/54.0'
+                    }
 
-                async with aiohttp.ClientSession() as session:
-                    async with session.get('https://google.com/search', params=params, headers=headers) as resp:
-                        root = ET.fromstring(await resp.text(), ET.HTMLParser())
-                        foo = root.xpath(".//div[@class='rg_meta notranslate']")[0].text
-                        result = json.loads(foo)
-                        out = result['tu']
-                        # For embeded image:
-                        # url = result['tu']
-                        # em = discord.Embed()
-                        # em.set_image(url=url)
-                        # await client.send_message(message.channel, embed=em)
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get('https://google.com/search', params=params, headers=headers) as resp:
+                            root = ET.fromstring(await resp.text(), ET.HTMLParser())
+                            foo = root.xpath(".//div[@class='rg_meta notranslate']")[0].text
+                            result = json.loads(foo)
+                            out = result['ou']
 
             # Tells a joke from a pre-programmed list
             elif message.content.startswith('!joke'):
