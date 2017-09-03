@@ -531,18 +531,11 @@ async def on_message(message):
             elif message.content.startswith('!getavatar'):
                 if len(message.content.split(" ")) == 1:
                     out = message.author.avatar_url
-                    # To embed image:
-                    # em = discord.Embed()
-                    # em.set_image(url=url)
-                    # await client.send_message(message.channel, embed=em)
                 else:
                     q = remove_command(message.content)
                     mem = discord.utils.get(message.server.members, name=q)
                     try:
                         out = mem.avatar_url
-                        # em = discord.Embed()
-                        # em.set_image(url=url)
-                        # await client.send_message(message.channel, embed=em)
                     except AttributeError:
                         out = "There is no user by that name, please try again. (Usernames are case sensitive)."
 
@@ -1067,6 +1060,46 @@ async def on_message(message):
                     out = '!until MM-DD-YYYY'
                 else:
                     out = str(Days_Until.until(parse[1])) + " days"
+
+            elif message.content.startswith('!userinfo'):
+                if message.content == '!userinfo':
+                    mem = message.author
+                else:
+                    q = str(remove_command(message.content))
+                    if q.startswith('<@'):
+                        mem = discord.utils.get(message.server.members, id=q[2:-1])
+                    else:
+                        mem = discord.utils.get(message.server.members, name=q)
+                try:
+                    if mem.avatar_url == "":
+                        avatar = mem.default_avatar_url
+                    else:
+                        avatar = mem.avatar_url
+
+                    username = mem.name + '#' + mem.discriminator
+                    created = mem.created_at.strftime('%B %d, %Y %I:%M %p')
+                    joined = mem.joined_at.strftime('%B %d, %Y %I:%M %p')
+                    roles = []
+                    for item in mem.roles:
+                        roles.append(item.name)
+                    roles = ', '.join(roles)
+
+                    if mem.name != mem.display_name:
+                        nickname = mem.display_name
+                    else:
+                        nickname = ' '
+
+                    embed = discord.Embed(title=username, type='rich', description=nickname, color=mem.color)
+                    embed.add_field(name='Joined Server', value=joined)
+                    embed.add_field(name='Account Created', value=created)
+                    embed.add_field(name='User ID', value=mem.id)
+                    embed.add_field(name='Beep Boop?', value=mem.bot)
+                    embed.add_field(name='Server Roles', value=roles)
+                    embed.set_thumbnail(url=avatar)
+                    
+                    await client.send_message(message.channel, embed=embed)
+                except AttributeError:
+                    out = "There is no user by that name, please try again. (Usernames are case sensitive)."
 
             # Returns with Wolfram Alpha result of query
             elif message.content.startswith('!wolfram'):
