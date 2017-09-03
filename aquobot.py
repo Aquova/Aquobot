@@ -1067,18 +1067,18 @@ async def on_message(message):
                 else:
                     q = str(remove_command(message.content))
                     if q.startswith('<@'):
-                        mem = discord.utils.get(message.server.members, id=q[2:-1])
+                        id = ''.join(c for c in q if c.isdigit())
+                        mem = discord.utils.get(message.server.members, id=id)
                     else:
                         mem = discord.utils.get(message.server.members, name=q)
                 try:
+                    username = mem.name + '#' + mem.discriminator
+                    created = mem.created_at.strftime('%B %d, %Y %I:%M %p')
+                    joined = mem.joined_at.strftime('%B %d, %Y %I:%M %p')
                     if mem.avatar_url == "":
                         avatar = mem.default_avatar_url
                     else:
                         avatar = mem.avatar_url
-
-                    username = mem.name + '#' + mem.discriminator
-                    created = mem.created_at.strftime('%B %d, %Y %I:%M %p')
-                    joined = mem.joined_at.strftime('%B %d, %Y %I:%M %p')
                     roles = []
                     for item in mem.roles:
                         roles.append(item.name)
