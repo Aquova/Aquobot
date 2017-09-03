@@ -169,7 +169,11 @@ async def on_reaction_add(reaction, user):
                 out = 'Quote added from {0}: "{1}". (#{2})'.format(user_name, mes, str(num + 1))
                 await client.send_message(reaction.message.channel, out)
     elif reaction.emoji == '📌':
-        await client.pin_message(reaction.message)
+        try:
+            await client.pin_message(reaction.message)
+        except discord.errors.HTTPException as e:
+            await client.send_message(reaction.message.channel, e)
+
 
 @client.event
 async def on_server_join(server):
@@ -425,6 +429,9 @@ async def on_message(message):
                             out = "It has been {} days since your last time! :confetti_ball:".format(tmp)
                     sqlconn.commit()
                     sqlconn.close()
+
+            elif (message.content.startswith('!deletethis') or message.content.startswith('!dt')):
+                out = 'https://cdn.discordapp.com/attachments/214906642741854210/353702529277886471/delete_this.gif'
 
             # Responds with .png image of text in "Ecco the Dolphin" style
             elif message.content.startswith('!ecco'):
@@ -806,6 +813,41 @@ async def on_message(message):
                 else:
                     out = Roman_Numerals.int_to_roman(parse[1])
 
+            # If you are an employer, just know this works, but I'm not proud of it.
+            elif message.content.startswith('!rt'):
+                if message.content == '!rt':
+                    out = "!rt QUERY"
+                else:
+                    q = remove_command(message.content)
+
+                    params = {'search': q}
+
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get('https://www.rottentomatoes.com/search/', params=params) as resp:
+                            root = ET.fromstring(await resp.text(), ET.HTMLParser())
+                            # This is the most hackish thing I've ever done
+                            info = root[1][10][3][0][1].text
+                            try:
+                                # This is the second most hackish thing I've ever done
+                                info = info.split('RT.PrivateApiV2FrontendHost, ')[1]
+                                info = info.split(',"tvCount"')[0]
+                                # Okay, I know.
+                                info = ', '.join(info.split(', ')[1:])
+                                result = json.loads(info + '}')
+                                url = 'http://rottentomatoes.com' + result['movies'][0]['url']
+                                score = str(result['movies'][0]['meterScore']) + '%'
+                                tomato = result['movies'][0]['meterClass'].replace('_', ' ').title()
+                                
+                                embed = discord.Embed(title=result['movies'][0]['name'], type='rich', description=url)
+                                embed.add_field(name='Tomatometer', value=tomato)
+                                embed.add_field(name='Score', value=score)
+                                embed.add_field(name='Year Released', value=result['movies'][0]['year'])
+                                embed.set_thumbnail(url=result['movies'][0]['image'])
+                                
+                                await client.send_message(message.channel, embed=embed)
+                            except IndexError:
+                                out = "No movie found with that name."
+
             # Returns scrabble value of given word
             elif message.content.startswith('!scrabble'):
                 parse = message.content.split(" ")
@@ -961,6 +1003,9 @@ async def on_message(message):
                     out = "!todo [add/remove]"
                 sqlconn.commit()
                 sqlconn.close()
+
+            elif message.content.startswith('!trapcard'):
+                out = 'https://pbs.twimg.com/media/CXnDzNFWAAA70wX.jpg'
 
             elif (message.content.startswith('!tr') or message.content.startswith('!translate')):
                 if (message.content == '!tr' or message.content == '!translate'):
