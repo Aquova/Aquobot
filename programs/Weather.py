@@ -108,7 +108,7 @@ def forecast(place):
     week = data['item']['forecast']
     out = ""
     for i in range(7):
-        out = out + week[i]['day'] + " " + week[i]['date'] + ", " + week[i]['text'] + " with a high of " + week[i]['high'] + "°F (" + F2C(week[i]['high']) + "°C) " + '\n'
+        out += "{} {}, {} with a high of {} °F ({}°C)\n".format(week[i]['day'], week[i]['date'], week[i]['text'], week[i]['high'], F2C(week[i]['high']))
     return out
 
 def time(place):
@@ -151,10 +151,13 @@ def main(place):
     sunrise = data['astronomy']['sunrise']
     sunset = data['astronomy']['sunset']
 
-    test = sunset.split(":")
-    if len(test[1]) == 4:
-        sunset = test[0] + ':0' + test[1]
+    test_sunset = sunset.split(":")
+    if len(test_sunset[1]) == 4:
+        sunset = test_sunset[0] + ':0' + test_sunset[1]
 
-    out = "Weather for " + location + ": " + weather_status + ", " + temp_F + "°F (" + temp_C + "°C), feels like " + wind_chill_F + "°F (" + wind_chill_C + "°C). Wind: " + wind_card + " at "+ wind_speed_mph + " mph (" + wind_speed_ms + " m/s). Sunrise at " + sunrise + ", sunset at " + sunset + "."
+    test_sunrise = sunrise.split(':')
+    if len(test_sunrise[1]) == 4:
+        sunrise = test_sunrise[0] + ':0' + test_sunrise[1]
 
+    out = "Weather for {}: {}, {}°F ({}°C), feels like {}°F ({}°C). Wind: {} at {} mph ({} m/s). Sunrise at {}, sunset at {}.".format(location, weather_status, temp_F, temp_C, wind_chill_F, wind_chill_C, wind_card, wind_speed_mph, wind_speed_ms, sunrise, sunset)
     return out
