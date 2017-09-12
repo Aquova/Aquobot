@@ -216,7 +216,7 @@ async def on_message(message):
 
             # Database of user birthdays. Will notify server if user's birthday on list is that day
             elif message.content.startswith('!birthday'):
-                out = Birthday.main(message.content, message.author.name, message.author.id, message.server.id)
+                out = Birthday.main(message.content, message.author.name, message.author.id, message.server.id, message.server.members)
 
             elif message.content.startswith('!blackjack'):
                 if message.content == '!blackjack rules':
