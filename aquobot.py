@@ -10,20 +10,15 @@ Requires Python 3.5+ to run
 import sys
 sys.path.insert(0, './programs')
 
-import discord, wolframalpha, wikipedia, requests, aiohttp
+import discord, wolframalpha, requests, aiohttp
 from googletrans import Translator
-from geopy.geocoders import Nominatim
 from google import google
 import lxml.etree as ET
-import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib
+import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, time
 
 # Python programs I wrote, in ./programs
-import Morse, Scrabble_Values, Roman_Numerals, Days_Until, Mayan, Jokes, Weather
-import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots
-
-# Suppressing the UserWarning from the wikipedia module. Possibly a bad idea in the long run
-import warnings
-warnings.filterwarnings('ignore', category=UserWarning, append=True)
+import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday
+import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss
 
 # Handles logging to discord.log
 logger = logging.getLogger('discord')
@@ -55,15 +50,6 @@ sqlconn.commit()
 sqlconn.close()
 
 num_emoji = {0: "0⃣", 1:"1⃣", 2:"2⃣", 3:"3⃣", 4:"4⃣", 5:"5⃣", 6:"6⃣", 7:"7⃣", 8:"8⃣", 9:"9⃣"}
-
-def get_xkcd(xkcd_json):
-    title = xkcd_json['title']
-    date = "{0}/{1}/{2}".format(xkcd_json['month'], xkcd_json['day'], xkcd_json['year'])
-    alt_text = xkcd_json['alt']
-    img_url = xkcd_json['img']
-    num = xkcd_json['num']
-    out = title + ", " + date + ", Comic #" + str(num) + '\n' + img_url + '\n' + "Alt text: " + alt_text
-    return out
 
 def hand_value(hand):
     total = 0
@@ -126,16 +112,14 @@ async def on_ready():
     print('------')
     # TODO: Fix game changing, as it's now broken
     game_object = discord.Game(name="type !help")
-    await client.change_presence(game=game_object)
-
-    global channel_id_list
-    channel_id_list = [x.id for x in client.get_all_channels()]
+    await client.change_presence(game=game_object)    
 
     while True:
         print("Checking birthday")
         await check_birthday()
         print("Done checking, now sleeping.")
-        await asyncio.sleep(86400) # One day in seconds - 86400
+        await asyncio.sleep(86400)
+
     
 @client.event
 async def on_channel_create(channel):
@@ -174,7 +158,6 @@ async def on_reaction_add(reaction, user):
         except discord.errors.HTTPException as e:
             await client.send_message(reaction.message.channel, e)
 
-
 @client.event
 async def on_server_join(server):
     serv_name = server.name
@@ -195,10 +178,10 @@ async def on_server_remove(server):
 # Upon typed message in chat
 @client.event
 async def on_message(message):
-    if message.channel.id not in channel_id_list:
-        secret = "User {0} (ID {1}) sent this DM: {2}".format(message.author.name,message.author.id,message.content)
-        DM_channel = client.get_channel(cfg['Servers']['DM-channel'])
-        await client.send_message(DM_channel, secret)
+    # if message.channel.id not in channel_id_list:
+    #     secret = "User {0} (ID {1}) sent this DM: {2}".format(message.author.name,message.author.id,message.content)
+    #     DM_channel = client.get_channel(cfg['Servers']['DM-channel'])
+    #     await client.send_message(DM_channel, secret)
         
     if message.author.id != client.user.id:
         try:
@@ -233,63 +216,7 @@ async def on_message(message):
 
             # Database of user birthdays. Will notify server if user's birthday on list is that day
             elif message.content.startswith('!birthday'):
-                months = {'JANUARY':1, 'JAN':1, 'FEB':2, 'FEBRUARY':2, 'MARCH':3, 'MAR':3, 'APRIL':4, 'APR':4, 'MAY':5, 'JUNE':6, 'JUN':6, 'JULY':7, 'JUL':7, 'AUGUST':8, 'AUG':8, 'SEPTEMBER':9, 'SEPT':9, 'OCTOBER':10, 'OCT':10, 'NOVEMBER':11, 'NOV':11, 'DECEMBER':12, 'DEC':12}
-                reverse = {1:'January', 2:'February', 3:'March', 4:'April', 5:'May', 6:'June', 7:'July', 8:'August', 9:'September', 10:'October', 11:'November', 12:'December'}
-                sqlconn = sqlite3.connect('database.db')
-                author_name = message.author.name
-                author_id = message.author.id
-                server_id = message.server.id
-                if message.content == '!birthday':
-                    birth_month = sqlconn.execute("SELECT month FROM birthday WHERE id=?", [author_id])
-                    birth_day = sqlconn.execute("SELECT day FROM birthday WHERE id=?", [author_id])
-                    try:
-                        query_month = birth_month.fetchone()[0]
-                        query_day = birth_day.fetchone()[0]
-                        out = "Your birthday is {0} {1}".format(reverse[int(query_month)], query_day)
-                    except TypeError:
-                        out = "!birthday [set] MONTH DAY"
-                elif message.content.startswith('!birthday set'):
-                    q = message.content.split(" ")[2:]
-                    try:
-                        if (1 <= int(q[1]) and int(q[1]) <= 31):
-                            if q[0].upper() in months.keys():
-                                params = (author_id, author_name, months[q[0].upper()], int(q[1]), server_id)
-                                sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day, server_id) VALUES (?, ?, ?, ?, ?)", params)
-                                out = "{0}'s birthday now set as {1}/{2}".format(author_name, months[q[0].upper()], q[1])
-                            elif (1 <= int(q[0]) and int(q[0]) <= 12):
-                                params = (author_id, author_name, int(q[0]), int(q[1]), server_id)
-                                sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day) VALUES (?, ?, ?, ?, ?)", params)
-                                out = "{0}'s birthday now set as {1}/{2}".format(author_name, q[0], q[1])
-                            else:
-                                out = "Invalid birthday format. The format needs to be !birthday set MONTH DAY"
-                        else:
-                            out = "Invalid birthday format. The format needs to be !birthday set MONTH DAY"
-                    except ValueError:
-                        out = "Invalid birthday format. The format needs to be !birthday set MONTH DAY"
-                elif message.content.startswith('!birthday list'):
-                    birth_ids = sqlconn.execute("SELECT id FROM birthday").fetchall()
-                    out = ""
-                    ids = [x.id for x in message.server.members]
-                    for user in birth_ids:
-                        if str(user[0]) in ids:
-                            birth_month = sqlconn.execute("SELECT month FROM birthday WHERE id=?", [user[0]]).fetchone()[0]
-                            birth_day = sqlconn.execute("SELECT day FROM birthday WHERE id=?", [user[0]]).fetchone()[0]
-                            birth_name = sqlconn.execute("SELECT name FROM birthday WHERE id=?", [user[0]]).fetchone()[0]
-                            out += "{0}'s birthday is on {1} {2}\n".format(birth_name, reverse[int(birth_month)], birth_day)
-                    if out == "":
-                        out = "There are no birthdays entered for anyone on this server."
-                else:
-                    q = remove_command(message.content)
-                    birth_month = sqlconn.execute("SELECT month FROM birthday WHERE name=?", [q])
-                    birth_day = sqlconn.execute("SELECT day FROM birthday WHERE name=?", [q])
-                    try:
-                        query_month = birth_month.fetchone()[0]
-                        query_day = birth_day.fetchone()[0]
-                        out = "Their birthday is {0} {1}".format(reverse[int(query_month)], query_day)
-                    except TypeError:
-                        out = "Error: No birthday for that user (searches are case sensitive)."
-                sqlconn.commit()
-                sqlconn.close()
+                out = Birthday.main(message.content, message.author.name, message.author.id, message.server.id)
 
             elif message.content.startswith('!blackjack'):
                 if message.content == '!blackjack rules':
@@ -544,45 +471,7 @@ async def on_message(message):
                 out = google.search(q)[0].link
 
             elif message.content.startswith('!iss'):
-                sqlconn = sqlite3.connect('database.db')
-                geo = Nominatim()
-                iss_json_url = urllib.request.urlopen('http://api.open-notify.org/iss-now.json')
-                iss_json = json.loads(iss_json_url.read())
-                latitude = iss_json['iss_position']['latitude']
-                longitude = iss_json['iss_position']['longitude']
-                location = geo.reverse("{0}, {1}".format(latitude,longitude))
-
-                if float(latitude) >= 0:
-                    latitude += "° N"
-                else:
-                    latitude = str(-1 * float(latitude)) + "° S"
-
-                if float(longitude) >= 0:
-                    longitude += "° E"
-                else:
-                    longitude = str(-1 * float(longitude)) + "° W"
-
-                time = datetime.datetime.fromtimestamp(iss_json['timestamp'])
-                out = "Right now ({0}), the International Space Station is located at {1}, {2}".format(time, latitude, longitude)
-                try:
-                    out += ", located at {}".format(location)
-                except TypeError:
-                    pass
-
-                # Check if user's location is stored, and add info
-                user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [message.author.id])
-                try:
-                    user_location = user_loc.fetchone()[0]
-                    location = geo.geocode(user_location)
-                    user_lat = location.latitude
-                    user_long = location.longitude
-                    pass_url = urllib.request.urlopen("http://api.open-notify.org/iss-pass.json?lat={0}&lon={1}".format(user_lat,user_long))
-                    pass_json = json.loads(pass_url.read())
-                    risetime = datetime.datetime.fromtimestamp(pass_json['response'][0]['risetime'])
-                    duration = pass_json['response'][0]['duration']
-                    out += '\nThe ISS will next pass over your location at {0} for {1} seconds'.format(risetime, duration)
-                except TypeError:
-                    out += "\nAdd your location to the database with !w add LOCATION to get more information!"
+                out = iss.main(message.author.id)
 
             elif message.content.startswith('!img'):
                 if message.content == '!img':
@@ -802,9 +691,9 @@ async def on_message(message):
                 if (message.content == '!roman'):
                     out = '!roman NUMBER/NUMERAL'
                 elif parse[1].isalpha() == True:
-                    out = Roman_Numerals.roman_to_int(parse[1])
+                    out = Roman.roman_to_int(parse[1])
                 else:
-                    out = Roman_Numerals.int_to_roman(parse[1])
+                    out = Roman.int_to_roman(parse[1])
 
             elif message.content.startswith('!roulette'):
                 basic_bet = 10
@@ -971,7 +860,6 @@ async def on_message(message):
                     sqlconn.commit()
                     sqlconn.close()
 
-            # If you are an employer, just know this works, but I'm not proud of it.
             elif message.content.startswith('!rt'):
                 if message.content == '!rt':
                     out = "!rt QUERY"
@@ -983,13 +871,11 @@ async def on_message(message):
                     async with aiohttp.ClientSession() as session:
                         async with session.get('https://www.rottentomatoes.com/search/', params=params) as resp:
                             root = ET.fromstring(await resp.text(), ET.HTMLParser())
-                            # This is the most hackish thing I've ever done
+
                             info = root[1][10][3][0][1].text
                             try:
-                                # This is the second most hackish thing I've ever done
                                 info = info.split('RT.PrivateApiV2FrontendHost, ')[1]
                                 info = info.split(',"tvCount"')[0]
-                                # Okay, I know.
                                 info = ', '.join(info.split(', ')[1:])
                                 result = json.loads(info + '}')
                                 url = 'http://rottentomatoes.com' + result['movies'][0]['url']
@@ -1012,7 +898,7 @@ async def on_message(message):
                 if (message.content == '!scrabble'):
                     out = '!scrabble WORD'
                 else:
-                    out = Scrabble_Values.scrabble(parse[1])
+                    out = Scrabble.scrabble(parse[1])
 
             # Responds with the number of servers currently attached to
             elif message.content.startswith('!servers'):
@@ -1321,15 +1207,7 @@ async def on_message(message):
 
             elif message.content.startswith('!wiki'):
                 q = remove_command(message.content)
-                wiki_url = 'https://en.wikipedia.org/wiki/'
-                results = wikipedia.search(q)
-                try:
-                    wikipedia.WikipediaPage(title=results[0])
-                    out = wiki_url + results[0].replace(" ","_")
-                except wikipedia.exceptions.DisambiguationError as e:
-                    out = wiki_url + e.options[0].replace(" ","_")
-                except IndexError:
-                    out = 'No article was found with that name'
+                out = Wikipedia.main(q)
                     
             # Returns with the weather of a specified location
             # Needs to be the last 'w' command
@@ -1387,28 +1265,7 @@ async def on_message(message):
                 out = Youtube.search(q)
 
             elif message.content.startswith('!xkcd'):
-                xkcd_json_url = urllib.request.urlopen('https://xkcd.com/info.0.json')
-                xkcd_json = json.loads(xkcd_json_url.read())
-                max_comic = xkcd_json['num']
-                if message.content == '!xkcd':
-                    out = get_xkcd(xkcd_json)
-                elif (message.content.split(" ")[1] == 'random' or message.content.split(" ")[1] == 'rand'):
-                    num = random.randint(1, max_comic)
-                    new_url = 'https://xkcd.com/{}/info.0.json'.format(num)
-                    new_json_url = urllib.request.urlopen(new_url)
-                    xkcd_json = json.loads(new_json_url.read())
-                    out = get_xkcd(xkcd_json)
-                else:
-                    try:
-                        num = int(message.content.split(" ")[1])
-                        new_url = 'https://xkcd.com/{}/info.0.json'.format(num)
-                        new_json_url = urllib.request.urlopen(new_url)
-                        xkcd_json = json.loads(new_json_url.read())
-                        out = get_xkcd(xkcd_json)
-                    except ValueError:
-                        out = "Not a valid number." + '\n' + "!xkcd [comic #]"
-                    except urllib.error.HTTPError:
-                        out = "There's no comic with that index number."
+                out = xkcd.main(message.content)
 
             # The following are responses to various keywords if present anywhere in a message
             elif ("HELLO AQUOBOT" in message.content.upper() or "HI AQUOBOT" in message.content.upper()):
