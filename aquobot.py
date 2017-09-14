@@ -17,7 +17,7 @@ import lxml.etree as ET
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, time
 
 # Python programs I wrote, in ./programs
-import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday
+import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji
 import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss
 
 # Handles logging to discord.log
@@ -121,13 +121,13 @@ async def on_ready():
         await asyncio.sleep(86400)
 
     
-@client.event
-async def on_channel_create(channel):
-    channel_id_list.append(channel.id)
+# @client.event
+# async def on_channel_create(channel):
+#     channel_id_list.append(channel.id)
 
-@client.event
-async def on_channel_delete(channel):
-    channel_id_list.remove(channel.id)
+# @client.event
+# async def on_channel_delete(channel):
+#     channel_id_list.remove(channel.id)
 
 @client.event
 async def on_reaction_add(reaction, user):
@@ -213,6 +213,12 @@ async def on_message(message):
             # It picks a random user on the server and says it will ban them, but takes no action
             elif message.content.startswith('!ban'):
                 out = Select.ban(message.server.members, message.author.name)
+
+            elif message.content.startswith('!bemoji'):
+                if message.content == '!bemoji':
+                    out = '!bemoji PHRASE'
+                else:
+                    out = Emoji.b_words(remove_command(message.content))
 
             # Database of user birthdays. Will notify server if user's birthday on list is that day
             elif message.content.startswith('!birthday'):
@@ -374,7 +380,13 @@ async def on_message(message):
 
             # Repeats back user message
             elif message.content.startswith('!echo'):
-                out = remove_command(message.content)    
+                out = remove_command(message.content)   
+
+            elif message.content.startswith('!emoji'):
+                if message.content == '!emoji':
+                    out = '!emoji PHRASE'
+                else:
+                    out = Emoji.emoji_text(remove_command(message.content))
 
             # Gives one of several interesting facts
             elif message.content.startswith('!fact'):
