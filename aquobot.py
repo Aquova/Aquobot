@@ -17,7 +17,7 @@ import lxml.etree as ET
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, time
 
 # Python programs I wrote, in ./programs
-import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji
+import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji, Help
 import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss
 
 # Handles logging to discord.log
@@ -110,8 +110,8 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
-    # TODO: Fix game changing, as it's now broken
-    game_object = discord.Game(name="type !help")
+
+    game_object = discord.Game(name="type !help", type=0)
     await client.change_presence(game=game_object)    
 
     while True:
@@ -119,15 +119,6 @@ async def on_ready():
         await check_birthday()
         print("Done checking, now sleeping.")
         await asyncio.sleep(86400)
-
-    
-# @client.event
-# async def on_channel_create(channel):
-#     channel_id_list.append(channel.id)
-
-# @client.event
-# async def on_channel_delete(channel):
-#     channel_id_list.remove(channel.id)
 
 @client.event
 async def on_reaction_add(reaction, user):
@@ -178,17 +169,15 @@ async def on_server_remove(server):
 # Upon typed message in chat
 @client.event
 async def on_message(message):
-    # if message.channel.id not in channel_id_list:
-    #     secret = "User {0} (ID {1}) sent this DM: {2}".format(message.author.name,message.author.id,message.content)
-    #     DM_channel = client.get_channel(cfg['Servers']['DM-channel'])
-    #     await client.send_message(DM_channel, secret)
-        
     if message.author.id != client.user.id:
         try:
             out = ""
             # !help links to website with command list
             if message.content.startswith("!help"):
-                out = "http://aquova.github.io/Aquobot"
+                if message.content == '!help':
+                    out = "http://aquova.github.io/Aquobot"
+                else:
+                    out = Help.main(remove_command(message.content))
 
             # Updates bot to most recent version
             elif message.content.startswith("!update"):
