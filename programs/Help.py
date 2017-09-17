@@ -58,7 +58,7 @@ info = {
 	'wiki':['!wiki QUERY', 'Returns the Wikipedia page of the searched term', ''],
 	'wolfram':['!wolfram QUERY', 'Provides an answer to a WolframAlpha query', ''],
 	'xkcd':['!xkcd [random/#]', 'Posts a comic from xkcd', 'Either !xkcd random or !xkcd rand with produce a random comic.\n!xkcd will post the most recent comic.'],
-	'youtube':['!youtube QUERY', 'Provides the YouTube link to the first result of the search phrase', 'Also works with "!yt"']
+	'youtube':['!youtube QUERY', 'Provides the YouTube link to the first result of the search phrase', 'Also works with "!yt"'],
 	'yt':['!yt QUERY', 'Provides the YouTube link to the first result of the search phrase', 'Also works with "!youtube"']
 }
 		
