@@ -118,7 +118,7 @@ async def on_ready():
         print("Checking birthday")
         await check_birthday()
         print("Done checking, now sleeping.")
-        await asyncio.sleep(86400)
+        await asyncio.sleep(28800) # Runs every 8 hours
 
 @client.event
 async def on_reaction_add(reaction, user):
