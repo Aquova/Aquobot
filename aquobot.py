@@ -71,33 +71,33 @@ def remove_command(m):
 
 async def check_birthday():
     sqlconn = sqlite3.connect('database.db')
-    birth_months = sqlconn.execute("SELECT month FROM birthday").fetchone()
-    birth_days = sqlconn.execute("SELECT day FROM birthday").fetchone()
-    birth_ids = sqlconn.execute("SELECT id FROM birthday").fetchone()
+    birthdays = sqlconn.execute("SELECT * FROM birthday").fetchall()
 
     d = datetime.date.today()
     month = d.month
     day = d.day
-    today_bdays = []
-    if birth_ids != None:
-        for i in range(0, len(birth_ids)):
+    bday_names = []
+    bday_ids = []
+    if birthdays != None:
+        for i in range(0, len(birthdays)):
             try:
-                if (month == int(birth_months[i]) and day == int(birth_days[i])):
-                    today_bdays.append(birth_ids[i])
+                if (month == int(birthdays[i][2]) and day == int(birthdays[i][3])):
+                    bday_names.append(birthdays[i][1])
+                    bday_ids.append(birthdays[i][0])
             except ValueError as e:
                 print("Error handled: " + e)
                 pass
     else:
-        print("birth_names is null apparently")
+        print("birthdays is null apparently")
 
     # Oh dear.
-    if today_bdays != []:
-        for j in today_bdays:
+    if bday_ids != []:
+        for j in range(0, len(bday_ids)):
             for server in client.servers:
                 ids = [x.id for x in server.members]
-                if str(j) in ids:
-                    birth_name = sqlconn.execute("SELECT name FROM birthday WHERE id=?", [j]).fetchone()[0]
-                    mess = "Today is {0}'s birthday! Everybody wish them a happy birthday! :birthday:".format(birth_name)
+                if str(bday_ids[j]) in ids:
+                    mess = "Today is {}'s birthday! Everybody wish them a happy birthday! :birthday:".format(bday_names[j])
+                    print(mess)
                     await client.send_message(server.default_channel, mess)
 
     sqlconn.commit()
@@ -118,7 +118,7 @@ async def on_ready():
         print("Checking birthday")
         await check_birthday()
         print("Done checking, now sleeping.")
-        await asyncio.sleep(28800) # Runs every 8 hours
+        await asyncio.sleep(86400)
 
 @client.event
 async def on_reaction_add(reaction, user):
