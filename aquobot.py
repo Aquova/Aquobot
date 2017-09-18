@@ -103,7 +103,6 @@ async def check_birthday():
     sqlconn.commit()
     sqlconn.close()
 
-
 # Upon bot starting up
 @client.event
 async def on_ready():
