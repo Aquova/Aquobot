@@ -103,6 +103,7 @@ async def check_birthday():
     sqlconn.commit()
     sqlconn.close()
 
+
 # Upon bot starting up
 @client.event
 async def on_ready():
@@ -118,7 +119,7 @@ async def on_ready():
         print("Checking birthday")
         await check_birthday()
         print("Done checking, now sleeping.")
-        await asyncio.sleep(86400)
+        await asyncio.sleep(86400) # Sleep for 24 hours
 
 @client.event
 async def on_reaction_add(reaction, user):
