@@ -346,8 +346,11 @@ async def on_message(message):
                             delta = today - last_day
                             num = str(delta).split(" ")[0]
                             tmp = ""
-                            for digit in num:
-                                tmp = tmp + num_emoji[int(digit)]
+                            try:
+                                for digit in num:
+                                    tmp = tmp + num_emoji[int(digit)]
+                            except ValueError:
+                                tmp = ":zero:"
                             out = "It has been {} days since your last time! :confetti_ball:".format(tmp)
                     sqlconn.commit()
                     sqlconn.close()
