@@ -1,12 +1,11 @@
 import sqlite3, discord
 
-def main(m):
+def main(m, author_name, author_id, timestamp):
     sqlconn = sqlite3.connect('database.db')
-    username = m.author.name
-    userid = m.author.id
-    timestamp = str(m.timestamp)
+    username = author_name
+    userid = author_id
     time = timestamp.split(".")[0] + " GMT" # Right now, time is given in GMT. Possibly change to use local time instead.
-    if m.content == '!todo':
+    if m == '!todo':
         user_list = sqlconn.execute("SELECT * FROM todo WHERE userid=?", [userid])
         user_todos = user_list.fetchall()
         if user_todos == []:
@@ -15,16 +14,16 @@ def main(m):
             out = ""
             for item in user_todos:
                 out += "{0} @ {1}. (#{2})".format(item[3], item[4], item[0]) + '\n'
-    elif m.content.startswith('!todo add'):
+    elif m.startswith('!todo add'):
         num = sqlconn.execute("SELECT COUNT(*) FROM todo") # WHERE userid IS NOT NULL")
         num = num.fetchone()[0] + 1
-        mes = m.content[10:]
+        mes = m[10:]
         params = (num, userid, username, mes, time)
         sqlconn.execute("INSERT OR REPLACE INTO todo (id, userid, username, m, t) VALUES (?, ?, ?, ?, ?)", params)
         out = "Item added by {0}: {1} @ {2}. (#{3})".format(username, mes, time, num)
-    elif m.content.startswith('!todo remove'):
+    elif m.startswith('!todo remove'):
         try:
-            remove_id = int(m.content[13:])
+            remove_id = int(m[13:])
             check_user = sqlconn.execute("SELECT userid FROM todo WHERE id=?", [remove_id])
             check_user = str(check_user.fetchone()[0])
             if check_user == userid:
