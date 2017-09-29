@@ -1263,7 +1263,7 @@ async def on_message(message):
 
             elif (message.content.upper() == 'AQUOBOT ATTACK MODE' or message.content.upper() == 'AQUOBOT, ATTACK MODE'):
                 if message.author.id == cfg['Users']['aquova']:
-                    out = '`ENGAGING ATTACK MODE`\n`ATOMIC BATTERIES TO POWER. TURBINES TO SPEED.\n`READY TO EXECUTE ATTACK VECTOR` :robot:'
+                    out = '`ENGAGING ATTACK MODE`\n`ATOMIC BATTERIES TO POWER. TURBINES TO SPEED.`\n`READY TO EXECUTE ATTACK VECTOR` :robot:'
                 
             if out != "":
                 await client.send_typing(message.channel)
