@@ -18,7 +18,7 @@ import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, ti
 
 # Python programs I wrote, in ./programs
 import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji, Help
-import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss
+import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo
 
 # Handles logging to discord.log
 logger = logging.getLogger('discord')
@@ -1012,45 +1012,48 @@ async def on_message(message):
 
             # Users can add/remove to their own todo list, and remove entries
             elif message.content.startswith('!todo'):
-                sqlconn = sqlite3.connect('database.db')
-                username = message.author.name
-                userid = message.author.id
-                timestamp = str(message.timestamp)
-                time = timestamp.split(".")[0] + " GMT" # Right now, time is given in GMT. Possibly change to use local time instead.
-                if message.content == '!todo':
-                    user_list = sqlconn.execute("SELECT * FROM todo WHERE userid=?", [userid])
-                    user_todos = user_list.fetchall()
-                    if user_todos == []:
-                        out = "You have not added anything to your todo list.\nAdd items with '!todo add item'"
-                    else:
-                        out = ""
-                        for item in user_todos:
-                            out += "{0} @ {1}. (#{2})".format(item[3], item[4], item[0]) + '\n'
-                elif message.content.startswith('!todo add'):
-                    num = sqlconn.execute("SELECT COUNT(*) FROM todo") # WHERE userid IS NOT NULL")
-                    num = num.fetchone()[0] + 1
-                    mes = message.content[10:]
-                    params = (num, userid, username, mes, time)
-                    sqlconn.execute("INSERT OR REPLACE INTO todo (id, userid, username, message, t) VALUES (?, ?, ?, ?, ?)", params)
-                    out = "Item added by {0}: {1} @ {2}. (#{3})".format(username, mes, time, num)
-                elif message.content.startswith('!todo remove'):
-                    try:
-                        remove_id = int(message.content[13:])
-                        check_user = sqlconn.execute("SELECT userid FROM todo WHERE id=?", [remove_id])
-                        check_user = str(check_user.fetchone()[0])
-                        if check_user == userid:
-                            sqlconn.execute("INSERT OR REPLACE INTO todo (id, userid, username, message, t) VALUES (?, NULL, NULL, NULL, NULL)", [remove_id])
-                            out = "Item {} removed".format(remove_id)
-                        else:
-                            out = "You are not allowed to remove other user's items."
-                    except TypeError:
-                        out = "There is no entry of that index value"
-                    except ValueError:
-                        out = "That's not a number. Please specify the index number of the item to remove."
-                else:
-                    out = "!todo [add/remove]"
-                sqlconn.commit()
-                sqlconn.close()
+                q = remove_command(message.content)
+                out = Todo.main(q)
+
+                # sqlconn = sqlite3.connect('database.db')
+                # username = message.author.name
+                # userid = message.author.id
+                # timestamp = str(message.timestamp)
+                # time = timestamp.split(".")[0] + " GMT" # Right now, time is given in GMT. Possibly change to use local time instead.
+                # if message.content == '!todo':
+                #     user_list = sqlconn.execute("SELECT * FROM todo WHERE userid=?", [userid])
+                #     user_todos = user_list.fetchall()
+                #     if user_todos == []:
+                #         out = "You have not added anything to your todo list.\nAdd items with '!todo add item'"
+                #     else:
+                #         out = ""
+                #         for item in user_todos:
+                #             out += "{0} @ {1}. (#{2})".format(item[3], item[4], item[0]) + '\n'
+                # elif message.content.startswith('!todo add'):
+                #     num = sqlconn.execute("SELECT COUNT(*) FROM todo") # WHERE userid IS NOT NULL")
+                #     num = num.fetchone()[0] + 1
+                #     mes = message.content[10:]
+                #     params = (num, userid, username, mes, time)
+                #     sqlconn.execute("INSERT OR REPLACE INTO todo (id, userid, username, message, t) VALUES (?, ?, ?, ?, ?)", params)
+                #     out = "Item added by {0}: {1} @ {2}. (#{3})".format(username, mes, time, num)
+                # elif message.content.startswith('!todo remove'):
+                #     try:
+                #         remove_id = int(message.content[13:])
+                #         check_user = sqlconn.execute("SELECT userid FROM todo WHERE id=?", [remove_id])
+                #         check_user = str(check_user.fetchone()[0])
+                #         if check_user == userid:
+                #             sqlconn.execute("INSERT OR REPLACE INTO todo (id, userid, username, message, t) VALUES (?, NULL, NULL, NULL, NULL)", [remove_id])
+                #             out = "Item {} removed".format(remove_id)
+                #         else:
+                #             out = "You are not allowed to remove other user's items."
+                #     except TypeError:
+                #         out = "There is no entry of that index value"
+                #     except ValueError:
+                #         out = "That's not a number. Please specify the index number of the item to remove."
+                # else:
+                #     out = "!todo [add/remove]"
+                # sqlconn.commit()
+                # sqlconn.close()
 
             elif message.content.startswith('!trapcard'):
                 out = 'https://pbs.twimg.com/media/CXnDzNFWAAA70wX.jpg'
@@ -1298,6 +1301,9 @@ async def on_message(message):
                 
             elif message.content.startswith('!lex'):
                 out = "https://i.imgur.com/yB8wssv.jpg"
+
+            elif (message.content.upper() == 'AQUOBOT ATTACK MODE' or message.content.upper() == 'AQUOBOT, ATTACK MODE'):
+                out = '`ENGAGING ATTACK MODE`\n`ATOMIC BATTERIES TO POWER. TURBINES TO SPEED.\n`READY TO EXECUTE ATTACK VECTOR` :robot:'
                 
             if out != "":
                 await client.send_typing(message.channel)
