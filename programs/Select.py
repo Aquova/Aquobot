@@ -39,3 +39,5 @@ def stop():
                  'http://i0.kym-cdn.com/entries/icons/original/000/003/382/icon.jpg',
                  'https://images.roadtrafficsigns.com/img/dp/lg/traffic-stop-sign.png',
                  'https://pbs.twimg.com/media/CJfUu6rWsAAV_pZ.jpg']
+
+    return random.choice(stop_list)
