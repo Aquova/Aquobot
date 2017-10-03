@@ -65,7 +65,9 @@ info = {
 		
 def main(m):
 	if m in list(info.keys()):
-		output = "Syntax: `{}`\n{}\nNote: {}".format(info[m][0], info[m][1], info[m][2])
+		output = "Syntax: `{}`\n{}".format(info[m][0], info[m][1])
+		if info[m][2] != '':
+			output += '\nNote: {}'.format(info[m][2])
 	else:
 		output = "There is no command by that name."
 
