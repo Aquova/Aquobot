@@ -980,6 +980,9 @@ async def on_message(message):
                         out = info
                     # out = Steam.get_userinfo(q) <- The old method
 
+            elif message.content.startswith('!stop'):
+                out = Select.stop()
+
             # Doesn't do anything right now, simply for testing
             elif message.content.startswith('!test'):
                 if message.author.id == cfg['Users']['aquova']:

@@ -32,3 +32,10 @@ def ban(user_list, author):
 
 def fact():
     return random.choice(fact_list)
+
+def stop():
+    stop_list = ['https://media.giphy.com/media/9MzzXn7ghEUW4/giphy.gif',
+                 'http://i0.kym-cdn.com/entries/icons/original/000/003/382/icon.jpg',
+                 'http://i0.kym-cdn.com/entries/icons/original/000/003/382/icon.jpg',
+                 'https://images.roadtrafficsigns.com/img/dp/lg/traffic-stop-sign.png',
+                 'https://pbs.twimg.com/media/CJfUu6rWsAAV_pZ.jpg']

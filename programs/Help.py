@@ -41,6 +41,7 @@ info = {
 	'spellcheck':['!spellcheck', 'Attempts to find any misspelled words in a sentence', ''],
 	'slots':['!slots', 'Try your hand at a the slot machine!', 'You can see how many points you have with "!points"'],
 	'steam':['!steam STEAM-USERNAME', 'Gives stats of a given Steam account', ''],
+	'stop':['!stop', 'Posts one of several images featuring a stop sign', ''],
 	'time':['!time [set] LOCATION', 'Posts the current time of a specified location', ''],
 	'todo':['!todo [add/remove #]', 'Allows users to add, remove, or view items on their personal todo list', ''],
 	'translate':['!translate TARGET-LANGUAGE PHRASE', 'Translates a phrase into a specified language', 'Can also use "!tr"\n^ can be used to translate previous message, i.e. !tr en ^'],
