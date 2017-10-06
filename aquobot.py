@@ -18,7 +18,7 @@ import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, ti
 
 # Python programs I wrote, in ./programs
 import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji, Help
-import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo
+import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo#, Weather2
 
 # Handles logging to discord.log
 logger = logging.getLogger('discord')
@@ -1205,6 +1205,35 @@ async def on_message(message):
                         out = "No location found. Please be more specific."
                 sqlconn.commit()
                 sqlconn.close()
+
+            # The 'weather2' implementation, in progress
+            # elif (message.content.startswith('!weather') or message.content.startswith('!w')):
+                # sqlconn = sqlite3.connect('database.db')
+                # author_id = int(message.author.id)
+                # author_name = message.author.name
+                # if (message.content == '!weather' or message.content == '!w'):
+                #     user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
+                #     try:
+                #         # Replace here
+                #         query_location = user_loc.fetchone()[0]
+                #         out = Weather.main(query_location)
+                #     except TypeError:
+                #         out = "!weather [set] LOCATION"
+                # elif (message.content.startswith("!weather set") or message.content.startswith('!w set')):
+                #     tmp = message.content.split(" ")[2:]
+                #     q = " ".join(tmp)
+                #     params = (author_id, author_name, q)
+                #     sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
+                #     out = "Location set as {}".format(q)
+                # else:
+                #     try:
+                #         # Replace here
+                #         q = remove_command(message.content)
+                #         out = Weather.main(q)
+                #     except TypeError:
+                #         out = "No location found. Please be more specific."
+                # sqlconn.commit()
+                # sqlconn.close()
 
             # Same as !weather, but prints emojis
             elif message.content.startswith('!qw'):

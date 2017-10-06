@@ -19,7 +19,7 @@ def main(m, author_name, author_id, timestamp):
         num = num.fetchone()[0] + 1
         mes = m[10:]
         params = (num, userid, username, mes, time)
-        sqlconn.execute("INSERT OR REPLACE INTO todo (id, userid, username, m, t) VALUES (?, ?, ?, ?, ?)", params)
+        sqlconn.execute("INSERT OR REPLACE INTO todo (id, userid, username, message, t) VALUES (?, ?, ?, ?, ?)", params)
         out = "Item added by {0}: {1} @ {2}. (#{3})".format(username, mes, time, num)
     elif m.startswith('!todo remove'):
         try:
@@ -27,7 +27,7 @@ def main(m, author_name, author_id, timestamp):
             check_user = sqlconn.execute("SELECT userid FROM todo WHERE id=?", [remove_id])
             check_user = str(check_user.fetchone()[0])
             if check_user == userid:
-                sqlconn.execute("INSERT OR REPLACE INTO todo (id, userid, username, m, t) VALUES (?, NULL, NULL, NULL, NULL)", [remove_id])
+                sqlconn.execute("INSERT OR REPLACE INTO todo (id, userid, username, message, t) VALUES (?, NULL, NULL, NULL, NULL)", [remove_id])
                 out = "Item {} removed".format(remove_id)
             else:
                 out = "You are not allowed to remove other user's items."
