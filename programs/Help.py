@@ -27,6 +27,7 @@ info = {
 	'morse':['!morse ENCODE/DECODE MESSAGE', 'Converts message into or out of morse code', ''],
 	'myanimelist':['!myanimelist [set] USERNAME', 'Shows the MyAnimeList profile of the given user', 'Also works with "!mal"'],
 	'mal':['!mal [set] USERNAME', 'Shows the MyAnimeList profile of the given user', 'Also works with "!myanimelist"'],
+	'nick':['!nick NEW_USERNAME', 'Gives your account the new nickname specified. (Basically the same as /nick but works on mobile)', "Aquobot's role needs to be higher than the user being edited. Due to this, this function can't work for server owners."],
 	'pin':['!pin USERNAME', 'Pins the most recent post by the given user', 'You can also pin a message by reacting with :pushpin:'],
 	'points':['!points', 'See how many points you have from the casino games', ''],
 	'poll':['!poll TITLE, OPTION1, OPTION2, OPTION3, ...', 'Presents a poll for users, based on input separated by commas. Users can vote via Discord reactions.', ''],

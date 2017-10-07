@@ -607,7 +607,7 @@ async def on_message(message):
                         print(message.author)
                         out = "Your new nickname is {}".format(new)
                     except discord.errors.Forbidden:
-                        out = "Aquobot does not have privledges to change nicknames on this server, or it is lower on the role hierarchy than the user you want to rename." 
+                        out = "Aquobot does not have privileges to change nicknames on this server, or it is lower on the role hierarchy than the user you want to rename." 
 
             # Pins most recent message of specified user
             elif message.content.startswith('!pin'):
