@@ -604,7 +604,6 @@ async def on_message(message):
                 else:
                     try:
                         await client.change_nickname(message.author, new)
-                        print(message.author)
                         out = "Your new nickname is {}".format(new)
                     except discord.errors.Forbidden:
                         out = "Aquobot does not have privileges to change nicknames on this server, or it is lower on the role hierarchy than the user you want to rename." 
@@ -924,6 +923,30 @@ async def on_message(message):
                 if (message.content == '!servers list' and (message.author.id == cfg['Users']['aquova'] or message.author.id == cfg['Users']['eemie'])):
                     for server in server_list:
                         out += '\n' + server.name
+
+            elif message.content.startswith('!serverinfo'):  
+                server = message.server
+                name = server.name
+                serv_id = server.id
+                embed = discord.Embed(title=name, type='rich', description=serv_id)
+                owner = server.owner.name
+                created = server.created_at.strftime('%B %d, %Y %I:%M %p')
+                if server.icon_url != "":
+                    icon = server.icon_url
+                    embed.set_thumbnail(url=icon)
+                mem_count = server.member_count
+                roles = server.role_hierarchy
+                channel_count = sum(1 for _ in server.channels)
+                region = server.region
+
+                embed.add_field(name='Server Created', value=created)
+                embed.add_field(name='Owner', value=owner)
+                embed.add_field(name='Server Region', value=region)
+                embed.add_field(name='Number of Members', value=mem_count)
+                embed.add_field(name='Number of Channels', value=channel_count)
+                embed.add_field(name='Number of Roles', value=len(roles))
+                
+                await client.send_message(message.channel, embed=embed)
 
             elif message.content.startswith('!slots'):
                 sqlconn = sqlite3.connect('database.db')
