@@ -158,7 +158,7 @@ async def on_server_join(server):
     default_channel = server.default_channel
     mems = server.member_count
     await client.send_message(default_channel, "Thank you for adding me to your server! Type '!help' for a list of commands")
-    await client.send_message(cfg['Servers']['general'], "Aquobot has been added to {0} (ID: {1}) Owned by {2} ({3}). Server has {4} members.".format(serv_name, serv_id, serv_owner_name, serv_owner_id, mems))
+    await client.send_message(client.get_channel(cfg['Servers']['general']), "Aquobot has been added to {0} (ID: {1}) Owned by {2} ({3}). Server has {4} members.".format(serv_name, serv_id, serv_owner_name, serv_owner_id, mems))
 
 @client.event
 async def on_server_remove(server):
@@ -195,8 +195,8 @@ async def on_message(message):
             elif message.content.startswith('!about'):
                 server_list = client.servers
                 server_num = str(len(server_list))
-                aquo_link = "<https://discordapp.com/oauth2/authorize?client_id=323620520073625601&scope=bot&permissions=2117594231>"
-                out = "Hello, my name is Aquobot. I was written in Python by Aquova so he would have something interesting to put on a resume. I am currently connected to {0} servers, and I look forward to spending time with you! If you want to have me on your server, go visit {1}, and ~~when~~ if that doesn't work, contact Aquova.".format(server_num, aquo_link)
+                aquo_link = "<https://discordapp.com/oauth2/authorize?client_id=323620520073625601&scope=bot&permissions=1278733377>"
+                out = "Hello, my name is Aquobot. I was written in Python by Aquova so he would have something interesting to put on a resume. I am currently connected to {0} servers, and I look forward to spending time with you! If you want to have me on your server, go visit {1}, and ~~when~~ if that doesn't work, contact Aquova#1296.".format(server_num, aquo_link)
 
             # Ban actually does nothing
             # It picks a random user on the server and says it will ban them, but takes no action
@@ -596,6 +596,18 @@ async def on_message(message):
                         out = "No user found by that name"
                 sqlconn.commit()
                 sqlconn.close()
+
+            elif message.content.startswith('!nick'):
+                new = remove_command(message.content)
+                if len(new) > 32:
+                    out = "Your nickname must be 32 characters or shorter. I don't make the rules."
+                else:
+                    try:
+                        await client.change_nickname(message.author, new)
+                        print(message.author)
+                        out = "Your new nickname is {}".format(new)
+                    except discord.errors.Forbidden:
+                        out = "Aquobot does not have privledges to change nicknames on this server, or it is lower on the role hierarchy than the user you want to rename." 
 
             # Pins most recent message of specified user
             elif message.content.startswith('!pin'):
