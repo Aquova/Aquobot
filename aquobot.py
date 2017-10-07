@@ -939,8 +939,8 @@ async def on_message(message):
                 channel_count = sum(1 for _ in server.channels)
                 region = server.region
 
-                embed.add_field(name='Server Created', value=created)
                 embed.add_field(name='Owner', value=owner)
+                embed.add_field(name='Server Created', value=created)
                 embed.add_field(name='Server Region', value=region)
                 embed.add_field(name='Number of Members', value=mem_count)
                 embed.add_field(name='Number of Channels', value=channel_count)
