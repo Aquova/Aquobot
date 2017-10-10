@@ -198,6 +198,22 @@ async def on_message(message):
                 aquo_link = "<https://discordapp.com/oauth2/authorize?client_id=323620520073625601&scope=bot&permissions=1278733377>"
                 out = "Hello, my name is Aquobot. I was written in Python by Aquova so he would have something interesting to put on a resume. I am currently connected to {0} servers, and I look forward to spending time with you! If you want to have me on your server, go visit {1}, and ~~when~~ if that doesn't work, contact Aquova#1296.".format(server_num, aquo_link)
 
+            elif message.content.startswith('!apod'):
+                apod_url = 'https://api.nasa.gov/planetary/apod?api_key=' + cfg['Client']['nasa']
+                if message.content != '!apod':
+                    q = remove_command(message.content)
+                    apod_url += '&date=' + q
+
+                r = requests.get(apod_url)
+                results = json.loads(r.text)
+                try:
+                    out = "{} | {}\n{}\n{}".format(results['title'], results['date'], results['hdurl'], results['explanation'])
+                except KeyError:
+                    if results['code'] == 400:
+                        out = "Usage: !apod [YYYY-MM-DD]\n{}".format(results['msg'])
+                    else:
+                        out = "I have no idea what happened. Contact Aquova#1296. Hurry."
+
             # Ban actually does nothing
             # It picks a random user on the server and says it will ban them, but takes no action
             elif message.content.startswith('!ban'):
