@@ -1,7 +1,7 @@
 info = {
 	'about':['!about', 'Aquobot gives a basic description of itself', ''],
 	'alive':['!alive', 'Simply asks the bot to respond if active', ''],
-	'apod':['!apod [YYYY-MM-DD', "Gets an image from NASA's 'Astronomy Picture of the Day' site", ''],
+	'apod':['!apod [YYYY-MM-DD]', "Gets an image from NASA's 'Astronomy Picture of the Day' site", ''],
 	'birthday':['!birthday [set] MONTH DAY', 'Look up or add birthdays to the database', 'List birthdays with "!birthday list"'],
 	'blackjack':['!blackjack', 'Play blackjack with the computer!', 'See how many points you have with "!points"'],
 	'cal':['!cal', 'Prints out the calendar for the month', ''],
