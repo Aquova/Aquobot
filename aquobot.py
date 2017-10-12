@@ -175,7 +175,7 @@ async def on_message(message):
             # !help links to website with command list
             if message.content.startswith("!help"):
                 if message.content == '!help':
-                    out = "http://aquova.github.io/Aquobot"
+                    out = "http://aquova.github.io/Aquobot\nFor help on a specific command, type `!help COMMAND`"
                 else:
                     out = Help.main(remove_command(message.content))
 
@@ -575,16 +575,8 @@ async def on_message(message):
 
             # Converts message into/out of morse code
             elif message.content.startswith('!morse'):
-                parse = message.content.split(" ")
-                if message.content == '!morse':
-                    out = '!morse ENCODE/DECODE MESSAGE'
-                elif parse[1].upper() == 'ENCODE':
-                    out = Morse.encode(" ".join(parse[2:]))
-                elif parse[1].upper() == 'DECODE':
-                    out = Morse.decode(" ".join(parse[2:]))
-                else:
-                    if message.author.id != client.user.id:
-                        out = "That is not a valid option, choose encode or decode."
+                parse = remove_command(message.content)
+                out = Morse.main(parse)
 
             elif (message.content.startswith('!myanimelist') or message.content.startswith('!mal')):
                 sqlconn = sqlite3.connect('database.db')
