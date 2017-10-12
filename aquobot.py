@@ -10,7 +10,7 @@ Requires Python 3.5+ to run
 import sys
 sys.path.insert(0, './programs')
 
-import discord, wolframalpha, requests, aiohttp
+import discord, wolframalpha, requests, aiohttp, async_timeout
 from googletrans import Translator
 from google import google
 import lxml.etree as ET
@@ -182,6 +182,7 @@ async def on_message(message):
             # Updates bot to most recent version
             elif message.content.startswith("!update"):
                 if (message.author.id == cfg['Users']['eemie'] or message.author.id == cfg['Users']['aquova']):
+                    await client.send_message(message.channel, "Rebooting and updating...") 
                     subprocess.call("./update.sh", shell=True)
                     sys.exit()
 
@@ -510,11 +511,18 @@ async def on_message(message):
                     }
 
                     async with aiohttp.ClientSession() as session:
-                        async with session.get('https://google.com/search', params=params, headers=headers) as resp:
-                            root = ET.fromstring(await resp.text(), ET.HTMLParser())
-                            foo = root.xpath(".//div[@class='rg_meta notranslate']")[0].text
-                            result = json.loads(foo)
-                            out = result['ou']
+                        try:
+                            with async_timeout.timeout(5):
+                                async with session.get('https://google.com/search', params=params, headers=headers) as resp:
+                                    if resp.status == 200:
+                                        root = ET.fromstring(await resp.text(), ET.HTMLParser())
+                                        foo = root.xpath(".//div[@class='rg_meta notranslate']")[0].text
+                                        result = json.loads(foo)
+                                        out = result['ou']
+                                    else:
+                                        out = "Error: Page unavailable\nError: {}".format(resp.response)
+                        except Exception as e:
+                            out = "Error: {}".format(e)
 
             # Tells a joke from a pre-programmed list
             elif message.content.startswith('!joke'):
