@@ -520,9 +520,9 @@ async def on_message(message):
                                         result = json.loads(foo)
                                         out = result['ou']
                                     else:
-                                        out = "Error: Page unavailable\nError: {}".format(resp.response)
+                                        out = "Google is unavailable I guess?\nError: {}".format(resp.response)
                         except Exception as e:
-                            out = "Error: {}".format(e)
+                            out = "Timeout error {}".format(e)
 
             # Tells a joke from a pre-programmed list
             elif message.content.startswith('!joke'):
