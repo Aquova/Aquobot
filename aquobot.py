@@ -10,7 +10,7 @@ Requires Python 3.5+ to run
 import sys
 sys.path.insert(0, './programs')
 
-import discord, wolframalpha, requests, aiohttp, async_timeout
+import discord, wolframalpha, requests, aiohttp, async_timeout, signal
 from googletrans import Translator
 from google import google
 import lxml.etree as ET
@@ -226,21 +226,17 @@ async def on_message(message):
                 else:
                     out = Emoji.b_words(remove_command(message.content))
 
-            elif (message.content.startswith('!brainfuck') or message.content.startswith('!bf')):
-                if len(message.content) == 1:
-                    out = '!brainfuck CODE'
-                else:
-                    q = remove_command(message.content)
-                    # Check to see if the first character is a valid Brainfuck symbol
-                    # It's not the best solution, but it'll do.
-                    try:
-                        with async_timeout.timeout(5):
-                            if (q[0] in '+-[]><.'):
-                                out = BF.decode(q)
-                            else:
-                                out = BF.encode(q)
-                    except Exception as e:
-                        out = "Tell Aquova this:\n{}".format(e)
+            # elif (message.content.startswith('!brainfuck') or message.content.startswith('!bf')):
+            #     if len(message.content) == 1:
+            #         out = '!brainfuck CODE'
+            #     else:
+            #         q = remove_command(message.content)
+            #         # Check to see if the first character is a valid Brainfuck symbol
+            #         # It's not the best solution, but it'll do.
+            #         if (q[0] in '+-[]><.'):
+            #             out = BF.decode(q)
+            #         else:
+            #             out = BF.encode(q)
 
             # Database of user birthdays. Will notify server if user's birthday on list is that day
             elif message.content.startswith('!birthday'):

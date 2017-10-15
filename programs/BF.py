@@ -58,6 +58,20 @@ def decode(code):
 
     return output
 
+def ord2bf(val):
+    divisor = 10 # The 'counting' factor
+    factor = val / divisor
+    remainder = val % divisor
+    return ("+" * divisor) + '[>' + ("+" * int(factor)) + '<-]>' + ('+' * remainder) + '.'
+
+
 def encode(code):
-    return "This isn't working yet, sorry."
-    # Implementation here: https://codegolf.stackexchange.com/questions/5418/brainf-golfer/5440#5440
+    output = ''
+    for i in range(len(code)):
+        if i == 0:
+            output += ord2bf(ord(code[i]))
+        else:
+            diff = ord(code[i]) - ord(code[i - 1])
+            output += ord2bf(diff)
+            
+    return output
