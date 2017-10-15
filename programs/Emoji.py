@@ -5,13 +5,13 @@ def emoji_text(m):
 	final = ""
 	for letter in m:
 		if letter.isalpha():
-			final += ":regional_indicator_{}: ".format(letter)
+			final += ":regional_indicator_{}: ".format(letter.lower())
 		elif letter.isdigit():
 			final += num_emoji[int(letter)]
 		elif letter == "!":
 			final += ":exclamation: "
 		elif letter == " ":
-			final += " "
+			final += "    "
 		else:
 			final += ":question: "
 
