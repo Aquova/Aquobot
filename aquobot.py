@@ -233,10 +233,14 @@ async def on_message(message):
                     q = remove_command(message.content)
                     # Check to see if the first character is a valid Brainfuck symbol
                     # It's not the best solution, but it'll do.
-                    if (q[0] in '+-[]><.'):
-                        out = BF.decode(q)
-                    else:
-                        out = BF.encode(q)
+                    try:
+                        with async_timeout.timeout(5):
+                            if (q[0] in '+-[]><.'):
+                                out = BF.decode(q)
+                            else:
+                                out = BF.encode(q)
+                    except Exception as e:
+                        out = "Tell Aquova this:\n{}".format(e)
 
             # Database of user birthdays. Will notify server if user's birthday on list is that day
             elif message.content.startswith('!birthday'):
