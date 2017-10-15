@@ -18,7 +18,7 @@ import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, ti
 
 # Python programs I wrote, in ./programs
 import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji, Help
-import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo#, Weather2
+import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo, BF#, Weather2
 
 # Handles logging to discord.log
 logger = logging.getLogger('discord')
@@ -225,6 +225,18 @@ async def on_message(message):
                     out = '!bemoji PHRASE'
                 else:
                     out = Emoji.b_words(remove_command(message.content))
+
+            elif (message.content.startswith('!brainfuck') or message.content.startswith('!bf')):
+                if len(message.content) == 1:
+                    out = '!brainfuck CODE'
+                else:
+                    q = remove_command(message.content)
+                    # Check to see if the first character is a valid Brainfuck symbol
+                    # It's not the best solution, but it'll do.
+                    if (q[0] in '+-[]><.'):
+                        out = BF.decode(q)
+                    else:
+                        out = BF.encode(q)
 
             # Database of user birthdays. Will notify server if user's birthday on list is that day
             elif message.content.startswith('!birthday'):
