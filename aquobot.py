@@ -17,7 +17,7 @@ import lxml.etree as ET
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, time
 
 # Python programs I wrote, in ./programs
-import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji, Help
+import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji, Help, Quotes
 import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo, BF#, Weather2
 
 # Handles logging to discord.log
@@ -126,6 +126,9 @@ async def on_reaction_add(reaction, user):
         user_name = reaction.message.author.name
         user_id = reaction.message.author.id
         mes = reaction.message.content
+        if reaction.message.attachments != []:
+            for item in reaction.message.attachments:    
+                mes += '\n' + item['url']
         server_id = reaction.message.server.id
         if mes != "":
             mes_id = int(reaction.message.id)
@@ -685,48 +688,7 @@ async def on_message(message):
 
             # Users can add quotes to a database, and recall a random one
             elif message.content.startswith('!quote'):
-                sqlconn = sqlite3.connect('database.db')
-                mes_server = message.server.id
-                if message.content == '!quote':
-                    try:
-                        valid = sqlconn.execute("SELECT quote FROM quotes WHERE serverid=?", [mes_server])
-                        quotes = valid.fetchall()
-                        quote = random.choice(quotes)
-                        rand_username = sqlconn.execute("SELECT username FROM quotes WHERE quote=?", [quote[0]])
-                        username = rand_username.fetchone()[0]
-                        rand_num = sqlconn.execute("SELECT num FROM quotes WHERE quote=?", [quote[0]])
-                        num = rand_num.fetchone()[0]
-                        out = 'From {0}: "{1}" (#{2})'.format(username, quote[0], str(num))
-                    except TypeError:
-                        out = "This server has no quotes in the database. React to a message with :speech_balloon: to add quotes."
-                elif len(message.content.split(" ")) == 2:
-                    try:
-                        num = int(remove_command(message.content))
-                        fetched_quote = sqlconn.execute("SELECT quote FROM quotes WHERE num=?", [num])
-                        fetched_username = sqlconn.execute("SELECT username FROM quotes WHERE num=?", [num])
-                        quote = fetched_quote.fetchone()[0]
-                        username = fetched_username.fetchone()[0]
-                        if quote != None:
-                            out = 'From {0}: "{1}" (#{2})'.format(username, quote, str(num))
-                        else:
-                            out = "There is no quote of that number"
-                    except ValueError:
-                        out = "That is not a number. Please try again"
-                    except TypeError:
-                        out = "There is no quote of that number"
-                elif message.content.startswith('!quote remove'):
-                    try:
-                        num = int(message.content[14:])
-                        check_exists = sqlconn.execute("SELECT messageid FROM quotes WHERE num=?", [num])
-                        check_exists = check_exists.fetchone()[0]
-                        sqlconn.execute("INSERT OR REPLACE INTO quotes (num, quote, username, userid, messageid, serverid) VALUES (?, NULL, NULL, NULL, NULL, NULL)", [num])
-                        out = "Item {} removed".format(num)
-                    except ValueError:
-                        out = "That is not a number. Please specify the quote ID number you wish to remove."
-                    except TypeError:
-                        out = "There is no ID of that number."    
-                sqlconn.commit()
-                sqlconn.close()
+                out = Quotes.main(message)
                 
             # Convert number into/out of roman numerals
             elif message.content.startswith('!roman'):
