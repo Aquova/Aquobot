@@ -17,7 +17,7 @@ import lxml.etree as ET
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, time
 
 # Python programs I wrote, in ./programs
-import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji, Help, Quotes
+import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji, Help, Quotes, MAL
 import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo, BF#, Weather2
 
 # Handles logging to discord.log
@@ -69,40 +69,6 @@ def remove_command(m):
     tmp = m.split(" ")[1:]
     return " ".join(tmp)
 
-async def check_birthday():
-    sqlconn = sqlite3.connect('database.db')
-    birthdays = sqlconn.execute("SELECT * FROM birthday").fetchall()
-
-    d = datetime.date.today()
-    month = d.month
-    day = d.day
-    bday_names = []
-    bday_ids = []
-    if birthdays != None:
-        for i in range(0, len(birthdays)):
-            try:
-                if (month == int(birthdays[i][2]) and day == int(birthdays[i][3])):
-                    bday_names.append(birthdays[i][1])
-                    bday_ids.append(birthdays[i][0])
-            except ValueError as e:
-                print("Error handled: " + e)
-                pass
-    else:
-        print("birthdays is null apparently")
-
-    # Oh dear.
-    if bday_ids != []:
-        for j in range(0, len(bday_ids)):
-            for server in client.servers:
-                ids = [x.id for x in server.members]
-                if str(bday_ids[j]) in ids:
-                    mess = "Today is {}'s birthday! Everybody wish them a happy birthday! :birthday:".format(bday_names[j])
-                    print(mess)
-                    await client.send_message(server.default_channel, mess)
-
-    sqlconn.commit()
-    sqlconn.close()
-
 # Upon bot starting up
 @client.event
 async def on_ready():
@@ -116,7 +82,7 @@ async def on_ready():
 
     while True:
         print("Checking birthday")
-        await check_birthday()
+        await Birthday.check_birthday()
         print("Done checking, now sleeping.")
         await asyncio.sleep(86400) # Sleep for 24 hours
 
@@ -243,7 +209,7 @@ async def on_message(message):
 
             # Database of user birthdays. Will notify server if user's birthday on list is that day
             elif message.content.startswith('!birthday'):
-                out = Birthday.main(message.content, message.author.name, message.author.id, message.server.id, message.server.members)
+                out = Birthday.main(message)
 
             elif message.content.startswith('!blackjack'):
                 if message.content == '!blackjack rules':
@@ -594,39 +560,7 @@ async def on_message(message):
                 out = Morse.main(parse)
 
             elif (message.content.startswith('!myanimelist') or message.content.startswith('!mal')):
-                sqlconn = sqlite3.connect('database.db')
-                if len(message.content.split(" ")) == 1:
-                    userinfo = sqlconn.execute("SELECT username FROM anime WHERE userid=?", [message.author.id,])
-                    try:
-                        q = userinfo.fetchone()[0]
-                        url = "https://myanimelist.net/profile/" + q
-                        r = requests.get(url)
-                        if r.status_code != 404:
-                            out = "Here's your account! ~~You weeb~~" + '\n' + url
-                        else:
-                            out = "No user found by that name"
-                    except TypeError:
-                        out = "!mal [set] USERNAME"
-                elif message.content.split(" ")[1].upper() == "SET":
-                    username = " ".join(message.content.split(" ")[2:])
-                    url = "https://myanimelist.net/profile/" + username
-                    r = requests.get(url)
-                    if r.status_code != 404:
-                        params = [message.author.id, username]
-                        sqlconn.execute("INSERT OR REPLACE INTO anime (userid, username) VALUES (?, ?)", params)
-                        out = "You too huh? :flag_jp:"
-                    else:
-                        out = "No user found by that name, did you misspell it?"
-                else:
-                    q = remove_command(message.content)
-                    url = "https://myanimelist.net/profile/" + q
-                    r = requests.get(url)
-                    if r.status_code != 404:
-                        out = "Here's your account you weeaboo trash!" + '\n' + url
-                    else:
-                        out = "No user found by that name"
-                sqlconn.commit()
-                sqlconn.close()
+                out = MAL.main(message)                
 
             elif message.content.startswith('!nick'):
                 new = remove_command(message.content)
