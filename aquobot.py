@@ -10,10 +10,11 @@ Requires Python 3.5+ to run
 import sys
 sys.path.insert(0, './programs')
 
-import discord, wolframalpha, requests, aiohttp, async_timeout, signal
+import discord
 from googletrans import Translator
 from google import google
 import lxml.etree as ET
+import requests, aiohttp, async_timeout, signal, wolframalpha
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, time
 
 # Python programs I wrote, in ./programs

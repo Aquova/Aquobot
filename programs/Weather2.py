@@ -24,8 +24,10 @@ class weather:
 
     self.time = self.data['lastBuildDate']
     self.location = self.data['description'][19:]
+    self.loc = self.data['title'][-2:]
     self.status = self.data['item']['condition']['text']
     self.temp_F = self.data['item']['condition']['temp']
+    self.weather_code = self.data['item']['condition']['code']
     self.temp_C = F2C(self.temp_F)
     self.wind_chill_F = self.data['wind']['chill']
     self.wind_chill_C = F2C(self.wind_chill_F)
@@ -35,8 +37,6 @@ class weather:
     self.wind_speed_ms = mph2ms(self.wind_speed_mph)
     self.sunrise = self.data['astronomy']['sunrise']
     self.sunset = self.data['astronomy']['sunset']
-
-    
 
     def get_woeid(place):
         client = yweather.Client()
@@ -102,19 +102,13 @@ class weather:
     return out
 
 
-def emoji_weather(place):
-    data = get_data(place)
-    loc = data['title'][-2:]
-    flag_emoji = ":flag_{}:".format(loc.lower())
-    weather = data['item']['condition']['code']
-    out = flag_emoji + " " + weather_emoji[int(weather)]
+def emoji_weather(weather_obj):
+    flag_emoji = ":flag_{}:".format(weather_obj.loc.lower())
+    out = flag_emoji + " " + weather_emoji[int(weather_obj.weather_code)]
     return out
 
-def emoji_forecast(place):
-    data = get_data(place)
-    loc = data['title'][-2:]
-    week = data['item']['forecast']
-    out = ":flag_{}:".format(loc.lower()) + '\n'
+def emoji_forecast(weather_obj):
+    out = ":flag_{}:".format(weather_obj.loc.lower()) + '\n'
     for i in range(7):
         value = int(week[i]['code'])
         condition = weather_emoji[value]
