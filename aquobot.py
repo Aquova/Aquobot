@@ -79,11 +79,11 @@ async def on_ready():
     print('------')
 
     game_object = discord.Game(name="type !help", type=0)
-    await client.change_presence(game=game_object)    
+    await client.change_presence(game=game_object)
 
     while True:
         print("Checking birthday")
-        await Birthday.check_birthday()
+        await Birthday.check_birthday(client)
         print("Done checking, now sleeping.")
         await asyncio.sleep(86400) # Sleep for 24 hours
 
@@ -94,7 +94,7 @@ async def on_reaction_add(reaction, user):
         user_id = reaction.message.author.id
         mes = reaction.message.content
         if reaction.message.attachments != []:
-            for item in reaction.message.attachments:    
+            for item in reaction.message.attachments:
                 mes += '\n' + item['url']
         server_id = reaction.message.server.id
         if mes != "":
@@ -152,7 +152,7 @@ async def on_message(message):
             # Updates bot to most recent version
             elif message.content.startswith("!update"):
                 if (message.author.id == cfg['Users']['eemie'] or message.author.id == cfg['Users']['aquova']):
-                    await client.send_message(message.channel, "Rebooting and updating...") 
+                    await client.send_message(message.channel, "Rebooting and updating...")
                     subprocess.call("./update.sh", shell=True)
                     sys.exit()
 
@@ -234,7 +234,7 @@ async def on_message(message):
                     dealer.append(deck.pop())
                     dealer.append(deck.pop())
                     await client.send_message(message.channel, "Okay {}, you've drawn a {} and {}, for a total of {}".format(message.author.name, player[0], player[1], hand_value(player)))
-                    
+
                     if hand_value(player) == 21:
                         user_money += 150
                         await client.send_message(message.channel, "{}: Blackjack!! You win! You now have {} points!".format(message.author.name, user_money))
@@ -371,7 +371,7 @@ async def on_message(message):
 
             # Repeats back user message
             elif message.content.startswith('!echo'):
-                out = remove_command(message.content)   
+                out = remove_command(message.content)
 
             elif message.content.startswith('!emoji'):
                 if message.content == '!emoji':
@@ -404,7 +404,7 @@ async def on_message(message):
                     mes = remove_command(message.content)
                     fb = "A message from {0} for you sir: '{1}' (User ID: {2}) (Server ID {3}) (Channel ID {4})".format(username, mes, userid, userserver, userchannel)
                     await client.send_message(feedback_channel, fb)
-                    out = "Message sent" 
+                    out = "Message sent"
 
             # Tells a 7 day forecast based on user or location. Uses same database as weather
             elif (message.content.startswith('!forecast') or message.content.startswith('!f')):
@@ -481,9 +481,9 @@ async def on_message(message):
                     out = "!img QUERY"
                 else:
                     q = remove_command(message.content)
-                    params = {'q': q, 
-                        'safe': 'on', 
-                        'lr': 'lang_en', 
+                    params = {'q': q,
+                        'safe': 'on',
+                        'lr': 'lang_en',
                         'hl': 'en',
                         'tbm': 'isch'
                     }
@@ -526,7 +526,7 @@ async def on_message(message):
 
                 r = requests.get(love_url, headers=headers)
                 results = json.loads(r.text)
-                out = "{} and {} are {}% compatible. {}".format(name_a, name_b, results['percentage'], results['result'])  
+                out = "{} and {} are {}% compatible. {}".format(name_a, name_b, results['percentage'], results['result'])
 
             elif message.content.startswith('!mathfact'):
                 if message.content == '!mathfact':
@@ -545,7 +545,7 @@ async def on_message(message):
                         results = json.loads(r.text)
                         out = "{} is {}".format(num, results['text'])
                     except TypeError:
-                        out = "That is not a number, please try again."      
+                        out = "That is not a number, please try again."
 
             # Converts time into the Mayan calendar, why not
             elif message.content.startswith('!mayan'):
@@ -561,7 +561,7 @@ async def on_message(message):
                 out = Morse.main(parse)
 
             elif (message.content.startswith('!myanimelist') or message.content.startswith('!mal')):
-                out = MAL.main(message)                
+                out = MAL.main(message)
 
             elif message.content.startswith('!nick'):
                 new = remove_command(message.content)
@@ -572,7 +572,7 @@ async def on_message(message):
                         await client.change_nickname(message.author, new)
                         out = "Your new nickname is {}".format(new)
                     except discord.errors.Forbidden:
-                        out = "Aquobot does not have privileges to change nicknames on this server, or it is lower on the role hierarchy than the user you want to rename." 
+                        out = "Aquobot does not have privileges to change nicknames on this server, or it is lower on the role hierarchy than the user you want to rename."
 
             # Pins most recent message of specified user
             elif message.content.startswith('!pin'):
@@ -624,7 +624,7 @@ async def on_message(message):
             # Users can add quotes to a database, and recall a random one
             elif message.content.startswith('!quote'):
                 out = Quotes.main(message)
-                
+
             # Convert number into/out of roman numerals
             elif message.content.startswith('!roman'):
                 parse = message.content.split(" ")
@@ -658,7 +658,7 @@ async def on_message(message):
                     black = list(set(wheel) - set(red + ['0', '00']))
                     dozen = [[str(c) for c in range(1,13)], [str(c) for c in range(13,25)], [str(c) for c in range(25,37)]]
                     half = [[str(c) for c in range(1,19)], [str(c) for c in range(19,37)]]
-                    
+
                     await client.send_message(message.channel, "Red: 1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36\nBlack: 2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35")
                     options = "Time to play roulette! Input the number you'd like to bet on:\n1. A single number\n2. 0 and 00\n3. Odds\n4. Evens (excludes 0 and 00)\n5. Reds\n6. Blacks\n7. A dozen\n8. Half"
                     await client.send_message(message.channel, options)
@@ -821,13 +821,13 @@ async def on_message(message):
                                 url = 'http://rottentomatoes.com' + result['movies'][0]['url']
                                 score = str(result['movies'][0]['meterScore']) + '%'
                                 tomato = result['movies'][0]['meterClass'].replace('_', ' ').title()
-                                
+
                                 embed = discord.Embed(title=result['movies'][0]['name'], type='rich', description=url)
                                 embed.add_field(name='Tomatometer', value=tomato)
                                 embed.add_field(name='Score', value=score)
                                 embed.add_field(name='Year Released', value=result['movies'][0]['year'])
                                 embed.set_thumbnail(url=result['movies'][0]['image'])
-                                
+
                                 await client.send_message(message.channel, embed=embed)
                             except IndexError:
                                 out = "No movie found with that name."
@@ -849,7 +849,7 @@ async def on_message(message):
                     for server in server_list:
                         out += '\n' + server.name
 
-            elif message.content.startswith('!serverinfo'):  
+            elif message.content.startswith('!serverinfo'):
                 server = message.server
                 name = server.name
                 serv_id = server.id
@@ -870,7 +870,7 @@ async def on_message(message):
                 embed.add_field(name='Number of Members', value=mem_count)
                 embed.add_field(name='Number of Channels', value=channel_count)
                 embed.add_field(name='Number of Roles', value=len(roles))
-                
+
                 await client.send_message(message.channel, embed=embed)
 
             elif message.content.startswith('!slots'):
@@ -1076,7 +1076,7 @@ async def on_message(message):
                     embed.add_field(name='Beep Boop?', value=mem.bot)
                     embed.add_field(name='Server Roles', value=roles)
                     embed.set_thumbnail(url=avatar)
-                    
+
                     await client.send_message(message.channel, embed=embed)
                 except AttributeError:
                     out = "There is no user by that name, please try again. (Usernames are case sensitive)."
@@ -1137,7 +1137,7 @@ async def on_message(message):
             elif message.content.startswith('!wiki'):
                 q = remove_command(message.content)
                 out = Wikipedia.main(q)
-                    
+
             # Returns with the weather of a specified location
             # Needs to be the last 'w' command
             elif (message.content.startswith('!weather') or message.content.startswith('!w')):
@@ -1249,14 +1249,14 @@ async def on_message(message):
 
             elif message.content.startswith('!jade'):
                 out = "http://i.imgur.com/vCDF2aO.png"
-                
+
             elif message.content.startswith('!lex'):
                 out = "https://i.imgur.com/yB8wssv.jpg"
 
             elif (message.content.upper() == 'AQUOBOT ATTACK MODE' or message.content.upper() == 'AQUOBOT, ATTACK MODE'):
                 if message.author.id == cfg['Users']['aquova']:
                     out = '`ENGAGING ATTACK MODE`\n`ATOMIC BATTERIES TO POWER. TURBINES TO SPEED.`\n`READY TO EXECUTE ATTACK VECTOR` :robot:'
-                
+
             if out != "":
                 await client.send_typing(message.channel)
 
