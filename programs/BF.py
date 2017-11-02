@@ -6,13 +6,19 @@ def decode(code):
     cellPointer = 0
     codePointer = 0
     output = ''
+    totalLoops = 0
 
     while codePointer < len(code):
+        totalLoops += 1
+        if totalLoops > 1000:
+            output = "Either your code takes a long time to process or it has an infinite loop. Either way, it's being terminated."
+            break
+
         if code[codePointer] == "+":
             cells[cellPointer] += 1
             if cells[cellPointer] > 255:
                 cells[cellPointer] = 0
-            
+
         elif code[codePointer] == "-":
             cells[cellPointer] -= 1
             if cells[cellPointer] < 0:
@@ -32,7 +38,7 @@ def decode(code):
             if code[codePointer] == 0:
                 openBraces = 1
                 # This finds the corresponding ending brace
-                # Accounts for nested loops 
+                # Accounts for nested loops
                 while openBraces > 0:
                     codePointer += 1
                     if code[codePointer] == '[':
@@ -73,5 +79,5 @@ def encode(code):
         else:
             diff = ord(code[i]) - ord(code[i - 1])
             output += ord2bf(diff)
-            
-    return output
+
+    return "```brainfuck\n{}\n```".format(output)
