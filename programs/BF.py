@@ -9,7 +9,7 @@ def decode(code):
 
     while codePointer < len(code):
         totalLoops += 1
-        if totalLoops > 1000:
+        if totalLoops > 10000:
             output = "Either your code takes a long time to process or it has an infinite loop. Either way, it's being terminated."
             break
 

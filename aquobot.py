@@ -138,7 +138,7 @@ async def on_message(message):
             # Updates bot to most recent version
             elif message.content.startswith("!update"):
                 if (message.author.id == cfg['Users']['eemie'] or message.author.id == cfg['Users']['aquova']):
-                    await client.send_message(message.channel, "Rebooting and updating...")
+                    await client.send_message(message.channel, "Restarting and updating...")
                     subprocess.call("./update.sh", shell=True)
                     sys.exit()
 
@@ -150,9 +150,7 @@ async def on_message(message):
 
             # Responds if active
             elif message.content.startswith('!alive'):
-                options = ['Nah.', 'Who wants to know?', ':robot: `yes`', "I wouldn't be responding if I were dead."]
-                if discord.Client.is_logged_in: # Is this really necessary?
-                    out = random.choice(options)
+                out = random.choice(['Nah.', 'Who wants to know?', ':robot: `yes`', "I wouldn't be responding if I were dead."])
 
             # Gives brief overview of the bot
             elif message.content.startswith('!about'):
