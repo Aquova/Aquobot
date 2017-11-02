@@ -1,6 +1,5 @@
 # This is a Brainfuck Interpreter, written for the Aquobot program
 # Written by Austin Bricker, 2017
-
 def decode(code):
     cells = [0]
     cellPointer = 0
@@ -64,20 +63,37 @@ def decode(code):
 
     return output
 
-def ord2bf(val):
-    divisor = 10 # The 'counting' factor
+divisor = 10 # The 'counting' factor
+
+def ord2bfPos(val):
     factor = val / divisor
     remainder = val % divisor
-    return ("+" * divisor) + '[>' + ("+" * int(factor)) + '<-]>' + ('+' * remainder) + '.'
+    if int(factor) != 0:
+        return ("+" * divisor) + '[>' + ("+" * int(factor)) + '<-]>' + ('+' * remainder) + '.'
+    else:
+        return ('+' * remainder) + '.'
 
+def ord2bfNeg(val):
+    factor = -val / divisor
+    remainder = -val % divisor
+    if int(factor) != 0:
+        return ("+" * divisor) + '[>' + ("-" * int(factor)) + '<-]>' + ('-' * remainder) + '.'
+    else:
+        return ('-' * remainder) + '.'
 
 def encode(code):
     output = ''
     for i in range(len(code)):
         if i == 0:
-            output += ord2bf(ord(code[i]))
+            output += ord2bfPos(ord(code[i]))
         else:
             diff = ord(code[i]) - ord(code[i - 1])
-            output += ord2bf(diff)
+            if abs(diff) > divisor:
+                output += '<'
+
+            if diff >= 0:
+                output += ord2bfPos(diff)
+            else:
+                output += ord2bfNeg(diff)
 
     return "```brainfuck\n{}\n```".format(output)

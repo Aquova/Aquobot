@@ -182,17 +182,17 @@ async def on_message(message):
                 else:
                     out = Emoji.b_words(remove_command(message.content))
 
-            # elif (message.content.startswith('!brainfuck') or message.content.startswith('!bf')):
-            #     if len(message.content.split(" ")) == 1:
-            #         out = '!brainfuck CODE'
-            #     else:
-            #         q = remove_command(message.content)
-            #         # Check to see if the first character is a valid Brainfuck symbol
-            #         # It's not the best solution, but it'll do.
-            #         if (q[0] in '+-[]><.'):
-            #             out = BF.decode(q)
-            #         else:
-            #             out = BF.encode(q)
+            elif (message.content.startswith('!brainfuck') or message.content.startswith('!bf')):
+                if len(message.content.split(" ")) == 1:
+                    out = '!brainfuck CODE'
+                else:
+                    q = remove_command(message.content)
+                    # Check to see if the first character is a valid Brainfuck symbol
+                    # It's not the best solution, but it'll do.
+                    if (q[0] in '+-[]><.'):
+                        out = BF.decode(q)
+                    else:
+                        out = BF.encode(q)
 
             # Database of user birthdays. Will notify server if user's birthday on list is that day
             elif message.content.startswith('!birthday'):
