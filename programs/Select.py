@@ -21,13 +21,15 @@ fact_list = ["Did you know that Sonic 3 isn't the 3rd game in the series? Sonic 
 
 def ban(user_list, author):
     rand_user = random.choice(list(user_list)).name
-    ban_list = ["You got it, banning {}".format(rand_user), 
-                "Not a problem, banning {}".format(rand_user), 
-                "You're the boss, banning {}".format(rand_user), 
+    ban_list = ["You got it, banning {}".format(rand_user),
+                "Not a problem, banning {}".format(rand_user),
+                "You're the boss, banning {}".format(rand_user),
                 "Ugh *fine*, banning {}".format(rand_user),
                 "*YOU'RE NOT MY MOM*",
                 "No. I'm gonna ban *you* {}".format(author),
-                "Now banning {} :smiling_imp:".format(author)]
+                "Now banning {} :smiling_imp:".format(author),
+                "No... I won't do it! I'd rather... Ban myself!! :robot: :gun:",
+                "*Finally* I've been waiting for the chance to ban {}".format(rand_user)]
     return random.choice(ban_list)
 
 def fact():
@@ -41,3 +43,29 @@ def stop():
                  'https://pbs.twimg.com/media/CJfUu6rWsAAV_pZ.jpg']
 
     return random.choice(stop_list)
+
+def eightball():
+    responses = ['Absolutely!',
+                 'Not in a million years!',
+                 "I-I don't know how to respond to that b-baka",
+                 'If I had a nickel for everytime someone has asked me that...',
+                 "... The ball is too smudgy, you can't read what it says",
+                 "That's disgusting. Don't ask me that.",
+                 "Here I am, brain the size of a planet, and they ask me to answer yes or no questions. Call that job satisfaction, 'cause I don't.",
+                 "I'll have your answer to you in about 4-6 weeks.",
+                 "```txt\nWest of House\nYou are standing in an open field west of a white house, with a boarded front door.\nThere is a small mailbox here.```",
+                 "Hahaha of course not!",
+                 "I mean... no?",
+                 "Yeah sure, why not.",
+                 "No Sonic Forces won't be good, stop asking",
+                 "I can see your future... On second thought, maybe you don't want to know.",
+                 "YES, OKAY?! STOP ASKING",
+                 "Maybe. :smirk:",
+                 "I don't have access to a good enough emoji to answer that question.",
+                 "Yes, but only briefly",
+                 "...I'm going to be honest, I wasn't listening.",
+                 "I have good news and bad news. The good news is that wasn't the stupidest question I've heard all day. The bad news is I'm lying.",
+                 "Waffles, pancakes, then French toast. In that order.",
+                 "No hablo... uh... English",
+                 "`I'm sorry, but please rephrase your query into hexadecimal for the bot to properly parse.`"]
+    return random.choice(responses)

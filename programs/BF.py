@@ -97,3 +97,7 @@ def encode(code):
                 output += ord2bfNeg(diff)
 
     return "```brainfuck\n{}\n```".format(output)
+
+if __name__ == '__main__':
+    word = input("Say a phrase: ")
+    print(encode(word))

@@ -142,6 +142,12 @@ async def on_message(message):
                     subprocess.call("./update.sh", shell=True)
                     sys.exit()
 
+            elif message.content.startswith('!8ball'):
+                if message.content == '!8ball':
+                    out = "You need to ask a question silly."
+                else:
+                    out = Select.eightball()
+
             # Responds if active
             elif message.content.startswith('!alive'):
                 options = ['Nah.', 'Who wants to know?', ':robot: `yes`', "I wouldn't be responding if I were dead."]
@@ -184,7 +190,7 @@ async def on_message(message):
 
             elif (message.content.startswith('!brainfuck') or message.content.startswith('!bf')):
                 if len(message.content.split(" ")) == 1:
-                    out = '!brainfuck CODE'
+                    out = '!brainfuck CODE\nInfo on the language: <https://learnxinyminutes.com/docs/brainfuck/>'
                 else:
                     q = remove_command(message.content)
                     # Check to see if the first character is a valid Brainfuck symbol
@@ -221,7 +227,7 @@ async def on_message(message):
                         if q.upper() in months:
                             out = "```bash" + '\n' + subprocess.run(['cal', '-hm', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
                         else:
-                            out = '!cal MONTH'
+                            out = "Usage: !cal"
                 else:
                     out = "Usage: !cal"
 

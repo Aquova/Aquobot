@@ -1,9 +1,12 @@
 info = {
+	'8ball':['!8ball', 'Gives a Magic 8-Ball response to a question', ''],
 	'about':['!about', 'Aquobot gives a basic description of itself', ''],
 	'alive':['!alive', 'Simply asks the bot to respond if active', ''],
 	'apod':['!apod [YYYY-MM-DD]', "Gets an image from NASA's 'Astronomy Picture of the Day' site", ''],
 	'birthday':['!birthday [set] MONTH DAY', 'Look up or add birthdays to the database', 'List birthdays with "!birthday list"'],
 	'blackjack':['!blackjack', 'Play blackjack with the computer!', 'See how many points you have with "!points"'],
+    'brainfuck':['!brainfuck', 'Convert messages into/out of the Brainfuck programming language', 'Also works with !bf'],
+    'bf':['!bf', 'Convert messages into/out of the Brainfuck programming language', 'Also works with !brainfuck'],
 	'cal':['!cal', 'Prints out the calendar for the month', ''],
 	'choose':['!choose OPTION1, OPTION2, OPTION3, ...', 'Picks between a list of options, separated by commas', ''],
 	'deletethis':['!deltethis', 'Posts the .gif of Eggman holding the "delete this" sign', 'Also works with "!dt"'],
@@ -65,7 +68,7 @@ info = {
 	'youtube':['!youtube QUERY', 'Provides the YouTube link to the first result of the search phrase', 'Also works with "!yt"'],
 	'yt':['!yt QUERY', 'Provides the YouTube link to the first result of the search phrase', 'Also works with "!youtube"']
 }
-		
+
 def main(m):
 	if m in list(info.keys()):
 		output = "Syntax: `{}`\n{}".format(info[m][0], info[m][1])
