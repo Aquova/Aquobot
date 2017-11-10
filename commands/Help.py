@@ -44,6 +44,7 @@ info = {
 	'scrabble':['!scrabble WORD', 'Calculates how many Scrabble points a word is worth', ''],
 	'servers':['!servers', 'Lists the number of servers Aquobot is currently serving', ''],
 	'serverinfo':['!serverinfo', 'Gives information on the current server', ''],
+	'speedrun':['!speedrun GAME', 'Gives information about a game on speedrun.com', ''],
 	'spellcheck':['!spellcheck', 'Attempts to find any misspelled words in a sentence', ''],
 	'slots':['!slots', 'Try your hand at a the slot machine!', 'You can see how many points you have with "!points"'],
 	'steam':['!steam STEAM-USERNAME', 'Gives stats of a given Steam account', ''],
