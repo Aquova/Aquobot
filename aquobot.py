@@ -8,7 +8,7 @@ Requires Python 3.5+ to run
 """
 
 import sys
-sys.path.insert(0, './programs')
+sys.path.insert(0, './commands')
 
 import discord
 from googletrans import Translator
@@ -17,8 +17,8 @@ import lxml.etree as ET
 import requests, aiohttp, async_timeout, signal, wolframalpha
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, time
 
-# Python programs I wrote, in ./programs
-import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji, Help, Quotes, MAL, Blackjack
+# Python programs I wrote, in ./commands
+import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji, Help, Quotes, MAL, Blackjack, Speedrun
 import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo, BF, Roulette #, Weather2
 
 # Logs to discord.log
@@ -286,7 +286,7 @@ async def on_message(message):
                     if valid == 'ERROR':
                         out = 'That phrase used an invalid character. Please try again.'
                     else:
-                        await client.send_file(message.channel, fp='./programs/ecco.png')
+                        await client.send_file(message.channel, fp='./commands/ecco.png')
 
             # Repeats back user message
             elif message.content.startswith('!echo'):
@@ -655,6 +655,13 @@ async def on_message(message):
 
                 sqlconn.commit()
                 sqlconn.close()
+
+            elif message.content.startswith('!speedrun'):
+                q = remove_command(message.content)
+                # if q.split(' ')[0].upper() == 'USER':
+                #     Speedrun.user(remove_command(q))
+                # else:
+                await Speedrun.game(q, client, message)
 
             elif message.content.startswith('!spellcheck'):
                 q = remove_command(message.content).replace(" ","+")
