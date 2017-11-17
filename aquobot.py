@@ -656,7 +656,7 @@ async def on_message(message):
             elif message.content.startswith('!speedrun'):
                 q = remove_command(message.content)
                 if q.split(' ')[0].upper() == 'USER':
-                    await Speedrun.user(remove_command(q))
+                    await Speedrun.user(remove_command(q), client, message)
                 else:
                     await Speedrun.game(q, client, message)
 

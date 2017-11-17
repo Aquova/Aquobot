@@ -4,6 +4,7 @@ class User:
     def __init__(self, url):
         result = urllib.request.urlopen(url).read().decode('utf8')
         data = json.loads(result)
+        self.url = data['data']['weblink']
         self.username = data['data']['names']['international']
         self.id = data['data']['id']
         self.location = data['data']['location']['country']['names']['international']
@@ -13,9 +14,9 @@ class User:
         PB_result = urllib.request.urlopen(PB_url).read().decode('utf8')
         PB_data = json.loads(PB_result)
         self.places = [x['place'] for x in PB_data['data']]
-        self.games = [x['game']['run'] for x in PB_data['data']]
-        self.category = [x['category']['run'] for x in PB_data['data']]
-        self.times = [x['primary_t']['run']['times'] for x in PB_data['data']]
+        self.games = [x['run']['game'] for x in PB_data['data']]
+        self.category = [x['run']['category'] for x in PB_data['data']]
+        self.times = [x['run']['times']['primary_t'] for x in PB_data['data']]
 
 def getTime(time):
     hours = int(time // 3600)
@@ -74,18 +75,18 @@ async def user(q, client, message):
         currentUser = User(user_url)
         currentUser.getPBs()
 
-        embed = discord.Embed(title=currentUser.username, type='rich', description=user_url)
+        embed = discord.Embed(title=currentUser.username, type='rich', description=currentUser.url)
         embed.add_field(name='Location', value=currentUser.location)
         embed.add_field(name='Total # of Records', value=len(currentUser.places))
 
         for i in range(0, len(currentUser.places)):
             result = urllib.request.urlopen('https://www.speedrun.com/api/v1/games/' + currentUser.games[i]).read().decode('utf8')
-            name = json.loads(result)['data'][0]['names']['international']
+            name = json.loads(result)['data']['names']['international']
 
-            cat_result = urllib.request.urlopen('https://www.speedrun.com/api/v1/categories/' + currentUser.categories[i]).read().decode('utf8')
+            cat_result = urllib.request.urlopen('https://www.speedrun.com/api/v1/categories/' + currentUser.category[i]).read().decode('utf8')
             cat = json.loads(cat_result)['data']['name']
 
-            embed.add_fild(name=name, value="{}\nRank: {} - {}".format(cat, currentUser.places[i], getTime(currentUser.times[i])))
+            embed.add_field(name=name, value="{}\nRank: {} - {}".format(cat, currentUser.places[i], getTime(currentUser.times[i])))
 
         await client.send_message(message.channel, embed=embed)
 
