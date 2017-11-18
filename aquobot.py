@@ -412,7 +412,7 @@ async def on_message(message):
                         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:54.0) Gecko/20100101 Firefox/54.0'
                     }
 
-                    resp = requests.get('https://google.com/search', params=params, headers=headers)
+                    resp = requests.get('https://google.com/search', params=params, headers=headers, timeout=5)
                     if resp.status_code == 200:
                         soup = BeautifulSoup(resp.text)
                         test_div = soup.findAll("div", {"class": "rg_meta notranslate"})[0].get_text()
