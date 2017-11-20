@@ -121,7 +121,7 @@ async def on_server_join(server):
 async def on_server_remove(server):
     serv_name = server.name
     serv_id = server.id
-    await client.send_message(cfg['Servers']['general'], "Aquobot has been removed from {0} (ID {1}). How rude.".format(serv_name, serv_id))
+    await client.send_message(client.get_channel(cfg['Servers']['general']), "Aquobot has been removed from {0} (ID {1}). How rude.".format(serv_name, serv_id))
 
 # Upon typed message in chat
 @client.event
