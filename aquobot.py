@@ -13,9 +13,9 @@ sys.path.insert(0, './commands')
 import discord
 from googletrans import Translator
 from google import google
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
 import lxml.etree as ET
-import requests, aiohttp, signal, wolframalpha
+import requests, aiohttp, signal, wolframalpha, async_timeout
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, time
 
 # Python programs I wrote, in ./commands
@@ -412,19 +412,34 @@ async def on_message(message):
                         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:54.0) Gecko/20100101 Firefox/54.0'
                     }
 
-                    try:
-                        resp = requests.get('https://google.com/search', params=params, headers=headers, timeout=5)
-                        if resp.status_code == 200:
-                            soup = BeautifulSoup(resp.text)
-                            test_div = soup.findAll("div", {"class": "rg_meta notranslate"})[0].get_text()
-                            foo = json.loads(test_div)
-                            out = foo['ou']
-                        else:
-                            out = "Google is unavailable I guess?\nError: {}".format(resp.response)
-                    except IndexError:
-                        out = "The author wasn't sure what to put here. You should ping him and tell him what you searched so he can make the error message better."
-                    except:
-                        out = "The search timed out. (I think.)"
+                    async with aiohttp.ClientSession() as session:
+                        try:
+                            with async_timeout.timeout(5):
+                                async with session.get('https://google.com/search', params=params, headers=headers) as resp:
+                                    if resp.status == 200:
+                                        root = ET.fromstring(await resp.text(), ET.HTMLParser())
+                                        foo = root.xpath(".//div[@class='rg_meta notranslate']")[0].text
+                                        result = json.loads(foo)
+                                        out = result['ou']
+                                    else:
+                                        out = "Google is unavailable I guess?\nError: {}".format(resp.response)
+                        except Exception as e:
+                            out = "Timeout error {}".format(e)
+
+                    # Using Beautiful soup might be nicer, but also doesn't work
+                    # try:
+                    #     resp = requests.get('https://google.com/search', params=params, headers=headers, timeout=5)
+                    #     if resp.status_code == 200:
+                    #         soup = BeautifulSoup(resp.text)
+                    #         test_div = soup.findAll("div", {"class": "rg_meta notranslate"})[0].get_text()
+                    #         foo = json.loads(test_div)
+                    #         out = foo['ou']
+                    #     else:
+                    #         out = "Google is unavailable I guess?\nError: {}".format(resp.response)
+                    # except IndexError:
+                    #     out = "The author wasn't sure what to put here. You should ping him and tell him what you searched so he can make the error message better."
+                    # except:
+                    #     out = "The search timed out. (I think.)"
 
             # Tells a joke from a pre-programmed list
             elif message.content.startswith('!joke'):
