@@ -20,7 +20,7 @@ import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, ti
 
 # Python programs I wrote, in ./commands
 import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji, Help, Quotes, MAL, Blackjack, Speedrun
-import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo, BF, Roulette #, Weather2
+import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo, BF, Roulette, ACPC #, Weather2
 
 # Logs to discord.log
 logger = logging.getLogger('discord')
@@ -48,6 +48,7 @@ sqlconn.execute("CREATE TABLE IF NOT EXISTS days (userid INT PRIMARY KEY, last T
 sqlconn.execute("CREATE TABLE IF NOT EXISTS whatpulse (userid INT PRIMARY KEY, username TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS anime (userid INT PRIMARY KEY, username TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS points (userid INT PRIMARY KEY, value INT);")
+sqlconn.execute("CREATE TABLE IF NOT EXISTS acpc (userid INT PRIMARY KEY, code TEXT);")
 sqlconn.commit()
 sqlconn.close()
 
@@ -152,6 +153,9 @@ async def on_message(message):
             # Responds if active
             elif message.content.startswith('!alive'):
                 out = random.choice(['Nah.', 'Who wants to know?', ':robot: `yes`', "I wouldn't be responding if I were dead."])
+
+            elif message.content.startswith('!acpc'):
+                await ACPC.main(client, message)
 
             # Gives brief overview of the bot
             elif message.content.startswith('!about'):
@@ -425,21 +429,6 @@ async def on_message(message):
                                         out = "Google is unavailable I guess?\nError: {}".format(resp.response)
                         except Exception as e:
                             out = "Timeout error {}".format(e)
-
-                    # Using Beautiful soup might be nicer, but also doesn't work
-                    # try:
-                    #     resp = requests.get('https://google.com/search', params=params, headers=headers, timeout=5)
-                    #     if resp.status_code == 200:
-                    #         soup = BeautifulSoup(resp.text)
-                    #         test_div = soup.findAll("div", {"class": "rg_meta notranslate"})[0].get_text()
-                    #         foo = json.loads(test_div)
-                    #         out = foo['ou']
-                    #     else:
-                    #         out = "Google is unavailable I guess?\nError: {}".format(resp.response)
-                    # except IndexError:
-                    #     out = "The author wasn't sure what to put here. You should ping him and tell him what you searched so he can make the error message better."
-                    # except:
-                    #     out = "The search timed out. (I think.)"
 
             # Tells a joke from a pre-programmed list
             elif message.content.startswith('!joke'):

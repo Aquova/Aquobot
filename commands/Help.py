@@ -1,6 +1,7 @@
 info = {
 	'8ball':['!8ball', 'Gives a Magic 8-Ball response to a question', ''],
 	'about':['!about', 'Aquobot gives a basic description of itself', ''],
+    'acpc':['!acpc [SET] [USERNAME]', 'Store your Animal Crossing Pocket Camp code', ''],
 	'alive':['!alive', 'Simply asks the bot to respond if active', ''],
 	'apod':['!apod [YYYY-MM-DD]', "Gets an image from NASA's 'Astronomy Picture of the Day' site", ''],
 	'birthday':['!birthday [set] MONTH DAY', 'Look up or add birthdays to the database', 'List birthdays with "!birthday list"'],
