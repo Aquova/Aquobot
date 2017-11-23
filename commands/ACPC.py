@@ -15,11 +15,11 @@ async def main(client, message):
         out = "Friend code added."
     else:
         q = " ".join(m.content.split(" ")[1:])
-        member = discord.utils.get(message.server.members, name=q)
-        code = sqlconn.execute("SELECT code FROM acpc WHERE username=?", [member.id])
         try:
-            out = birth_month.fetchone()[0]
-        except TypeError:
+            member = discord.utils.get(message.server.members, name=q)
+            code = sqlconn.execute("SELECT code FROM acpc WHERE username=?", [member.id])
+            out = 'Their code is: ' + birth_month.fetchone()[0]
+        except:
             out = "Error: No code for that user (searches are case sensitive)."
     sqlconn.commit()
     sqlconn.close()
