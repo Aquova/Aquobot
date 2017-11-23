@@ -19,7 +19,8 @@ async def main(client, message):
             member = discord.utils.get(message.server.members, name=q)
             code = sqlconn.execute("SELECT code FROM acpc WHERE username=?", [member.id])
             out = 'Their code is: ' + birth_month.fetchone()[0]
-        except:
+        except as e:
+            await client.send_message(message.channel, e)
             out = "Error: No code for that user (searches are case sensitive)."
     sqlconn.commit()
     sqlconn.close()
