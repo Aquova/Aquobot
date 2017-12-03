@@ -1,7 +1,6 @@
 info = {
 	'8ball':['!8ball', 'Gives a Magic 8-Ball response to a question', ''],
 	'about':['!about', 'Aquobot gives a basic description of itself', ''],
-    'acpc':['!acpc [SET] [USERNAME]', 'Store your Animal Crossing Pocket Camp code', ''],
 	'alive':['!alive', 'Simply asks the bot to respond if active', ''],
 	'apod':['!apod [YYYY-MM-DD]', "Gets an image from NASA's 'Astronomy Picture of the Day' site", ''],
 	'birthday':['!birthday [set] MONTH DAY', 'Look up or add birthdays to the database', 'List birthdays with "!birthday list"'],
@@ -29,7 +28,7 @@ info = {
 	'lc':['!lc NAME1 NAME2', 'Gives the compatibility of two people. Toally not bogus.', 'Can also be used with "!lovecalc"'],
 	'mathfact':['!mathfact INTEGER', 'Gives mathematical facts about a number', ''],
 	'mayan':['!mayan MM-DD-YYYY', 'Converts the date into the Mayan Long Count', ''],
-	'morse':['!morse ENCODE/DECODE MESSAGE', 'Converts message into or out of morse code', ''],
+	'morse':['!morse MESSAGE', 'Converts message into or out of morse code', ''],
 	'myanimelist':['!myanimelist [set] USERNAME', 'Shows the MyAnimeList profile of the given user', 'Also works with "!mal"'],
 	'mal':['!mal [set] USERNAME', 'Shows the MyAnimeList profile of the given user', 'Also works with "!myanimelist"'],
 	'nick':['!nick NEW_USERNAME', 'Gives your account the new nickname specified. (Basically the same as /nick but works on mobile)', "Aquobot's role needs to be higher than the user being edited. Due to this, this function can't work for server owners."],

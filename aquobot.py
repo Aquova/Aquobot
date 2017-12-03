@@ -48,7 +48,6 @@ sqlconn.execute("CREATE TABLE IF NOT EXISTS days (userid INT PRIMARY KEY, last T
 sqlconn.execute("CREATE TABLE IF NOT EXISTS whatpulse (userid INT PRIMARY KEY, username TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS anime (userid INT PRIMARY KEY, username TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS points (userid INT PRIMARY KEY, value INT);")
-sqlconn.execute("CREATE TABLE IF NOT EXISTS acpc (userid INT PRIMARY KEY, code TEXT);")
 sqlconn.commit()
 sqlconn.close()
 
@@ -153,9 +152,6 @@ async def on_message(message):
             # Responds if active
             elif message.content.startswith('!alive'):
                 out = random.choice(['Nah.', 'Who wants to know?', ':robot: `yes`', "I wouldn't be responding if I were dead."])
-
-            elif message.content.startswith('!acpc'):
-                await ACPC.main(client, message)
 
             # Gives brief overview of the bot
             elif message.content.startswith('!about'):
