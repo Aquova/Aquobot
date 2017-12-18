@@ -423,8 +423,12 @@ async def on_message(message):
                                         out = result['ou']
                                     else:
                                         out = "Google is unavailable I guess?\nError: {}".format(resp.response)
+                        except IndexError:
+                            out = "No search results found at all. Did you search for something naughty?"
+                        except asyncio.TimeoutError:
+                            out = "Timeout error"
                         except Exception as e:
-                            out = "Timeout error {}".format(e)
+                            out = "An unusual error of type {} occurred".format(type(e).__name__)
 
             # Tells a joke from a pre-programmed list
             elif message.content.startswith('!joke'):
