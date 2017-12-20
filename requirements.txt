@@ -13,3 +13,4 @@ Pillow==4.3.0
 google_api_python_client==1.6.4
 discord==0.0.2
 protobuf==3.5.0.post1
+git+https://github.com/abenassi/Google-Search-API/
