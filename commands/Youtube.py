@@ -23,6 +23,6 @@ def search(phrase):
 			break
 	try:
 		url = youtube_url + video_id
-	except:
+	except Exception:
 		url = "No videos found with that search term."
 	return url

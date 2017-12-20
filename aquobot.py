@@ -100,11 +100,11 @@ async def on_reaction_add(reaction, user):
                 sqlconn.close()
                 out = 'Quote added from {0}: "{1}". (#{2})'.format(user_name, mes, str(num + 1))
                 await client.send_message(reaction.message.channel, out)
-    elif reaction.emoji == '📌':
+    elif (reaction.emoji == '📌' or reaction.emoji == '📍'):
         try:
             await client.pin_message(reaction.message)
         except discord.errors.HTTPException as e:
-            await client.send_message(reaction.message.channel, e)
+            await client.send_message(reaction.message.channel, e) # If max pin limit has been reached
 
 @client.event
 async def on_server_join(server):
@@ -138,10 +138,13 @@ async def on_message(message):
 
             # Updates bot to most recent version
             elif message.content.startswith("!update"):
-                if (message.author.id == cfg['Users']['eemie'] or message.author.id == cfg['Users']['aquova']):
-                    await client.send_message(message.channel, "Restarting and updating...")
-                    subprocess.call("./update.sh", shell=True)
-                    sys.exit()
+                try:
+                    if (message.author.id in cfg['Users']['admin'] or message.author.id == cfg['Users']['owner']):
+                        await client.send_message(message.channel, "Restarting and updating...")
+                        subprocess.call("./update.sh", shell=True)
+                        sys.exit()
+                except KeyError:
+                    out = "Need to update config.json with owner and admin User IDs"
 
             elif message.content.startswith('!8ball'):
                 if message.content == '!8ball':
@@ -166,18 +169,24 @@ async def on_message(message):
                     q = remove_command(message.content)
                     apod_url += '&date=' + q
 
-                r = requests.get(apod_url)
-                results = json.loads(r.text)
-                try:
-                    out = "{} | {}\n{}\n{}".format(results['title'], results['date'], results['hdurl'], results['explanation'])
-                except KeyError:
-                    if results['code'] == 400:
-                        out = "Usage: !apod [YYYY-MM-DD]\n{}".format(results['msg'])
-                    else:
-                        out = "I have no idea what happened. Contact Aquova#1296. Hurry."
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(apod_url) as resp:
+                        if resp.status == 200:
+                            results = await resp.json()
+                            try:
+                                if results['media_type'] == "image":
+                                    out = "{} | {}\n{}\n{}".format(results['title'], results['date'], results['hdurl'], results['explanation'])
+                                elif results['media_type'] =='video':
+                                    out = "{} | {}\n{}\n{}".format(results['title'], results['date'], results['explanation'], results['url'])
+                            except KeyError as e:
+                                try:
+                                    if results['code'] == 400:
+                                        out = "Usage: !apod [YYYY-MM-DD]\n{}".format(results['msg'])
+                                    else:
+                                        out = "I have no idea what happened. Contact Aquova#1296. Hurry."
+                                except KeyError:
+                                    out = "I have no idea what happened. Contact Aquova#1296. Hurry."
 
-            # Ban actually does nothing
-            # It picks a random user on the server and says it will ban them, but takes no action
             elif message.content.startswith('!ban'):
                 out = Select.ban(message.server.members, message.author.name)
 
@@ -192,8 +201,6 @@ async def on_message(message):
                     out = '!brainfuck CODE\nInfo on the language: <https://learnxinyminutes.com/docs/brainfuck/>'
                 else:
                     q = remove_command(message.content)
-                    # Check to see if the first character is a valid Brainfuck symbol
-                    # It's not the best solution, but it'll do.
                     if (q[0] in '+-[]><.'):
                         out = BF.decode(q)
                     else:
@@ -242,7 +249,7 @@ async def on_message(message):
             # This one is for me and eemie
             elif message.content.startswith('!days'):
                 if message.server.id == cfg['Servers']['Brickhouse']:
-                    if (message.author.id == cfg['Users']['eemie'] or message.author.id == cfg['Users']['aquova']):
+                    if (message.author.id in cfg['Users']['admin'] or message.author.id == cfg['Users']['owner']):
                         sqlconn = sqlite3.connect('database.db')
                         today = datetime.date.today()
                         if message.content == '!days reset':
@@ -305,7 +312,7 @@ async def on_message(message):
 
             # Presents feedback to a special feedback channel, which authorized users can respond to
             elif message.content.startswith('!feedback'):
-                if (message.author.id == cfg['Users']['aquova'] or message.author.id == cfg['Users']['eemie']):
+                if (message.author.id == cfg['Users']['owner'] or message.author.id in cfg['Users']['admin']):
                     if message.content == '!feedback':
                         out = '!feedback CHANNEL_ID MESSAGE'
                     else:
@@ -504,11 +511,14 @@ async def on_message(message):
                     out = '!pin @USERNAME'
                 else:
                     id = message.content.split(" ")[1]
-                    id = id[3:-1] # This is a terrible way to do this. You should fix this sometime.
+                    id = id[3:-1]
                     user = discord.utils.get(message.server.members, id=id)
                     async for pin in client.logs_from(message.channel, limit=100):
                         if (pin.author == user and pin.content != message.content):
-                            await client.pin_message(pin)
+                            try:
+                                await client.pin_message(pin)
+                            except discord.errors.HTTPException as e:
+                                await client.send_message(reaction.message.channel, e) # If max pin limit has been reached
                             break
 
             # Produces a poll where users can vote via reactions
@@ -613,7 +623,7 @@ async def on_message(message):
                 server_list = client.servers
                 server_num = str(len(server_list))
                 out = "I am currently a member of {} servers".format(server_num)
-                if (message.content == '!servers list' and (message.author.id == cfg['Users']['aquova'] or message.author.id == cfg['Users']['eemie'])):
+                if (message.content == '!servers list' and (message.author.id == cfg['Users']['owner'] or message.author.id in cfg['Users']['admin'])):
                     for server in server_list:
                         out += '\n' + server.name
 
@@ -682,9 +692,8 @@ async def on_message(message):
                 out = "Suggestion: {}".format(results['suggestion'])
 
             # Can change "now playing" game title
-            # Isn't currently working, for reasons unknown
             elif message.content.startswith('!status'):
-                if message.author.id == cfg['Users']['aquova']:
+                if message.author.id == cfg['Users']['owner']:
                     new_game = remove_command(message.content)
                     game_object = discord.Game(name=new_game)
                     await client.change_presence(game=game_object)
@@ -720,7 +729,7 @@ async def on_message(message):
 
             # Doesn't do anything right now, simply for testing
             elif message.content.startswith('!test'):
-                if message.author.id == cfg['Users']['aquova']:
+                if message.author.id == cfg['Users']['owner']:
                     out = 'Yeah, thats coo.'
                 else:
                     out = '*NO*'
@@ -1029,8 +1038,7 @@ async def on_message(message):
                 out = "https://i.imgur.com/yB8wssv.jpg"
 
             elif (message.content.upper() == 'AQUOBOT ATTACK MODE' or message.content.upper() == 'AQUOBOT, ATTACK MODE'):
-                if message.author.id == cfg['Users']['aquova']:
-                    out = '`ENGAGING ATTACK MODE`\n`ATOMIC BATTERIES TO POWER. TURBINES TO SPEED.`\n`READY TO EXECUTE ATTACK VECTOR` :robot:'
+                out = '`ENGAGING ATTACK MODE`\n`ATOMIC BATTERIES TO POWER. TURBINES TO SPEED.`\n`READY TO EXECUTE ATTACK VECTOR` :robot:'
 
             elif message.content.upper() == 'GNU TERRY PRATCHETT':
                 out = 'GNU Terry Pratchett'

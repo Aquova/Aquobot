@@ -1,8 +1,7 @@
-*config.json
+*.json
 *discord.log
 *.DS_Store
 *__pycache__
 *database.db
 *ecco.png
-*setup.py
 *.swp
