@@ -88,7 +88,7 @@ def encode(code):
             output += ord2bfPos(ord(code[i]))
         else:
             diff = ord(code[i]) - ord(code[i - 1])
-            if abs(diff) > divisor:
+            if abs(diff) >= divisor:
                 output += '<'
 
             if diff >= 0:
