@@ -225,21 +225,18 @@ async def on_message(message):
                         out = "```bash" + '\n' + subprocess.run(['cal'], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
                     else:
                         out = "```bash" + '\n' + subprocess.run(['cal', '-h'], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
-                elif len(message.content) == 2:
+                elif len(message.content.split(" ")) == 2:
                     try:
                         q = int(remove_command(message.content))
                         if 0 < q and q <= 12:
+                            q = str(q) # The cal command requires a string. This is kinda dumb, I know
                             if (platform.system() == "Darwin"):
                                 out = "```bash" + '\n' + subprocess.run(['cal', '-m', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
                             else:
                                 out = "```bash" + '\n' + subprocess.run(['cal', '-hm', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
-                        else:
-                            if (platform.system() == "Darwin"):
-                                out = "```bash" + '\n' + subprocess.run(['cal', '-y', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
-                            else:
-                                out = "```bash" + '\n' + subprocess.run(['cal', '-hy', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
-                    except TypeError:
+                    except ValueError:
                         months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
+                        q = remove_command(message.content)
                         if q.upper() in months:
                             if (platform.system() == "Darwin"):
                                 out = "```bash" + '\n' + subprocess.run(['cal', '-m', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"

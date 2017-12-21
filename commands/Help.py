@@ -7,7 +7,7 @@ info = {
 	'blackjack':['!blackjack', 'Play blackjack with the computer!', 'See how many points you have with "!points"'],
     'brainfuck':['!brainfuck', 'Convert messages into/out of the Brainfuck programming language', 'Also works with !bf'],
     'bf':['!bf', 'Convert messages into/out of the Brainfuck programming language', 'Also works with !brainfuck'],
-	'cal':['!cal', 'Prints out the calendar for the month', ''],
+	'cal':['!cal [MONTH]', 'Prints out the calendar for the month', ''],
 	'choose':['!choose OPTION1, OPTION2, OPTION3, ...', 'Picks between a list of options, separated by commas', ''],
 	'deletethis':['!deltethis', 'Posts the .gif of Eggman holding the "delete this" sign', 'Also works with "!dt"'],
 	'dt':['!dt', 'Posts the .gif of Eggman holding the "delete this" sign', 'Also works with "!deletethis"'],
