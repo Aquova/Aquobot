@@ -39,12 +39,9 @@ async def check_birthday(client):
 def main(m):
     sqlconn = sqlite3.connect('database.db')
     if m.content == '!birthday':
-        birth_month = sqlconn.execute("SELECT month FROM birthday WHERE id=?", [m.author.id])
-        birth_day = sqlconn.execute("SELECT day FROM birthday WHERE id=?", [m.author.id])
         try:
-            query_month = birth_month.fetchone()[0]
-            query_day = birth_day.fetchone()[0]
-            out = "Your birthday is {0} {1}".format(reverse[int(query_month)], query_day)
+            birth = sqlconn.execute("SELECT month, day FROM birthday WHERE id=?", [m.author.id]).fetchall()[0]
+            out = "Your birthday is {0} {1}".format(reverse[int(birth[0])], birth[1])
         except TypeError:
             out = "!birthday [set] MONTH DAY"
     elif m.content.startswith('!birthday set'):
@@ -71,21 +68,15 @@ def main(m):
         ids = [x.id for x in m.server.members]
         for user in birth_ids:
             if str(user[0]) in ids:
-                # Someday clean this up
-                birth_month = sqlconn.execute("SELECT month FROM birthday WHERE id=?", [user[0]]).fetchone()[0]
-                birth_day = sqlconn.execute("SELECT day FROM birthday WHERE id=?", [user[0]]).fetchone()[0]
-                birth_name = sqlconn.execute("SELECT name FROM birthday WHERE id=?", [user[0]]).fetchone()[0]
-                out += "{0}'s birthday is on {1} {2}\n".format(birth_name, reverse[int(birth_month)], birth_day)
+                birth = sqlconn.execute("SELECT month, day, name FROM birthday WHERE id=?", [user[0]]).fetchall()[0]
+                out += "{0}'s birthday is on {1} {2}\n".format(birth[2], reverse[int(birth[0])], birth[1])
         if out == "":
             out = "There are no birthdays entered for anyone on this server."
     else:
         q = " ".join(m.content.split(" ")[1:])
-        birth_month = sqlconn.execute("SELECT month FROM birthday WHERE name=?", [q])
-        birth_day = sqlconn.execute("SELECT day FROM birthday WHERE name=?", [q])
         try:
-            query_month = birth_month.fetchone()[0]
-            query_day = birth_day.fetchone()[0]
-            out = "Their birthday is {0} {1}".format(reverse[int(query_month)], query_day)
+            birth = sqlconn.execute("SELECT month, day FROM birthday WHERE name=?", [q]).fetchall()[0]
+            out = "Their birthday is {0} {1}".format(reverse[int(birth[0])], birth[1])
         except TypeError:
             out = "Error: No birthday for that user (searches are case sensitive)."
     sqlconn.commit()
