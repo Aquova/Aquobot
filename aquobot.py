@@ -218,20 +218,33 @@ async def on_message(message):
 
             # Prints out the calendar for the month
             elif message.content.startswith('!cal'):
+                # OS X doesn't support -h flag, but Linux requires it, so every command needs a Mac and non-Mac version
+                import platform
                 if len(message.content.split(" ")) == 1:
-                    # This command doesn't work under OS X, as the -h flag isn't supported (for some reason)
-                    out = "```bash" + '\n' + subprocess.run(['cal', '-h'], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
+                    if (platform.system() == "Darwin"):
+                        out = "```bash" + '\n' + subprocess.run(['cal'], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
+                    else:
+                        out = "```bash" + '\n' + subprocess.run(['cal', '-h'], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
                 elif len(message.content) == 2:
                     try:
                         q = int(remove_command(message.content))
                         if 0 < q and q <= 12:
-                            out = "```bash" + '\n' + subprocess.run(['cal', '-hm', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
+                            if (platform.system() == "Darwin"):
+                                out = "```bash" + '\n' + subprocess.run(['cal', '-m', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
+                            else:
+                                out = "```bash" + '\n' + subprocess.run(['cal', '-hm', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
                         else:
-                            out = "```bash" + '\n' + subprocess.run(['cal', '-hy', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
+                            if (platform.system() == "Darwin"):
+                                out = "```bash" + '\n' + subprocess.run(['cal', '-y', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
+                            else:
+                                out = "```bash" + '\n' + subprocess.run(['cal', '-hy', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
                     except TypeError:
                         months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
                         if q.upper() in months:
-                            out = "```bash" + '\n' + subprocess.run(['cal', '-hm', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
+                            if (platform.system() == "Darwin"):
+                                out = "```bash" + '\n' + subprocess.run(['cal', '-m', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
+                            else:
+                                out = "```bash" + '\n' + subprocess.run(['cal', '-hm', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
                         else:
                             out = "Usage: !cal"
                 else:
@@ -324,12 +337,8 @@ async def on_message(message):
                         out = "Reply sent"
                 else:
                     feedback_channel = client.get_channel(cfg['Servers']['feedback'])
-                    userid = message.author.id
-                    username = message.author.name
-                    userchannel = message.channel.id
-                    userserver = message.channel.server.id
                     mes = remove_command(message.content)
-                    fb = "A message from {0} for you sir: '{1}' (User ID: {2}) (Server ID {3}) (Channel ID {4})".format(username, mes, userid, userserver, userchannel)
+                    fb = "A message from {0} for you sir: '{1}' (User ID: {2}) (Server ID {3}) (Channel ID {4})".format(message.author.name, mes, message.author.id, message.channel.server.id, message.channel.id)
                     await client.send_message(feedback_channel, fb)
                     out = "Message sent"
 
