@@ -139,7 +139,7 @@ async def on_message(message):
             # Updates bot to most recent version
             elif message.content.startswith("!update"):
                 try:
-                    if (message.author.id in cfg['Users']['admin'] or message.author.id == cfg['Users']['owner']):
+                    if (message.author.id == cfg['Users']['eemie'] or message.author.id == cfg['Users']['aquova']):
                         await client.send_message(message.channel, "Restarting and updating...")
                         subprocess.call("./update.sh", shell=True)
                         sys.exit()
@@ -262,7 +262,7 @@ async def on_message(message):
             # This one is for me and eemie
             elif message.content.startswith('!days'):
                 if message.server.id == cfg['Servers']['Brickhouse']:
-                    if (message.author.id in cfg['Users']['admin'] or message.author.id == cfg['Users']['owner']):
+                    if (message.author.id == cfg['Users']['eemie'] or message.author.id == cfg['Users']['aquova']):
                         sqlconn = sqlite3.connect('database.db')
                         today = datetime.date.today()
                         if message.content == '!days reset':
@@ -325,7 +325,7 @@ async def on_message(message):
 
             # Presents feedback to a special feedback channel, which authorized users can respond to
             elif message.content.startswith('!feedback'):
-                if (message.author.id == cfg['Users']['owner'] or message.author.id in cfg['Users']['admin']):
+                if (message.author.id == cfg['Users']['aquova'] or message.author.id == cfg['Users']['eemie']):
                     if message.content == '!feedback':
                         out = '!feedback CHANNEL_ID MESSAGE'
                     else:
@@ -632,7 +632,7 @@ async def on_message(message):
                 server_list = client.servers
                 server_num = str(len(server_list))
                 out = "I am currently a member of {} servers".format(server_num)
-                if (message.content == '!servers list' and (message.author.id == cfg['Users']['owner'] or message.author.id in cfg['Users']['admin'])):
+                if (message.content == '!servers list' and (message.author.id == cfg['Users']['aquova'] or message.author.id == cfg['Users']['eemie'])):
                     for server in server_list:
                         out += '\n' + server.name
 
@@ -702,7 +702,7 @@ async def on_message(message):
 
             # Can change "now playing" game title
             elif message.content.startswith('!status'):
-                if message.author.id == cfg['Users']['owner']:
+                if message.author.id == cfg['Users']['aquova']:
                     new_game = remove_command(message.content)
                     game_object = discord.Game(name=new_game)
                     await client.change_presence(game=game_object)
@@ -738,7 +738,7 @@ async def on_message(message):
 
             # Doesn't do anything right now, simply for testing
             elif message.content.startswith('!test'):
-                if message.author.id == cfg['Users']['owner']:
+                if message.author.id == cfg['Users']['aquova']:
                     out = 'Yeah, thats coo.'
                 else:
                     out = '*NO*'
