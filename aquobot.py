@@ -198,7 +198,7 @@ async def on_message(message):
 
             elif (message.content.startswith('!brainfuck') or message.content.startswith('!bf')):
                 if len(message.content.split(" ")) == 1:
-                    out = '!brainfuck CODE\nInfo on the language: <https://learnxinyminutes.com/docs/brainfuck/>'
+                    out = '!brainfuck CODE\nInfo on the language: <https://learnxinyminutes.com/docs/brainfuck/>\nStill confused? Use this site to help visualize what is happening <http://bf.jamesliu.info/>'
                 else:
                     q = remove_command(message.content)
                     if (q[0] in '+-[]><.'):
@@ -338,6 +338,9 @@ async def on_message(message):
                     fb = "A message from {0} for you sir: '{1}' (User ID: {2}) (Server ID {3}) (Channel ID {4})".format(message.author.name, mes, message.author.id, message.channel.server.id, message.channel.id)
                     await client.send_message(feedback_channel, fb)
                     out = "Message sent"
+
+            elif message.content.startswith('!fw'):
+                out = "There's no !fw command, quit asking."
 
             # Tells a 7 day forecast based on user or location. Uses same database as weather
             elif (message.content.startswith('!forecast') or message.content.startswith('!f')):
