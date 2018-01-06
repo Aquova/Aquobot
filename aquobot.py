@@ -20,7 +20,7 @@ import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, ti
 
 # Python programs I wrote, in ./commands
 import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji, Help, Quotes, MAL, Blackjack, Speedrun
-import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo, BF, Roulette #, Weather2
+import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo, BF, Roulette, Braille #, Weather2
 
 # Logs to discord.log
 logger = logging.getLogger('discord')
@@ -205,6 +205,10 @@ async def on_message(message):
                         out = BF.decode(q)
                     else:
                         out = BF.encode(q)
+
+            elif message.content.startswith("!braille"):
+                q = remove_command(message.content)
+                out = Braille.main(q)
 
             # Database of user birthdays. Will notify server if user's birthday on list is that day
             elif message.content.startswith('!birthday'):
