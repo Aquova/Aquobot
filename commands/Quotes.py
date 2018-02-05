@@ -35,7 +35,7 @@ def main(message):
     else:
         try:
             q = int(remove_command(message.content))
-            quote = sqlconn.execute("SELECT * FROM quotes WHERE num=?", [q]).fetchall()              
+            quote = sqlconn.execute("SELECT * FROM quotes WHERE num=?", [q]).fetchall()
         except ValueError:
             q = str(remove_command(message.content))
             quote = sqlconn.execute("SELECT * FROM quotes WHERE username=?", [q]).fetchall()
@@ -45,7 +45,11 @@ def main(message):
             num = chosen[0]
             text = chosen[1]
             username = chosen[2]
-            out = 'From {0}: "{1}" (#{2})'.format(username, text, str(num))
+            server_id = chosen[5]
+            if server_id == mes_server:
+                out = 'From {0}: "{1}" (#{2})'.format(username, text, str(num))
+            else:
+                out = "Only quotes from this server can be displayed."
         except IndexError:
             out = "No quote matched that query."
     sqlconn.commit()
