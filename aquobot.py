@@ -20,7 +20,7 @@ import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, ti
 
 # Python programs I wrote, in ./commands
 import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji, Help, Quotes, MAL, Blackjack, Speedrun
-import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo, BF, Roulette, Braille #, Weather2
+import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo, BF, Braille
 
 # Logs to discord.log
 logger = logging.getLogger('discord')
