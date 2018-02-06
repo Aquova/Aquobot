@@ -66,6 +66,5 @@ def eightball():
                  "No hablo... uh... English",
                  "Does a bear shit in the woods?",
                  "*sigh* Yes dear, what ever you say..",
-                 "*Nods head*\nNo.",
-                 "```txt\n _____\n< NO. >\n -----\n        \   ^__^\n         \  (oo)\_______\n            (__)\       )\/\\n                ||----w |\n            \n||     ||\n```"]
+                 "*Nods head*\nNo."]
     return random.choice(responses)

@@ -206,6 +206,7 @@ async def on_message(message):
                     else:
                         out = BF.encode(q)
 
+            # Work in progress
             elif message.content.startswith("!braille"):
                 q = remove_command(message.content)
                 out = Braille.main(q)
@@ -582,47 +583,6 @@ async def on_message(message):
                 else:
                     out = Roman.int_to_roman(parse[1])
 
-            elif message.content.startswith('!roulette'):
-                if message.content == '!roulette rules':
-                    out = '<https://en.wikipedia.org/wiki/Roulette#Bet_odds_table>'
-                elif message.content == '!roulette odds':
-                    out = '<https://en.wikipedia.org/wiki/Roulette#Bet_odds_table>\nYou can calculate your payout as: 10 points * ((36 / # of numbers bet on) - 1)'
-                else:
-                    await Roulette.main(client, message)
-
-            # TODO: Someday redo this with requests and BeautifulSoup
-            elif message.content.startswith('!rt'):
-                if message.content == '!rt':
-                    out = "!rt QUERY"
-                else:
-                    q = remove_command(message.content)
-
-                    params = {'search': q}
-
-                    async with aiohttp.ClientSession() as session:
-                        async with session.get('https://www.rottentomatoes.com/search/', params=params) as resp:
-                            root = ET.fromstring(await resp.text(), ET.HTMLParser())
-
-                            info = root[1][10][3][0][1].text
-                            try:
-                                info = info.split('RT.PrivateApiV2FrontendHost, ')[1]
-                                info = info.split(',"tvCount"')[0]
-                                info = ', '.join(info.split(', ')[1:])
-                                result = json.loads(info + '}')
-                                url = 'http://rottentomatoes.com' + result['movies'][0]['url']
-                                score = str(result['movies'][0]['meterScore']) + '%'
-                                tomato = result['movies'][0]['meterClass'].replace('_', ' ').title()
-
-                                embed = discord.Embed(title=result['movies'][0]['name'], type='rich', description=url)
-                                embed.add_field(name='Tomatometer', value=tomato)
-                                embed.add_field(name='Score', value=score)
-                                embed.add_field(name='Year Released', value=result['movies'][0]['year'])
-                                embed.set_thumbnail(url=result['movies'][0]['image'])
-
-                                await client.send_message(message.channel, embed=embed)
-                            except IndexError:
-                                out = "No movie found with that name."
-
             # Returns scrabble value of given word
             elif message.content.startswith('!scrabble'):
                 parse = message.content.split(" ")
@@ -963,35 +923,6 @@ async def on_message(message):
                 sqlconn.commit()
                 sqlconn.close()
 
-            # The 'weather2' implementation, in progress
-            # elif (message.content.startswith('!weather') or message.content.startswith('!w')):
-                # sqlconn = sqlite3.connect('database.db')
-                # author_id = int(message.author.id)
-                # author_name = message.author.name
-                # if (message.content == '!weather' or message.content == '!w'):
-                #     user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
-                #     try:
-                #         # Replace here
-                #         query_location = user_loc.fetchone()[0]
-                #         out = Weather.main(query_location)
-                #     except TypeError:
-                #         out = "!weather [set] LOCATION"
-                # elif (message.content.startswith("!weather set") or message.content.startswith('!w set')):
-                #     tmp = message.content.split(" ")[2:]
-                #     q = " ".join(tmp)
-                #     params = (author_id, author_name, q)
-                #     sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
-                #     out = "Location set as {}".format(q)
-                # else:
-                #     try:
-                #         # Replace here
-                #         q = remove_command(message.content)
-                #         out = Weather.main(q)
-                #     except TypeError:
-                #         out = "No location found. Please be more specific."
-                # sqlconn.commit()
-                # sqlconn.close()
-
             # Same as !weather, but prints emojis
             elif message.content.startswith('!qw'):
                 sqlconn = sqlite3.connect('database.db')
@@ -1046,9 +977,6 @@ async def on_message(message):
 
             elif message.content.startswith('!jade'):
                 out = "http://i.imgur.com/vCDF2aO.png"
-
-            elif message.content.startswith('!lex'):
-                out = "https://i.imgur.com/yB8wssv.jpg"
 
             elif (message.content.upper() == 'AQUOBOT ATTACK MODE' or message.content.upper() == 'AQUOBOT, ATTACK MODE'):
                 out = '`ENGAGING ATTACK MODE`\n`ATOMIC BATTERIES TO POWER. TURBINES TO SPEED.`\n`READY TO EXECUTE ATTACK VECTOR` :robot:'
