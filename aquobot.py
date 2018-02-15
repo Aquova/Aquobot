@@ -161,7 +161,7 @@ async def on_message(message):
                 server_list = client.servers
                 server_num = str(len(server_list))
                 aquo_link = "<https://discordapp.com/oauth2/authorize?client_id=323620520073625601&scope=bot&permissions=1278733377>"
-                out = "Hello, my name is Aquobot. I was written in Python by Aquova so he would have something interesting to put on a resume. I am currently connected to {0} servers, and I look forward to spending time with you! If you want to have me on your server, go visit {1}, and ~~when~~ if that doesn't work, contact Aquova#1296.".format(server_num, aquo_link)
+                out = "Hello, my name is Aquobot. I was written by aquova so he would have something interesting to put on a resume. I am currently connected to {0} servers, and I look forward to spending time with you! If you want to have me on your server, go visit {1}, and ~~when~~ if that doesn't work, contact Aquova#1296.".format(server_num, aquo_link)
 
             elif message.content.startswith('!apod'):
                 apod_url = 'https://api.nasa.gov/planetary/apod?api_key=' + cfg['Client']['nasa']
