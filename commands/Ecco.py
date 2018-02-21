@@ -1,7 +1,7 @@
 # This is a program that will take in user input and output an image of that text in the style of the text in 'Ecco the Dolphin'
 # Written by Austin Bricker, 2017
 
-import os 
+import os
 from PIL import Image
 
 def text(sentence):
@@ -29,10 +29,10 @@ def text(sentence):
     row_num = 0
     y_pos = 132 - (len(new_rows) * y_margin // 2)
     for row in new_rows:
-        x_pos = 152 - (len(row) * x_margin // 2)
+        x_pos = 160 - (len(row) * x_margin // 2)
         for letter in row:
             try:
-                if letter == " ": # Behavior if space 
+                if letter == " ": # Behavior if space
                     x_pos += x_margin
                 else:
                     if letter == '.':
