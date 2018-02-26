@@ -891,6 +891,9 @@ async def on_message(message):
                 sqlconn.commit()
                 sqlconn.close()
 
+            elif message.content.startswith('!wait'):
+                out = "https://cdn.discordapp.com/attachments/296752525615431680/417678219408310283/8c9.png"
+
             elif message.content.startswith('!wiki'):
                 q = remove_command(message.content)
                 out = Wikipedia.main(q)
