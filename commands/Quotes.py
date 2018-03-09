@@ -55,6 +55,8 @@ def main(message):
                 out = "Only quotes from this server can be displayed."
         except IndexError:
             out = "No quote matched that query."
+        except TypeError:
+            out = "No quote matched that query."
     sqlconn.commit()
     sqlconn.close()
 
