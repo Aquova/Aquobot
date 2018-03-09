@@ -23,10 +23,13 @@ def main(message):
     elif message.content.startswith('!quote remove'):
         try:
             num = int(message.content[14:])
-            check_exists = sqlconn.execute("SELECT messageid FROM quotes WHERE num=?", [num])
+            check_exists = sqlconn.execute("SELECT serverid FROM quotes WHERE num=?", [num])
             check_exists = check_exists.fetchone()[0]
-            sqlconn.execute("INSERT OR REPLACE INTO quotes (num, quote, username, userid, messageid, serverid) VALUES (?, NULL, NULL, NULL, NULL, NULL)", [num])
-            out = "Item {} removed".format(num)
+            if int(check_exists) == int(mes_server):
+                sqlconn.execute("INSERT OR REPLACE INTO quotes (num, quote, username, userid, messageid, serverid) VALUES (?, NULL, NULL, NULL, NULL, NULL)", [num])
+                out = "Item {} removed".format(num)
+            else:
+                out = "You cannot delete quotes from other servers."
         except ValueError:
             out = "That is not a number. Please specify the quote ID number you wish to remove."
         except TypeError:
