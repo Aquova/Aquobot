@@ -38,7 +38,7 @@ def main(message):
             quote = sqlconn.execute("SELECT * FROM quotes WHERE num=?", [q]).fetchall()
         except ValueError:
             q = str(remove_command(message.content))
-            quote = sqlconn.execute("SELECT * FROM quotes WHERE username=?", [q]).fetchall()
+            quote = sqlconn.execute("SELECT * FROM quotes WHERE username=? AND serverid=?", [q, mes_server]).fetchall()
 
         try:
             chosen = random.choice(quote)
@@ -46,7 +46,7 @@ def main(message):
             text = chosen[1]
             username = chosen[2]
             server_id = chosen[5]
-            if server_id == mes_server:
+            if int(server_id) == int(mes_server):
                 out = 'From {0}: "{1}" (#{2})'.format(username, text, str(num))
             else:
                 out = "Only quotes from this server can be displayed."

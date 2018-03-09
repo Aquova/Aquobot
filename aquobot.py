@@ -98,7 +98,7 @@ async def on_reaction_add(reaction, user):
                 sqlconn.execute("INSERT INTO quotes (num, quote, username, userid, messageid, serverid) VALUES (?, ?, ?, ?, ?, ?)", params)
                 sqlconn.commit()
                 sqlconn.close()
-                out = 'Quote added from {0}: "{1}". (#{2})'.format(user_name, mes, str(num + 1))
+                out = 'Quote added by {}: "{}" ~{}. (#{})'.format(user.name, mes, user_name, str(num + 1))
                 await client.send_message(reaction.message.channel, out)
     elif (reaction.emoji == '📌' or reaction.emoji == '📍'):
         try:
