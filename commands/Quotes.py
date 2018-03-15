@@ -19,6 +19,8 @@ def main(message):
             out = 'From {0}: "{1}" (#{2})'.format(username, quote[0], str(num))
         except TypeError:
             out = "This server has no quotes in the database. React to a message with :speech_balloon: to add quotes."
+        except IndexError:
+            out = "This server has no quotes in the database. React to a message with :speech_balloon: to add quotes."
 
     elif message.content.startswith('!quote remove'):
         try:

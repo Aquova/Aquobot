@@ -114,7 +114,10 @@ async def on_server_join(server):
     serv_owner_id = server.owner.id
     default_channel = server.default_channel
     mems = server.member_count
-    await client.send_message(default_channel, "Thank you for adding me to your server! Type '!help' for a list of commands")
+    try:
+        await client.send_message(default_channel, "Thank you for adding me to your server! Type '!help' for a list of commands")
+    except Exception:
+        pass # This probably means their server doesn't have a default channel. I'm unsure what approach to do with this.
     await client.send_message(client.get_channel(cfg['Servers']['general']), "Aquobot has been added to {0} (ID: {1}) Owned by {2} ({3}). Server has {4} members.".format(serv_name, serv_id, serv_owner_name, serv_owner_id, mems))
 
 @client.event
