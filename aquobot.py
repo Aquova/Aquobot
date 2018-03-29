@@ -116,8 +116,10 @@ async def on_server_join(server):
     mems = server.member_count
     try:
         await client.send_message(default_channel, "Thank you for adding me to your server! Type '!help' for a list of commands")
-    except Exception:
+    except discord.errors.InvalidArgument:
         pass # This probably means their server doesn't have a default channel. I'm unsure what approach to do with this.
+    except Exception as e:
+        print(e)
     await client.send_message(client.get_channel(cfg['Servers']['general']), "Aquobot has been added to {0} (ID: {1}) Owned by {2} ({3}). Server has {4} members.".format(serv_name, serv_id, serv_owner_name, serv_owner_id, mems))
 
 @client.event
