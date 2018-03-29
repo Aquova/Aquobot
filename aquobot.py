@@ -117,6 +117,7 @@ async def on_server_join(server):
     try:
         await client.send_message(default_channel, "Thank you for adding me to your server! Type '!help' for a list of commands")
     except discord.errors.InvalidArgument:
+        await client.send_message(client.get_channel(cfg['Servers']['general']), "New server {} has no default channel, skipping introduction".format(serv_name))
         pass # This probably means their server doesn't have a default channel. I'm unsure what approach to do with this.
     except Exception as e:
         print(e)
