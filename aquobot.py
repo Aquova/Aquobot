@@ -135,23 +135,37 @@ async def on_server_remove(server):
 @client.event
 async def on_member_update(before, after):
     if (before.nick != after.nick):
-        old = before.nick
         new = after.nick
-        if old == None:
-            old = before.name
         if new == None:
             new = after.name
-        Logging.changeNick(old, new, after.server)
+        Logging.changeNick(before, new, after.server)
     elif before.roles != after.roles:
         name = after.nick
         if name == None:
             name = after.name
         if len(before.roles) > len(after.roles):
             missing = [r for r in before.roles if r not in after.roles]
-            Logging.lostRole(missing[0], name, after.server)
+            Logging.changedRole(missing[0], name, after.server, False)
         else:
             missing = [r for r in after.roles if r not in before.roles]
-            Logging.gainedRole(missing[0], name, after.server)
+            Logging.changedRole(missing[0], name, after.server, True)
+
+@client.event
+async def on_server_update(before, after):
+    if (before.name != after.name):
+        Logging.renameServer(before, after)
+
+@client.event
+async def on_member_join(member):
+    Logging.memberJoined(member, member.server)
+
+@client.event
+async def on_member_remove(member):
+    Logging.memberLeave(member, member.server)
+
+@client.event
+async def on_member_ban(member):
+    Logging.ban(member)
 
 # Upon typed message in chat
 @client.event
