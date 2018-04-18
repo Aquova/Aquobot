@@ -34,7 +34,7 @@ async def check_birthday(client):
                     try:
                         await client.send_message(server.default_channel, mess)
                     except discord.errors.InvalidArgument:
-                        print("Server "{}" has no default channel, skipping".format(server.name))
+                        print("Server '{}' has no default channel, skipping".format(server.name))
                         pass # This probably means their server doesn't have a default channel. I'm unsure what approach to do with this.
 
     sqlconn.commit()

@@ -1,7 +1,7 @@
 """
 The Aquobot program for Discord
 The only Discord bot that utilizes the Mayan calendar!
-http://github.com/Aquova/Aquobot
+http://github.com/aquova/Aquobot
 
 Written by Austin Bricker, 2017
 Requires Python 3.5+ to run
@@ -20,7 +20,7 @@ import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, ti
 
 # Python programs I wrote, in ./commands
 import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji, Help, Quotes, MAL, Blackjack, Speedrun
-import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo, BF, Braille
+import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo, BF, Braille, Logging
 
 # Logs to discord.log
 logger = logging.getLogger('discord')
@@ -68,6 +68,8 @@ async def on_ready():
     game_object = discord.Game(name="type !help", type=0)
     await client.change_presence(game=game_object)
 
+    Logging.setup(client.servers)
+
     while True:
         print("Checking birthday")
         await Birthday.check_birthday(client)
@@ -114,6 +116,7 @@ async def on_server_join(server):
     serv_owner_id = server.owner.id
     default_channel = server.default_channel
     mems = server.member_count
+    Logging.setup([server])
     try:
         await client.send_message(default_channel, "Thank you for adding me to your server! Type '!help' for a list of commands")
     except discord.errors.InvalidArgument:
@@ -129,9 +132,31 @@ async def on_server_remove(server):
     serv_id = server.id
     await client.send_message(client.get_channel(cfg['Servers']['general']), "Aquobot has been removed from {0} (ID {1}). How rude.".format(serv_name, serv_id))
 
+@client.event
+async def on_member_update(before, after):
+    if (before.nick != after.nick):
+        old = before.nick
+        new = after.nick
+        if old == None:
+            old = before.name
+        if new == None:
+            new = after.name
+        Logging.changeNick(old, new, after.server)
+    elif before.roles != after.roles:
+        name = after.nick
+        if name == None:
+            name = after.name
+        if len(before.roles) > len(after.roles):
+            missing = [r for r in before.roles if r not in after.roles]
+            Logging.lostRole(missing[0], name, after.server)
+        else:
+            missing = [r for r in after.roles if r not in before.roles]
+            Logging.gainedRole(missing[0], name, after.server)
+
 # Upon typed message in chat
 @client.event
 async def on_message(message):
+    Logging.write(message)
     if message.author.id != client.user.id:
         try:
             out = ""
@@ -166,7 +191,7 @@ async def on_message(message):
             elif message.content.startswith('!about'):
                 server_list = client.servers
                 server_num = str(len(server_list))
-                aquo_link = "<https://discordapp.com/oauth2/authorize?client_id=323620520073625601&scope=bot&permissions=1278733377>"
+                aquo_link = "<https://discordapp.com/oauth2/authorize?client_id=323620520073625601&scope=bot&permissions=0>"
                 out = "Hello, my name is Aquobot. I was written by aquova so he would have something interesting to put on a resume. I am currently connected to {0} servers, and I look forward to spending time with you! If you want to have me on your server, go visit {1}, and ~~when~~ if that doesn't work, contact Aquova#1296.".format(server_num, aquo_link)
 
             elif message.content.startswith('!apod'):
