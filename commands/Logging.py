@@ -1,6 +1,6 @@
 # Better logging functionality for Aquobot
 
-import os, discord
+import os, discord, datetime
 
 def setup(servers):
     if not os.path.isdir("logs"):
@@ -28,7 +28,7 @@ def write(message):
     if message.channel.type == discord.ChannelType.text:
         f = "logs/{}/#{}.log".format(message.server.name, message.channel.name)
         with open(f, 'a') as openFile:
-            ts = message.timestamp.encode('utf-8').split('.')[0]
+            ts = message.timestamp.strftime('%Y-%m-%d %H:%M:%S')
             try:
                 name = message.author.nick
             except AttributeError:
@@ -48,9 +48,9 @@ def changedRole(role, name, server, gained):
             f = "logs/{}/#{}.log".format(server.name, channel.name)
             with open(f, 'a') as openFile:
                 if gained:
-                    openFile.write("{} has gained the role {}".format(name, role))
+                    openFile.write("{} has gained the role {}\n".format(name, role))
                 else:
-                    openFile.write("{} has lost the role {}".format(name, role))
+                    openFile.write("{} has lost the role {}\n".format(name, role))
 
 def memberJoined(member, server):
     for channel in server.channels:
