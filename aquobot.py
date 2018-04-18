@@ -135,13 +135,15 @@ async def on_server_remove(server):
 @client.event
 async def on_member_update(before, after):
     if (before.nick != after.nick):
-        new = after.nick
-        if new == None:
+        try:
+            new = after.nick
+        except AttributeError:
             new = after.name
         Logging.changeNick(before, new, after.server)
     elif before.roles != after.roles:
-        name = after.nick
-        if name == None:
+        try:
+            name = after.nick
+        except AttributeError:
             name = after.name
         if len(before.roles) > len(after.roles):
             missing = [r for r in before.roles if r not in after.roles]
