@@ -27,13 +27,16 @@ def renameServer(old, new):
 def write(message):
     if message.channel.type == discord.ChannelType.text:
         f = "logs/{}/#{}.log".format(message.server.name, message.channel.name)
-        with open(f, 'a') as openFile:
-            ts = message.timestamp.strftime('%Y-%m-%d %H:%M:%S')
-            try:
-                name = message.author.nick
-            except AttributeError:
+        ts = message.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        try:
+            if message.author.nick == None:
                 name = message.author.name
-            openFile.write("{} <{}> {}\n".format(ts, name, message.content.encode('utf-8')))
+            else:
+                name = message.author.nick
+        except AttributeError:
+            name = message.author.name
+        with open(f, 'a') as openFile:
+            openFile.write("{} <{}> {}\n".format(ts, name, message.content))
 
 def changeNick(old, new, server):
     for channel in server.channels:
