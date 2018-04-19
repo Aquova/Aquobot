@@ -35,7 +35,7 @@ def write(message):
                 name = message.author.nick
         except AttributeError:
             name = message.author.name
-        with open(f, 'a') as openFile:
+        with open(f, 'a', encoding='utf-8') as openFile:
             openFile.write("{} <{}> {}\n".format(ts, name, message.content))
 
 def changeNick(old, new, server):
