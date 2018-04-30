@@ -10,9 +10,12 @@ def setup(servers):
             os.makedirs(folder)
     else:
         for server in servers:
-            folder = "logs/" + server.name
-            if not os.path.isdir(folder):
-                os.makedirs(folder)
+            try:
+                folder = "logs/" + server.name
+                if not os.path.isdir(folder):
+                    os.makedirs(folder)
+            except TypeError: # I'm not sure what causes this tbh
+                pass
 
 def renameServer(old, new):
     oldFolder = "logs/" + old.name
