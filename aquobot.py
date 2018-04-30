@@ -1027,6 +1027,9 @@ async def on_message(message):
             elif message.content.startswith('!jade'):
                 out = "http://i.imgur.com/vCDF2aO.png"
 
+            elif message.content.startswith('!toe'):
+                out = ":crocodile: grrr"
+
             elif (message.content.upper() == 'AQUOBOT ATTACK MODE' or message.content.upper() == 'AQUOBOT, ATTACK MODE'):
                 out = '`ENGAGING ATTACK MODE`\n`ATOMIC BATTERIES TO POWER. TURBINES TO SPEED.`\n`READY TO EXECUTE ATTACK VECTOR` :robot:'
 

@@ -93,9 +93,11 @@ async def main(client, m):
         elif hand_value(player) > 21:
             user_money -= 50 * dd
             await client.send_message(m.channel, "{}: You have gone over 21, you lose.. You now have {} points".format(m.author.name,user_money))
-        elif hand_value(dealer) >= hand_value(player):
+        elif hand_value(dealer) > hand_value(player):
             user_money -= 50 * dd
             await client.send_message(m.channel, "{}: The dealer had {} while you had {}, you lose. You now have {} points".format(m.author.name,hand_value(dealer), hand_value(player), user_money))
+        elif hand_value(dealer) == hand_value(player):
+            await client.send_message(m.channel, "{}: The dealer had {} while you had {}, it's a draw! You still have {} points".format(m.author.name,hand_value(dealer), hand_value(player), user_money))
         else:
             user_money += 50 * dd
             await client.send_message(m.channel, "{}: The dealer has {}, but you have {}! You win! You now have {} points".format(m.author.name,hand_value(dealer), hand_value(player), user_money))
