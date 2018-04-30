@@ -120,7 +120,7 @@ async def on_server_join(server):
     try:
         await client.send_message(default_channel, "Thank you for adding me to your server! Type '!help' for a list of commands")
     except discord.errors.InvalidArgument:
-        await client.send_message(client.get_channel(cfg['Servers']['general']), "New server {} has no default channel, skipping introduction".format(serv_name))
+        await client.send_message(client.get_channel(cfg['Servers']['general']), "New server: {} has no default channel, skipping introduction".format(serv_name))
         pass # This probably means their server doesn't have a default channel. I'm unsure what approach to do with this.
     except Exception as e:
         print(e)
@@ -146,10 +146,10 @@ async def on_member_update(before, after):
     elif before.roles != after.roles:
         if len(before.roles) > len(after.roles):
             missing = [r for r in before.roles if r not in after.roles]
-            Logging.changedRole(missing[0], name, after.server, False)
+            Logging.changedRole(missing[0], new, after.server, False)
         else:
             missing = [r for r in after.roles if r not in before.roles]
-            Logging.changedRole(missing[0], name, after.server, True)
+            Logging.changedRole(missing[0], new, after.server, True)
 
 @client.event
 async def on_server_update(before, after):
@@ -381,8 +381,11 @@ async def on_message(message):
                         channel_id = m.split(" ")[0]
                         mes = m[len(channel_id):]
                         response_chan = client.get_channel(channel_id)
-                        await client.send_message(response_chan, mes)
-                        out = "Reply sent"
+                        try:
+                            await client.send_message(response_chan, mes)
+                            out = "Reply sent"
+                        except discord.errors.InvalidArgument:
+                            out = "Feedback needs to be of the form `!feedback CHANNEL_ID MESSAGE`"
                 else:
                     feedback_channel = client.get_channel(cfg['Servers']['feedback'])
                     mes = remove_command(message.content)
