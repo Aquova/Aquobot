@@ -71,10 +71,8 @@ async def on_ready():
 
     Logging.setup(client.servers)
 
-    # dateCheck = datetime.time(7, 0) # Check for birthday everyday at 7 AM
-    dateCheck = datetime.time(20, 0) # Check for birthday everyday at 7 AM
+    dateCheck = datetime.time(7, 0) # Check for birthday everyday at 7 AM
     diff = datetime.timedelta(hours=24) - (datetime.datetime.combine(datetime.date.min, datetime.datetime.now().time()) - datetime.datetime.combine(datetime.date.min, dateCheck))
-    print(diff.seconds)
     await asyncio.sleep(diff.seconds)
     while True:
         print("Checking birthday")
