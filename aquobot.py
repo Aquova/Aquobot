@@ -626,6 +626,42 @@ async def on_message(message):
             elif message.content.startswith('!quote'):
                 out = Quotes.main(message)
 
+            elif message.content.startswith('!rockpaperscissors') or message.content.startswith('!rps'):
+                if len(message.content.split(" ")) == 1:
+                    out = '`!rockpaperscissors MOVE`'
+                else:
+                    hand = remove_command(message.content)
+                    options = {"ROCK":":fist:", "PAPER":":hand_splayed:", "SCISSORS":":v:"}
+                    optionsList = list(options.keys())
+                    if hand.upper() not in optionsList:
+                        out = "You need to throw either rock, paper, or scissors"
+                    else:
+                        playerIndex = optionsList.index(hand.upper())
+                        cpuIndex = random.randint(0, len(optionsList) - 1)
+                        sqlconn = sqlite3.connect('database.db')
+                        money = sqlconn.execute("SELECT value FROM points WHERE userid=?", [message.author.id])
+                        try:
+                            user_money = money.fetchone()[0]
+                        except TypeError:
+                            user_money = 0
+
+                        # They have the same play, it's a tie
+                        if cpuIndex == playerIndex:
+                            out = "You both threw {}, it's a tie! {} = {}\nYou still have {} points".format(optionsList[cpuIndex].title(), options[optionsList[cpuIndex]], options[optionsList[cpuIndex]], user_money)
+                        # Player threw the weaker hand, they lose
+                        elif ((playerIndex + 1) % 3 == cpuIndex):
+                            user_money -= 10
+                            out = "{} beats {}, you lose! {} < {}\nYou now have {} points".format(optionsList[cpuIndex].title(), optionsList[playerIndex].title(), options[optionsList[playerIndex]], options[optionsList[cpuIndex]], user_money)
+                        else:
+                            user_money += 10
+                            out = "{} beats {}, you win! {} > {}\nYou now have {} points".format(optionsList[playerIndex].title(), optionsList[cpuIndex].title(), options[optionsList[playerIndex]], options[optionsList[cpuIndex]], user_money)
+
+                        params = [message.author.id, user_money]
+                        sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)
+
+                        sqlconn.commit()
+                        sqlconn.close()
+
             # Convert number into/out of roman numerals
             elif message.content.startswith('!roman'):
                 parse = message.content.split(" ")
