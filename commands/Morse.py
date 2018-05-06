@@ -1,5 +1,5 @@
 # This is a program that can encode and decode messages in Morse Code
-# Written by Austin Bricker, 2015-2017
+# Written by Austin Bricker, 2015-2018
 
 morse = {"A":".-", "B":"-...", "C":"-.-.", "D":"-..", "E":".", "F":"..-.", "G":"--.", "H":"....",
          "I":"..", "J":".---", "K":"-.-", "L":".-..", "M":"--", "N":"-.", "O":"---", "P":".--.",

@@ -81,7 +81,7 @@ def main(m):
         try:
             birth = sqlconn.execute("SELECT month, day FROM birthday WHERE name=?", [q]).fetchall()[0]
             out = "Their birthday is {0} {1}".format(reverse[int(birth[0])], birth[1])
-        except TypeError:
+        except (IndexError, TypeError):
             out = "Error: No birthday for that user (searches are case sensitive)."
     sqlconn.commit()
     sqlconn.close()
