@@ -1,16 +1,14 @@
 """
 The Aquobot program for Discord
-The only Discord bot that utilizes the Mayan calendar!
 http://github.com/aquova/Aquobot
 
 Written by Austin Bricker, 2017
 Requires Python 3.5+ to run
 """
 
-import sys
+import sys, discord
 sys.path.insert(0, './commands')
 
-import discord
 from googletrans import Translator
 from google import google
 # from bs4 import BeautifulSoup
@@ -18,9 +16,10 @@ import lxml.etree as ET
 import requests, aiohttp, signal, wolframalpha, async_timeout
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, time
 
-# Python programs I wrote, in ./commands
-import Morse, Scrabble, Roman, Days_Until, Mayan, Jokes, Weather, Birthday, Emoji, Help, Quotes, MAL, Blackjack, Speedrun
-import Upside, Ecco, Select, Youtube, Steam, Whatpulse, Slots, xkcd, Wikipedia, iss, Todo, BF, Braille, Logging
+# Local python modules
+import BF, Birthday, Blackjack, Braille, Days_Until, Ecco, Emoji, Help, Jokes, ISS
+import Logging, MAL, Mayan, Morse, Roman, Quotes, Scrabble, Select, Steam, Slots
+import Speedrun, Todo, Upside, Weather, Youtube, Wikipedia, XKCD, Whatpulse
 
 # Logs to discord.log
 logger = logging.getLogger('discord')
@@ -64,7 +63,6 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
-    firstRun = True
 
     game_object = discord.Game(name="type !help", type=0)
     await client.change_presence(game=game_object)
@@ -145,19 +143,19 @@ async def on_member_update(before, after):
             new = after.nick
     except AttributeError:
         new = after.name
-    if (before.nick != after.nick):
+    if before.nick != after.nick:
         Logging.changeNick(before, new, after.server)
     elif before.roles != after.roles:
         if len(before.roles) > len(after.roles):
-            missing = [r for r in before.roles if r not in after.roles]
-            Logging.changedRole(missing[0], new, after.server, False)
+            mISSing = [r for r in before.roles if r not in after.roles]
+            Logging.changedRole(mISSing[0], new, after.server, False)
         else:
-            missing = [r for r in after.roles if r not in before.roles]
-            Logging.changedRole(missing[0], new, after.server, True)
+            mISSing = [r for r in after.roles if r not in before.roles]
+            Logging.changedRole(mISSing[0], new, after.server, True)
 
 @client.event
 async def on_server_update(before, after):
-    if (before.name != after.name):
+    if before.name != after.name:
         Logging.renameServer(before, after)
 
 @client.event
@@ -210,7 +208,7 @@ async def on_message(message):
             elif message.content.startswith('!about'):
                 server_list = client.servers
                 server_num = str(len(server_list))
-                aquo_link = "<https://discordapp.com/oauth2/authorize?client_id=323620520073625601&scope=bot&permissions=0>"
+                aquo_link = "<https://discordapp.com/oauth2/authorize?client_id=323620520073625601&scope=bot&permISSions=0>"
                 out = "Hello, my name is Aquobot. I was written by aquova so he would have something interesting to put on a resume. I am currently connected to {0} servers, and I look forward to spending time with you! If you want to have me on your server, go visit {1}, and ~~when~~ if that doesn't work, contact Aquova#1296.".format(server_num, aquo_link)
 
             elif message.content.startswith('!apod'):
@@ -226,7 +224,7 @@ async def on_message(message):
                             try:
                                 if results['media_type'] == "image":
                                     out = "{} | {}\n{}\n{}".format(results['title'], results['date'], results['hdurl'], results['explanation'])
-                                elif results['media_type'] =='video':
+                                elif results['media_type'] == 'video':
                                     out = "{} | {}\n{}\n{}".format(results['title'], results['date'], results['explanation'], results['url'])
                             except KeyError as e:
                                 try:
@@ -251,7 +249,7 @@ async def on_message(message):
                     out = '!brainfuck CODE\nInfo on the language: <https://learnxinyminutes.com/docs/brainfuck/>\nStill confused? Use this site to help visualize what is happening <http://bf.jamesliu.info/>'
                 else:
                     q = remove_command(message.content)
-                    if (q[0] in '+-[]><.'):
+                    if q[0] in '+-[]><.':
                         out = BF.decode(q)
                     else:
                         out = BF.encode(q)
@@ -276,7 +274,7 @@ async def on_message(message):
                 # OS X doesn't support -h flag, but Linux requires it, so every command needs a Mac and non-Mac version
                 import platform
                 if len(message.content.split(" ")) == 1:
-                    if (platform.system() == "Darwin"):
+                    if platform.system() == "Darwin":
                         out = "```bash" + '\n' + subprocess.run(['cal'], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
                     else:
                         out = "```bash" + '\n' + subprocess.run(['cal', '-h'], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
@@ -285,7 +283,7 @@ async def on_message(message):
                         q = int(remove_command(message.content))
                         if 0 < q and q <= 12:
                             q = str(q) # The cal command requires a string. This is kinda dumb, I know
-                            if (platform.system() == "Darwin"):
+                            if platform.system() == "Darwin":
                                 out = "```bash" + '\n' + subprocess.run(['cal', '-m', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
                             else:
                                 out = "```bash" + '\n' + subprocess.run(['cal', '-hm', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
@@ -293,7 +291,7 @@ async def on_message(message):
                         months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
                         q = remove_command(message.content)
                         if q.upper() in months:
-                            if (platform.system() == "Darwin"):
+                            if platform.system() == "Darwin":
                                 out = "```bash" + '\n' + subprocess.run(['cal', '-m', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
                             else:
                                 out = "```bash" + '\n' + subprocess.run(['cal', '-hm', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
@@ -467,8 +465,8 @@ async def on_message(message):
                 q = remove_command(message.content)
                 out = google.search(q)[0].link
 
-            elif message.content.startswith('!iss'):
-                out = iss.main(message.author.id)
+            elif message.content.startswith('!ISS'):
+                out = ISS.main(message.author.id)
 
             elif message.content.startswith('!img'):
                 if message.content == '!img':
@@ -517,7 +515,7 @@ async def on_message(message):
                 name_b = message.content.split(" ")[2]
                 love_url = 'https://love-calculator.p.mashape.com/getPercentage?fname={}&sname={}'.format(name_a, name_b)
 
-                headers={
+                headers = {
                     "X-Mashape-Key": cfg['Client']['mashape'],
                     "Accept": "application/json"
                 }
@@ -534,7 +532,7 @@ async def on_message(message):
                     try:
                         foo = int(num)
                         fact_url = "https://numbersapi.p.mashape.com/{}/math?fragment=true&json=true".format(num)
-                        headers={
+                        headers = {
                             "X-Mashape-Key": cfg['Client']['mashape'],
                             "Accept": "text/plain"
                         }
@@ -548,7 +546,7 @@ async def on_message(message):
             # Converts time into the Mayan calendar, why not
             elif message.content.startswith('!mayan'):
                 parse = message.content.split(" ")
-                if (message.content == '!mayan'):
+                if message.content == '!mayan':
                     out = '!until MM-DD-YYYY/TODAY'
                 else:
                     out = "That date is " + str(Mayan.mayan(parse[1])) + " in the Mayan Long Count"
@@ -585,7 +583,7 @@ async def on_message(message):
                             try:
                                 await client.pin_message(pin)
                             except discord.errors.HTTPException as e:
-                                await client.send_message(reaction.message.channel, e) # If max pin limit has been reached
+                                await client.send_message(message.channel, e) # If max pin limit has been reached
                             break
 
             # Produces a poll where users can vote via reactions
@@ -626,15 +624,15 @@ async def on_message(message):
             elif message.content.startswith('!quote'):
                 out = Quotes.main(message)
 
-            elif message.content.startswith('!rockpaperscissors') or message.content.startswith('!rps'):
+            elif message.content.startswith('!rockpaperscISSors') or message.content.startswith('!rps'):
                 if len(message.content.split(" ")) == 1:
-                    out = '`!rockpaperscissors MOVE`'
+                    out = '`!rockpaperscISSors MOVE`'
                 else:
                     hand = remove_command(message.content)
                     options = {"ROCK":":fist:", "PAPER":":hand_splayed:", "SCISSORS":":v:"}
                     optionsList = list(options.keys())
                     if hand.upper() not in optionsList:
-                        out = "You need to throw either rock, paper, or scissors"
+                        out = "You need to throw either rock, paper, or scISSors"
                     else:
                         playerIndex = optionsList.index(hand.upper())
                         cpuIndex = random.randint(0, len(optionsList) - 1)
@@ -649,7 +647,7 @@ async def on_message(message):
                         if cpuIndex == playerIndex:
                             out = "You both threw {}, it's a tie! {} = {}\nYou still have {} points".format(optionsList[cpuIndex].title(), options[optionsList[cpuIndex]], options[optionsList[cpuIndex]], user_money)
                         # Player threw the weaker hand, they lose
-                        elif ((playerIndex + 1) % 3 == cpuIndex):
+                        elif (playerIndex + 1) % 3 == cpuIndex:
                             user_money -= 10
                             out = "{} beats {}, you lose! {} < {}\nYou now have {} points".format(optionsList[cpuIndex].title(), optionsList[playerIndex].title(), options[optionsList[playerIndex]], options[optionsList[cpuIndex]], user_money)
                         else:
@@ -665,7 +663,7 @@ async def on_message(message):
             # Convert number into/out of roman numerals
             elif message.content.startswith('!roman'):
                 parse = message.content.split(" ")
-                if (message.content == '!roman'):
+                if message.content == '!roman':
                     out = '!roman NUMBER/NUMERAL'
                 elif parse[1].isalpha() == True:
                     out = Roman.roman_to_int(parse[1])
@@ -675,7 +673,7 @@ async def on_message(message):
             # Returns scrabble value of given word
             elif message.content.startswith('!scrabble'):
                 parse = message.content.split(" ")
-                if (message.content == '!scrabble'):
+                if message.content == '!scrabble':
                     out = '!scrabble WORD'
                 else:
                     out = Scrabble.scrabble(parse[1])
@@ -742,9 +740,9 @@ async def on_message(message):
                     await Speedrun.game(q, client, message)
 
             elif message.content.startswith('!spellcheck'):
-                q = remove_command(message.content).replace(" ","+")
+                q = remove_command(message.content).replace(" ", "+")
                 sc_url = 'https://montanaflynn-spellcheck.p.mashape.com/check/?text=' + q
-                headers={
+                headers = {
                     "X-Mashape-Key": cfg['Client']['mashape'],
                     "Accept": "text/plain"
                 }
@@ -761,7 +759,7 @@ async def on_message(message):
                     await client.change_presence(game=game_object)
                     out = "Changed status to: {}".format(new_game)
                 else:
-                    out = "You do not have permissions for this command."
+                    out = "You do not have permISSions for this command."
 
             elif message.content.startswith('!steam'):
                 if len(message.content.split(" ")) == 1:
@@ -851,7 +849,7 @@ async def on_message(message):
                     q = remove_command(message.content)
                     twitch_url = 'https://api.twitch.tv/kraken/users?login={}'.format(q)
 
-                    headers={
+                    headers = {
                         "Client-ID": cfg['Client']['twitch'],
                         "Accept": "application/vnd.twitchtv.v5+json"
                     }
@@ -882,7 +880,7 @@ async def on_message(message):
             # Gives number of days until specified date
             elif message.content.startswith('!until'):
                 parse = message.content.split(" ")
-                if (message.content == '!until'):
+                if message.content == '!until':
                     out = '!until MM-DD-YYYY'
                 else:
                     out = str(Days_Until.until(parse[1])) + " days"
@@ -1042,8 +1040,8 @@ async def on_message(message):
                 q = remove_command(message.content)
                 out = Youtube.search(q)
 
-            elif message.content.startswith('!xkcd'):
-                out = xkcd.main(message.content)
+            elif message.content.startswith('!XKCD'):
+                out = XKCD.main(message.content)
 
             # The following are responses to various keywords if present anywhere in a message
             elif ("HELLO AQUOBOT" in message.content.upper() or "HI AQUOBOT" in message.content.upper()):

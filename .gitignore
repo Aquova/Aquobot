@@ -1,8 +1,20 @@
+# Config/Private data
 *.json
+*database.db
+
+# Bot logging files
 *discord.log
+*logs
+
+# System generated files 
 *.DS_Store
 *__pycache__
-*database.db
-*ecco.png
 *.swp
-*logs
+
+# VSCode files
+*.vscode
+*.code-workspace
+*.pylintrc
+
+# Simply isn't needed
+*ecco.png

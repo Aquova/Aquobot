@@ -1,6 +1,29 @@
 import sqlite3, asyncio, sqlite3, datetime, discord
 
-months = {'JANUARY':1, 'JAN':1, 'FEB':2, 'FEBRUARY':2, 'MARCH':3, 'MAR':3, 'APRIL':4, 'APR':4, 'MAY':5, 'JUNE':6, 'JUN':6, 'JULY':7, 'JUL':7, 'AUGUST':8, 'AUG':8, 'SEPTEMBER':9, 'SEPT':9, 'OCTOBER':10, 'OCT':10, 'NOVEMBER':11, 'NOV':11, 'DECEMBER':12, 'DEC':12}
+months = {'JANUARY':1,
+          'JAN':1,
+          'FEB':2,
+          'FEBRUARY':2,
+          'MARCH':3,
+          'MAR':3,
+          'APRIL':4,
+          'APR':4,
+          'MAY':5,
+          'JUNE':6,
+          'JUN':6,
+          'JULY':7,
+          'JUL':7,
+          'AUGUST':8,
+          'AUG':8,
+          'SEPTEMBER':9,
+          'SEPT':9,
+          'OCTOBER':10,
+          'OCT':10,
+          'NOVEMBER':11,
+          'NOV':11,
+          'DECEMBER':12,
+          'DEC':12}
+
 reverse = {1:'January', 2:'February', 3:'March', 4:'April', 5:'May', 6:'June', 7:'July', 8:'August', 9:'September', 10:'October', 11:'November', 12:'December'}
 
 async def check_birthday(client):
