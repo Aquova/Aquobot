@@ -1,8 +1,5 @@
 import sqlite3, discord, random
-
-def remove_command(m):
-    tmp = m.split(" ")[1:]
-    return " ".join(tmp)
+from Utils import remove_command
 
 def main(message):
     sqlconn = sqlite3.connect('database.db')
@@ -21,7 +18,6 @@ def main(message):
             out = "This server has no quotes in the database. React to a message with :speech_balloon: to add quotes."
         except IndexError:
             out = "This server has no quotes in the database. React to a message with :speech_balloon: to add quotes."
-
     elif message.content.startswith('!quote remove'):
         try:
             num = int(message.content[14:])
@@ -36,7 +32,6 @@ def main(message):
             out = "That is not a number. Please specify the quote ID number you wish to remove."
         except TypeError:
             out = "There is no ID of that number."
-
     else:
         try:
             q = int(remove_command(message.content))
@@ -44,7 +39,6 @@ def main(message):
         except ValueError:
             q = str(remove_command(message.content))
             quote = sqlconn.execute("SELECT * FROM quotes WHERE username=? AND serverid=?", [q, mes_server]).fetchall()
-
         try:
             chosen = random.choice(quote)
             num = chosen[0]

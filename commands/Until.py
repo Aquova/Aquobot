@@ -3,9 +3,7 @@
 
 import datetime
 
-#target = raw_input("How many days until what date? (Format: MM-DD-YYYY) ")
-
-def until(target):
+def main(target):
     m = int(target[:2])
     d = int(target[3:5])
     y = int(target[6:10])

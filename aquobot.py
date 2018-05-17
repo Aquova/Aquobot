@@ -13,13 +13,14 @@ from googletrans import Translator
 from google import google
 # from bs4 import BeautifulSoup
 import lxml.etree as ET
-import requests, aiohttp, signal, wolframalpha, async_timeout
+import aiohttp, signal, wolframalpha, async_timeout
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, time
 
 # Local python modules
-import BF, Birthday, Blackjack, Braille, Days_Until, Ecco, Emoji, Help, Jokes, ISS
+import BF, Birthday, Blackjack, Braille, Cal, Ecco, Emoji, Help, Jokes, ISS
 import Logging, MAL, Mayan, Morse, Roman, Quotes, Scrabble, Select, Steam, Slots
-import Speedrun, Todo, Upside, Weather, Youtube, Wikipedia, XKCD, Whatpulse
+import Speedrun, Todo, Upside, Weather, Youtube, Wikipedia, XKCD, Whatpulse, Until
+from Utils import remove_command
 
 # Logs to discord.log
 logger = logging.getLogger('discord')
@@ -51,10 +52,6 @@ sqlconn.commit()
 sqlconn.close()
 
 num_emoji = {0: "0⃣", 1:"1⃣", 2:"2⃣", 3:"3⃣", 4:"4⃣", 5:"5⃣", 6:"6⃣", 7:"7⃣", 8:"8⃣", 9:"9⃣"}
-
-def remove_command(m):
-    tmp = m.split(" ")[1:]
-    return " ".join(tmp)
 
 # Upon bot starting up
 @client.event
@@ -206,10 +203,7 @@ async def on_message(message):
 
             # Gives brief overview of the bot
             elif message.content.startswith('!about'):
-                server_list = client.servers
-                server_num = str(len(server_list))
-                aquo_link = "<https://discordapp.com/oauth2/authorize?client_id=323620520073625601&scope=bot&permISSions=0>"
-                out = "Hello, my name is Aquobot. I was written by aquova so he would have something interesting to put on a resume. I am currently connected to {0} servers, and I look forward to spending time with you! If you want to have me on your server, go visit {1}, and ~~when~~ if that doesn't work, contact Aquova#1296.".format(server_num, aquo_link)
+                out = "Hello, my name is Aquobot. I was written by aquova so he would have something interesting to put on a resume. I am currently connected to {} servers, and I look forward to spending time with you! If you want to have me on your server, go visit <https://discordapp.com/oauth2/authorize?client_id=323620520073625601&scope=bot&permISSions=0>, and ~~when~~ if that doesn't work, contact Aquova#1296.".format(len(client.servers))
 
             elif message.content.startswith('!apod'):
                 apod_url = 'https://api.nasa.gov/planetary/apod?api_key=' + cfg['Client']['nasa']
@@ -271,34 +265,7 @@ async def on_message(message):
 
             # Prints out the calendar for the month
             elif message.content.startswith('!cal'):
-                # OS X doesn't support -h flag, but Linux requires it, so every command needs a Mac and non-Mac version
-                import platform
-                if len(message.content.split(" ")) == 1:
-                    if platform.system() == "Darwin":
-                        out = "```bash" + '\n' + subprocess.run(['cal'], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
-                    else:
-                        out = "```bash" + '\n' + subprocess.run(['cal', '-h'], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
-                elif len(message.content.split(" ")) == 2:
-                    try:
-                        q = int(remove_command(message.content))
-                        if 0 < q and q <= 12:
-                            q = str(q) # The cal command requires a string. This is kinda dumb, I know
-                            if platform.system() == "Darwin":
-                                out = "```bash" + '\n' + subprocess.run(['cal', '-m', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
-                            else:
-                                out = "```bash" + '\n' + subprocess.run(['cal', '-hm', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
-                    except ValueError:
-                        months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
-                        q = remove_command(message.content)
-                        if q.upper() in months:
-                            if platform.system() == "Darwin":
-                                out = "```bash" + '\n' + subprocess.run(['cal', '-m', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
-                            else:
-                                out = "```bash" + '\n' + subprocess.run(['cal', '-hm', q], stdout=subprocess.PIPE).stdout.decode('utf-8') + "```"
-                        else:
-                            out = "Usage: !cal"
-                else:
-                    out = "Usage: !cal"
+                out = Cal.main(message)
 
             # Chooses between given options
             elif message.content.startswith('!choose'):
@@ -465,7 +432,7 @@ async def on_message(message):
                 q = remove_command(message.content)
                 out = google.search(q)[0].link
 
-            elif message.content.startswith('!ISS'):
+            elif message.content.startswith('!iss'):
                 out = ISS.main(message.author.id)
 
             elif message.content.startswith('!img'):
@@ -520,9 +487,10 @@ async def on_message(message):
                     "Accept": "application/json"
                 }
 
-                r = requests.get(love_url, headers=headers)
-                results = json.loads(r.text)
-                out = "{} and {} are {}% compatible. {}".format(name_a, name_b, results['percentage'], results['result'])
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(love_url, headers=headers) as resp:
+                        results = json.loads(resp.text())
+                        out = "{} and {} are {}% compatible. {}".format(name_a, name_b, results['percentage'], results['result'])
 
             elif message.content.startswith('!mathfact'):
                 if message.content == '!mathfact':
@@ -537,9 +505,11 @@ async def on_message(message):
                             "Accept": "text/plain"
                         }
 
-                        r = requests.get(fact_url, headers=headers)
-                        results = json.loads(r.text)
-                        out = "{} is {}".format(num, results['text'])
+
+                        async with aiohttp.ClientSession() as session:
+                            async with session.get(fact_url, headers=headers) as resp:
+                                results = json.loads(resp.text())
+                                out = "{} is {}".format(num, results['text'])
                     except TypeError:
                         out = "That is not a number, please try again."
 
@@ -547,7 +517,7 @@ async def on_message(message):
             elif message.content.startswith('!mayan'):
                 parse = message.content.split(" ")
                 if message.content == '!mayan':
-                    out = '!until MM-DD-YYYY/TODAY'
+                    out = '!mayan MM-DD-YYYY/TODAY'
                 else:
                     out = "That date is " + str(Mayan.mayan(parse[1])) + " in the Mayan Long Count"
 
@@ -557,7 +527,7 @@ async def on_message(message):
                 out = Morse.main(parse)
 
             elif (message.content.startswith('!myanimelist') or message.content.startswith('!mal')):
-                out = MAL.main(message)
+                out = await MAL.main(message)
 
             elif message.content.startswith('!nick'):
                 new = remove_command(message.content)
@@ -747,9 +717,10 @@ async def on_message(message):
                     "Accept": "text/plain"
                 }
 
-                r = requests.get(sc_url, headers=headers)
-                results = json.loads(r.text)
-                out = "Suggestion: {}".format(results['suggestion'])
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(sc_url, headers=headers) as resp:
+                        results = json.loads(resp.text())
+                        out = "Suggestion: {}".format(results['suggestion'])
 
             # Can change "now playing" game title
             elif message.content.startswith('!status'):
@@ -854,23 +825,24 @@ async def on_message(message):
                         "Accept": "application/vnd.twitchtv.v5+json"
                     }
 
-                    r = requests.get(twitch_url, headers=headers)
-                    results = json.loads(r.text)
-                    if results['_total'] == 0:
-                        out = "There is no user by that name."
-                    else:
-                        username = results['users'][0]['name']
-                        user_url = 'https://www.twitch.tv/' + username
-                        embed = discord.Embed(title=results['users'][0]['display_name'], type='rich', description=user_url)
-                        embed.add_field(name='ID', value=results['users'][0]['_id'])
-                        embed.add_field(name='Bio', value=results['users'][0]['bio'])
-                        embed.add_field(name='Account Created', value=results['users'][0]['created_at'][:10])
-                        embed.add_field(name='Last Updated', value=results['users'][0]['updated_at'][:10])
-                        if results['users'][0]['logo'] == None:
-                            embed.set_thumbnail(url='https://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_70x70.png')
-                        else:
-                            embed.set_thumbnail(url=results['users'][0]['logo'])
-                        await client.send_message(message.channel, embed=embed)
+                    async with aiohttp.ClientSession() as session:
+                        with session.get(twitch_url, headers=headers) as resp:
+                            results = json.loads(resp.text())
+                            if results['_total'] == 0:
+                                out = "There is no user by that name."
+                            else:
+                                username = results['users'][0]['name']
+                                user_url = 'https://www.twitch.tv/' + username
+                                embed = discord.Embed(title=results['users'][0]['display_name'], type='rich', description=user_url)
+                                embed.add_field(name='ID', value=results['users'][0]['_id'])
+                                embed.add_field(name='Bio', value=results['users'][0]['bio'])
+                                embed.add_field(name='Account Created', value=results['users'][0]['created_at'][:10])
+                                embed.add_field(name='Last Updated', value=results['users'][0]['updated_at'][:10])
+                                if results['users'][0]['logo'] == None:
+                                    embed.set_thumbnail(url='https://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_70x70.png')
+                                else:
+                                    embed.set_thumbnail(url=results['users'][0]['logo'])
+                                await client.send_message(message.channel, embed=embed)
 
             # Prints given text upside down
             elif message.content.startswith('!upside'):
@@ -883,7 +855,7 @@ async def on_message(message):
                 if message.content == '!until':
                     out = '!until MM-DD-YYYY'
                 else:
-                    out = str(Days_Until.until(parse[1])) + " days"
+                    out = str(Until.main(parse[1])) + " days"
 
             elif message.content.startswith('!userinfo'):
                 if message.content == '!userinfo':
@@ -1040,7 +1012,7 @@ async def on_message(message):
                 q = remove_command(message.content)
                 out = Youtube.search(q)
 
-            elif message.content.startswith('!XKCD'):
+            elif message.content.startswith('!xkcd'):
                 out = XKCD.main(message.content)
 
             # The following are responses to various keywords if present anywhere in a message
