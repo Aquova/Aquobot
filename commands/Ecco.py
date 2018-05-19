@@ -1,13 +1,25 @@
 # This is a program that will take in user input and output an image of that text in the style of the text in 'Ecco the Dolphin'
-# Written by Austin Bricker, 2017
+# Written by Austin Bricker, 2017-2018
 
 import os
 from PIL import Image
 
+unusualLetters = {"M": 24, "W": 24, "X": 18}
+
+max_row_len = 18
+x_margin = 16
+y_margin = 26
+
+def centerText(row):
+    c = 160
+    for letter in row:
+        if letter.upper() in list(unusualLetters.keys()):
+            c -= unusualLetters[letter.upper()] // 2
+        else:
+            c -= x_margin / 2
+    return int(c)
+
 def text(sentence):
-    max_row_len = 18
-    x_margin = 16
-    y_margin = 26
     words = sentence.split(" ")
     new_rows = []
     new_line = words[0]
@@ -29,7 +41,7 @@ def text(sentence):
     row_num = 0
     y_pos = 132 - (len(new_rows) * y_margin // 2)
     for row in new_rows:
-        x_pos = 160 - (len(row) * x_margin // 2)
+        x_pos = centerText(row)
         for letter in row:
             try:
                 if letter == " ": # Behavior if space
