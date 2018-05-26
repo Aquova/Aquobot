@@ -76,12 +76,12 @@ def main(m):
         try:
             if (1 <= int(q[1]) and int(q[1]) <= 31):
                 if q[0].upper() in months.keys():
-                    params = (m.author.id, m.author.name, months[q[0].upper()], int(q[1]), m.server.id)
-                    sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day, server_id) VALUES (?, ?, ?, ?, ?)", params)
+                    params = (m.author.id, m.author.name, months[q[0].upper()], int(q[1]))
+                    sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day) VALUES (?, ?, ?, ?)", params)
                     out = "{0}'s birthday now set as {1}/{2}".format(m.author.name, months[q[0].upper()], q[1])
                 elif (1 <= int(q[0]) and int(q[0]) <= 12):
-                    params = (m.author.id, m.author.name, int(q[0]), int(q[1]), m.server.id)
-                    sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day, server_id) VALUES (?, ?, ?, ?, ?)", params)
+                    params = (m.author.id, m.author.name, int(q[0]), int(q[1]))
+                    sqlconn.execute("INSERT OR REPLACE INTO birthday (id, name, month, day) VALUES (?, ?, ?, ?)", params)
                     out = "{0}'s birthday now set as {1}/{2}".format(m.author.name, q[0], q[1])
                 else:
                     out = "Invalid birthday format. The format needs to be !birthday set MONTH DAY"
@@ -90,7 +90,9 @@ def main(m):
         except ValueError:
             out = "Invalid birthday format. The format needs to be !birthday set MONTH DAY"
     elif m.content.startswith('!birthday list'):
-        birth_ids = sqlconn.execute("SELECT id FROM birthday").fetchall()
+        current_month = datetime.datetime.now().month
+        birth_ids = sqlconn.execute("SELECT id FROM birthday WHERE month > ? ORDER BY month ASC, day ASC;", [current_month - 1]).fetchall()
+        birth_ids.extend(sqlconn.execute("SELECT id FROM birthday WHERE month < ? ORDER BY month ASC, day ASC;", [current_month]).fetchall())
         out = ""
         ids = [x.id for x in m.server.members]
         for user in birth_ids:
