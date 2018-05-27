@@ -1,5 +1,5 @@
 import sqlite3, discord, random
-from Utils import remove_command
+from commands.Utils import remove_command
 
 def main(message):
     sqlconn = sqlite3.connect('database.db')

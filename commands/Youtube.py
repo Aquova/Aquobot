@@ -4,10 +4,10 @@
 from apiclient.discovery import build
 from apiclient.errors import HttpError
 from oauth2client.tools import argparser
-import json
+import json, os, sys
 
-with open("config.json") as json_data_file:
-	cfg = json.load(json_data_file)
+with open(os.path.join(sys.path[0], 'config.json')) as json_data_file:
+    cfg = json.load(json_data_file)
 
 DEVELOPER_KEY = cfg['Client']['google']
 YOUTUBE_API_SERVICE_NAME = "youtube"

@@ -6,9 +6,7 @@ Written by Austin Bricker, 2017
 Requires Python 3.5+ to run
 """
 
-import sys, discord
-sys.path.insert(0, './commands')
-
+import sys, discord, os
 from googletrans import Translator
 from google import google
 # from bs4 import BeautifulSoup
@@ -17,10 +15,10 @@ import aiohttp, signal, wolframalpha, async_timeout
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, time
 
 # Local python modules
-import BF, Birthday, Blackjack, Braille, Cal, Ecco, Emoji, Help, Jokes, ISS
-import Logging, MAL, Mayan, Morse, Roman, Quotes, Scrabble, Select, Steam, Slots
-import Speedrun, Todo, Upside, Weather, Youtube, Wikipedia, XKCD, Whatpulse, Until
-from Utils import remove_command
+from commands import BF, Birthday, Blackjack, Braille, Cal, Ecco, Emoji, Help, Jokes, ISS
+from commands import Logging, MAL, Mayan, Morse, Roman, Quotes, Scrabble, Select, Steam, Slots
+from commands import Speedrun, Todo, Upside, Weather, Youtube, Wikipedia, XKCD, Whatpulse, Until
+from commands.Utils import remove_command
 
 # Logs to discord.log
 logger = logging.getLogger('discord')
@@ -30,7 +28,7 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 # config.json isn't included in repository, to protect public keys
-with open('config.json') as json_data_file:
+with open(os.path.join(sys.path[0], 'config.json')) as json_data_file:
     cfg = json.load(json_data_file)
 
 wolfram_key = str(cfg['Client']['wolfram'])

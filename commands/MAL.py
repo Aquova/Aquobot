@@ -1,5 +1,5 @@
 import discord, sqlite3, aiohttp, asyncio
-from Utils import remove_command
+from commands.Utils import remove_command
 
 async def main(message):
     sqlconn = sqlite3.connect('database.db')

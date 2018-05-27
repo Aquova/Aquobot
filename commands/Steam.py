@@ -1,6 +1,6 @@
-import urllib, json, urllib.parse, urllib.request, datetime
+import urllib, json, urllib.parse, urllib.request, datetime, os, sys
 
-with open('config.json') as json_data_file:
+with open(os.path.join(sys.path[0], 'config.json')) as json_data_file:
     cfg = json.load(json_data_file)
 
 api = cfg['Client']['steam']

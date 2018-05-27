@@ -40,6 +40,6 @@ def main(mai):
         duration = pass_json['response'][0]['duration']
         out += '\nThe ISS will next pass over your location at {0} for {1} seconds'.format(risetime, duration)
     except TypeError:
-        out += "\nAdd your location to the database with !w add LOCATION to get more information!"
+        out += "\nAdd your location to the database with !w set LOCATION to get more information!"
 
     return out

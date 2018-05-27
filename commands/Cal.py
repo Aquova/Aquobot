@@ -2,7 +2,7 @@
 # Written by Austin Bricker, 2017-2018
 
 import platform, discord, subprocess
-from Utils import remove_command
+from commands.Utils import remove_command
 
 # OS X doesn't support -h flag, but Linux requires it, so every command needs a Mac and non-Mac version
 def main(message):

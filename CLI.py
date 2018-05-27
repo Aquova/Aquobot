@@ -4,18 +4,15 @@ Designed to allow me to use some of Aquobot's functions from a terminal, without
 Written by aquova, 2018
 """
 
-import sys
-sys.path.insert(0, './commands')
-
 from googletrans import Translator
 from google import google
 import lxml.etree as ET
-import wolframalpha, json, random, sqlite3, datetime, time, requests
-from Utils import remove_command, startswith
+import sys, wolframalpha, json, random, sqlite3, datetime, time, requests, os
+from commands.Utils import remove_command, startswith
 
-import Help, Select, BF, Cal, Ecco, Weather, ISS, Jokes, Mayan, Morse, Roman, Scrabble, Speedrun, Steam, Todo, Upside, Until, Wikipedia, Youtube, XKCD
+from commands import Help, Select, BF, Ecco, Weather, Jokes, Mayan, Morse, Roman, Scrabble, Todo, Upside, Until, Wikipedia, Youtube, XKCD
 
-with open('config.json') as json_data_file:
+with open(os.path.join(sys.path[0], 'config.json')) as json_data_file:
     cfg = json.load(json_data_file)
 
 wolframKey = str(cfg['Client']['wolfram'])
