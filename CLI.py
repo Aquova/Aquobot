@@ -10,8 +10,8 @@ sys.path.insert(0, './commands')
 from googletrans import Translator
 from google import google
 import lxml.etree as ET
-import http, wolframalpha, json, random, sqlite3, datetime, urllib, time, requests
-from Utils import remove_command
+import wolframalpha, json, random, sqlite3, datetime, time, requests
+from Utils import remove_command, startswith
 
 import Help, Select, BF, Cal, Ecco, Weather, ISS, Jokes, Mayan, Morse, Roman, Scrabble, Speedrun, Steam, Todo, Upside, Until, Wikipedia, Youtube, XKCD
 
@@ -21,13 +21,10 @@ with open('config.json') as json_data_file:
 wolframKey = str(cfg['Client']['wolfram'])
 waclient = wolframalpha.Client(wolframKey)
 
-def startswith(phrase, substring):
-    subLength = len(substring)
-    if len(phrase) < subLength:
-        return False
-    if substring.upper() == phrase[:subLength].upper():
-        return True
-    return False
+sqlconn = sqlite3.connect('cli.db')
+sqlconn.execute("CREATE TABLE IF NOT EXISTS todo (id INT PRIMARY KEY, message TEXT, t TEXT);")
+sqlconn.commit()
+sqlconn.close()
 
 def printTitle():
     print("                         _           _   ")
@@ -35,6 +32,7 @@ def printTitle():
     print(" / _` |/ _` | | | |/ _ \| '_ \ / _ \| __|")
     print("| (_| | (_| | |_| | (_) | |_) | (_) | |_ ")
     print(" \__,_|\__, |\__,_|\___/|_.__/ \___/ \__|")
+    print("By aquova")
     print("")
 
 def main():
@@ -96,64 +94,17 @@ def main():
     elif startswith(userInput, "!echo"):
         out = remove_command(userInput)
 
-    # # Tells a 7 day forecast based on user or location. Uses same database as weather
-    # elif (startswith(userInput, "!forecast") or startswith(userInput, "!f")):
-    #     sqlconn = sqlite3.connect('database.db')
-    #     author_id = int(message.author.id)
-    #     author_name = message.author.name
-    #     if (message.content == '!forecast' or message.content == '!f'):
-    #         user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
-    #         try:
-    #             query_location = user_loc.fetchone()[0]
-    #             out = Weather.forecast(query_location)
-    #         except TypeError:
-    #             out = "!forecast [set] LOCATION"
-    #     elif message.content.startswith("!forecast set"):
-    #         q = message.content[13:]
-    #         params = (author_id, author_name, q)
-    #         sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
-    #         out = "Location set as %s" % q
-    #     else:
-    #         try:
-    #             q = remove_command(message.content)
-    #             out = Weather.forecast(q)
-    #         except TypeError:
-    #             out = "No location found. Please be more specific."
-    #     sqlconn.commit()
-    #     sqlconn.close()
-
-    # # Same as !forecast, but responds with emojis
-    # elif message.content.startswith('!qf'):
-    #     sqlconn = sqlite3.connect('database.db')
-    #     author_id = int(message.author.id)
-    #     author_name = message.author.name
-    #     if message.content == '!qf':
-    #         user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
-    #         try:
-    #             query_location = user_loc.fetchone()[0]
-    #             out = Weather.emoji_forecast(query_location)
-    #         except TypeError:
-    #             out = "!qf [set] LOCATION"
-    #     elif message.content.startswith("!qf set"):
-    #         q = message.content[7:]
-    #         params = (author_id, author_name, q)
-    #         sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
-    #         out = "Location set as %s" % q
-    #     else:
-    #         try:
-    #             q = remove_command(message.content)
-    #             out = Weather.emoji_forecast(q)
-    #         except TypeError:
-    #             out = "No location found. Please be more specific."
-    #     sqlconn.commit()
-    #     sqlconn.close()
+    # Tells a 7 day forecast based on specified location
+    elif (startswith(userInput, "!forecast") or startswith(userInput, "!f")):
+        try:
+            q = remove_command(userInput)
+            out = Weather.forecast(q)
+        except TypeError:
+            out = "No location found. Please be more specific."
 
     elif startswith(userInput, '!g'):
         q = remove_command(userInput)
         out = google.search(q)[0].link
-
-    # elif message.content.startswith('!iss'):
-    #     out = ISS.main(message.author.id)
 
     elif startswith(userInput, "!img"):
         if userInput == "!img":
@@ -201,41 +152,26 @@ def main():
         parse = remove_command(userInput)
         out = Morse.main(parse)
 
-    # elif message.content.startswith('!rockpaperscissors') or message.content.startswith('!rps'):
-    #     if len(message.content.split(" ")) == 1:
-    #         out = '`!rockpaperscISSors MOVE`'
-    #     else:
-    #         hand = remove_command(message.content)
-    #         options = {"ROCK":":fist:", "PAPER":":hand_splayed:", "SCISSORS":":v:"}
-    #         optionsList = list(options.keys())
-    #         if hand.upper() not in optionsList:
-    #             out = "You need to throw either rock, paper, or scISSors"
-    #         else:
-    #             playerIndex = optionsList.index(hand.upper())
-    #             cpuIndex = random.randint(0, len(optionsList) - 1)
-    #             sqlconn = sqlite3.connect('database.db')
-    #             money = sqlconn.execute("SELECT value FROM points WHERE userid=?", [message.author.id])
-    #             try:
-    #                 user_money = money.fetchone()[0]
-    #             except TypeError:
-    #                 user_money = 0
+    elif startswith(userInput, "!rockpaperscissors") or startswith(userInput, "!rps"):
+        if len(userInput.split(" ")) == 1:
+            out = '`!rockpaperscissors MOVE`'
+        else:
+            hand = remove_command(userInput)
+            optionsList = ["ROCK", "PAPER", "SCISSORS"]
+            if hand.upper() not in optionsList:
+                out = "You need to throw either rock, paper, or scissors"
+            else:
+                playerIndex = optionsList.index(hand.upper())
+                cpuIndex = random.randint(0, len(optionsList) - 1)
 
-    #             # They have the same play, it's a tie
-    #             if cpuIndex == playerIndex:
-    #                 out = "You both threw {}, it's a tie! {} = {}\nYou still have {} points".format(optionsList[cpuIndex].title(), options[optionsList[cpuIndex]], options[optionsList[cpuIndex]], user_money)
-    #             # Player threw the weaker hand, they lose
-    #             elif (playerIndex + 1) % 3 == cpuIndex:
-    #                 user_money -= 10
-    #                 out = "{} beats {}, you lose! {} < {}\nYou now have {} points".format(optionsList[cpuIndex].title(), optionsList[playerIndex].title(), options[optionsList[playerIndex]], options[optionsList[cpuIndex]], user_money)
-    #             else:
-    #                 user_money += 10
-    #                 out = "{} beats {}, you win! {} > {}\nYou now have {} points".format(optionsList[playerIndex].title(), optionsList[cpuIndex].title(), options[optionsList[playerIndex]], options[optionsList[cpuIndex]], user_money)
-
-    #             params = [message.author.id, user_money]
-    #             sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)
-
-    #             sqlconn.commit()
-    #             sqlconn.close()
+                # They have the same play, it's a tie
+                if cpuIndex == playerIndex:
+                    out = "You both threw {}, it's a tie!\n".format(optionsList[cpuIndex].title())
+                # Player threw the weaker hand, they lose
+                elif (playerIndex + 1) % 3 == cpuIndex:
+                    out = "{} beats {}, you lose!".format(optionsList[cpuIndex].title(), optionsList[playerIndex].title())
+                else:
+                    out = "{} beats {}, you win!\n".format(optionsList[playerIndex].title(), optionsList[cpuIndex].title())
 
     # Convert number into/out of roman numerals
     elif startswith(userInput, "!roman"):
@@ -255,33 +191,12 @@ def main():
         else:
             out = str(Scrabble.scrabble(parse[1]))
 
-    # elif message.content.startswith('!slots'):
-    #     sqlconn = sqlite3.connect('database.db')
-    #     money = sqlconn.execute("SELECT value FROM points WHERE userid=?", [message.author.id])
-    #     try:
-    #         user_money = money.fetchone()[0]
-    #     except TypeError:
-    #         user_money = 0
-
-    #     if message.content == '!slots info':
-    #         out = "Play slots with Aquobot! Type '!slots' to bet your hard earned cash against chance!"
-    #     else:
-    #         earned, phrase, rolls = Slots.main()
-    #         user_money += earned
-    #         out = "You got {0}-{1}-{2}, so you earned {3} points. {4} You now have {5} points".format(rolls[0], rolls[1], rolls[2], earned, phrase, user_money)
-
-    #         params = [message.author.id, user_money]
-    #         sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)
-
-    #     sqlconn.commit()
-    #     sqlconn.close()
-
-    # # elif message.content.startswith('!speedrun'):
-    # #     q = remove_command(message.content)
-    # #     if q.split(' ')[0].upper() == 'USER':
-    # #         await Speedrun.user(remove_command(q), client, message)
-    # #     else:
-    # #         await Speedrun.game(q, client, message)
+    elif startswith(userInput, "!slots"):
+        if userInput == '!slots info':
+            out = "Play slots with Aquobot! Type '!slots' to bet your hard earned cash against chance!"
+        else:
+            earned, phrase, rolls = Slots.main()
+            out = "You got {0}-{1}-{2}, so you earned {3} points. {4}".format(rolls[0], rolls[1], rolls[2], earned, phrase)
 
     elif startswith(userInput, "!spellcheck"):
         q = remove_command(userInput).replace(" ", "+")
@@ -295,55 +210,45 @@ def main():
         results = json.loads(r.text)
         out = "Suggestion: {}".format(results['suggestion'])
 
-    # # elif message.content.startswith('!steam'):
-    # #     if len(message.content.split(" ")) == 1:
-    # #         out = "!steam USERNAME"
-    # #     else:
-    # #         q = remove_command(message.content)
-    # #         info = Steam.get_userinfo(q)
-    # #         if isinstance(info, list):
-    # #             embed = discord.Embed(title=info[0], type='rich', description=info[2])
-    # #             embed.add_field(name='User ID', value=info[1])
-    # #             embed.set_thumbnail(url=info[3])
-    # #             embed.add_field(name='Last Logged Off', value=info[4])
-    # #             embed.add_field(name='Profile Created', value=info[5])
-    # #             embed.add_field(name='Games Owned', value=info[6])
-    # #             if len(info) > 8:
-    # #                 embed.add_field(name='Games Played Last 2 Weeks', value=info[7])
-    # #                 recent_info = "{0} ({1} hours, {2} hours total)".format(info[8], info[9], info[10])
-    # #                 embed.add_field(name='Most Played Last 2 Weeks', value=recent_info)
 
-    # #             await client.send_message(message.channel, embed=embed)
-    # #         else:
-    # #             out = info
-    # #         # out = Steam.get_userinfo(q) <- The old method
+    # Displays the time for a user or location.
+    elif startswith(userInput, "!time"):
+        q = remove_command(userInput)
+        out = Weather.time(q)
 
-    # # Displays the time for a user or location. Uses same database as weather
-    # elif message.content.startswith('!time'):
-    #     sqlconn = sqlite3.connect('database.db')
-    #     author_id = int(message.author.id)
-    #     author_name = message.author.name
-    #     if message.content == '!time':
-    #         user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
-    #         try:
-    #             query_location = user_loc.fetchone()[0]
-    #             out = Weather.time(query_location)
-    #         except TypeError:
-    #             out = "!time [set] LOCATION"
-    #     elif message.content.startswith("!time set"):
-    #         q = message.content[9:]
-    #         params = (author_id, author_name, q)
-    #         sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
-    #         out = "Location set as %s" % q
-    #     else:
-    #         q = remove_command(message.content)
-    #         out = Weather.time(q)
-    #     sqlconn.commit()
-    #     sqlconn.close()
-
-    # # Users can add/remove to their own todo list, and remove entries
-    # elif message.content.startswith('!todo'):
-    #     out = Todo.main(message.content, message.author.name, message.author.id, str(message.timestamp))
+    # Users can add/remove to their own todo list, and remove entries
+    elif startswith(userInput, "!todo"):
+        sqlconn = sqlite3.connect('cli.db')
+        time = str(datetime.datetime.now()).split(".")[0] + " GMT"
+        if userInput == '!todo':
+            user_todos = sqlconn.execute("SELECT * FROM todo").fetchall()
+            if user_todos == []:
+                out = "You have not added anything to your todo list.\nAdd items with '!todo add item'"
+            else:
+                out = ""
+                for item in user_todos:
+                    out += "{} @ {}. (#{})".format(item[1], item[2], item[0])
+        elif startswith(userInput, "!todo add"):
+            num = sqlconn.execute("SELECT COUNT(*) FROM todo")
+            num = num.fetchone()[0] + 1
+            mes = remove_command(remove_command(userInput))
+            params = (num, mes, time)
+            sqlconn.execute("INSERT OR REPLACE INTO todo (id, message, t) VALUES (?, ?, ?)", params)
+            out = "Item added: {} @ {}. (#{})".format(mes, time, num)
+        elif startswith(userInput, '!todo remove'):
+            try:
+                mes = remove_command(remove_command(userInput))
+                remove_id = int(mes)
+                sqlconn.execute("DELETE FROM todo WHERE id=?", [remove_id])
+                out = "Item {} removed".format(remove_id)
+            except TypeError:
+                out = "There is no entry of that index value"
+            except ValueError:
+                out = "That's not a number. Please specify the index number of the item to remove."
+        else:
+            out = "!todo [add/remove]"
+        sqlconn.commit()
+        sqlconn.close()
 
     elif (startswith(userInput, "!tr") or startswith(userInput, "!translate")):
         if (userInput == '!tr' or userInput == '!translate'):
@@ -357,37 +262,6 @@ def main():
                 out = new.text
             except ValueError:
                 out = "Invalid destination language."
-
-    # # elif message.content.startswith('!twitch'):
-    # #     if message.content == '!twitch':
-    # #         out = '!twitch USERNAME'
-    # #     else:
-    # #         q = remove_command(message.content)
-    # #         twitch_url = 'https://api.twitch.tv/kraken/users?login={}'.format(q)
-
-    # #         headers = {
-    # #             "Client-ID": cfg['Client']['twitch'],
-    # #             "Accept": "application/vnd.twitchtv.v5+json"
-    # #         }
-
-    # #         async with aiohttp.ClientSession() as session:
-    # #             with session.get(twitch_url, headers=headers) as resp:
-    # #                 results = json.loads(resp.text())
-    # #                 if results['_total'] == 0:
-    # #                     out = "There is no user by that name."
-    # #                 else:
-    # #                     username = results['users'][0]['name']
-    # #                     user_url = 'https://www.twitch.tv/' + username
-    # #                     embed = discord.Embed(title=results['users'][0]['display_name'], type='rich', description=user_url)
-    # #                     embed.add_field(name='ID', value=results['users'][0]['_id'])
-    # #                     embed.add_field(name='Bio', value=results['users'][0]['bio'])
-    # #                     embed.add_field(name='Account Created', value=results['users'][0]['created_at'][:10])
-    # #                     embed.add_field(name='Last Updated', value=results['users'][0]['updated_at'][:10])
-    # #                     if results['users'][0]['logo'] == None:
-    # #                         embed.set_thumbnail(url='https://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_70x70.png')
-    # #                     else:
-    # #                         embed.set_thumbnail(url=results['users'][0]['logo'])
-    # #                     await client.send_message(message.channel, embed=embed)
 
     # Prints given text upside down
     elif startswith(userInput, "!upside"):
@@ -415,63 +289,21 @@ def main():
         q = remove_command(userInput)
         out = Wikipedia.main(q)
 
-    # # Returns with the weather of a specified location
-    # # Needs to be the last 'w' command
-    # elif (message.content.startswith('!weather') or message.content.startswith('!w')):
-    #     sqlconn = sqlite3.connect('database.db')
-    #     author_id = int(message.author.id)
-    #     author_name = message.author.name
-    #     if (message.content == '!weather' or message.content == '!w'):
-    #         user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
-    #         try:
-    #             query_location = user_loc.fetchone()[0]
-    #             out = Weather.main(query_location)
-    #         except TypeError:
-    #             out = "!weather [set] LOCATION"
-    #     elif (message.content.startswith("!weather set") or message.content.startswith('!w set')):
-    #         tmp = message.content.split(" ")[2:]
-    #         q = " ".join(tmp)
-    #         params = (author_id, author_name, q)
-    #         sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
-    #         out = "Location set as %s" % q
-    #     else:
-    #         try:
-    #             q = remove_command(message.content)
-    #             out = Weather.main(q)
-    #         except TypeError:
-    #             out = "No location found. Please be more specific."
-    #     sqlconn.commit()
-    #     sqlconn.close()
-
-    # # Same as !weather, but prints emojis
-    # elif message.content.startswith('!qw'):
-    #     sqlconn = sqlite3.connect('database.db')
-    #     author_id = int(message.author.id)
-    #     author_name = message.author.name
-    #     if message.content == '!qw':
-    #         user_loc = sqlconn.execute("SELECT location FROM weather WHERE id=?", [author_id])
-    #         try:
-    #             query_location = user_loc.fetchone()[0]
-    #             out = Weather.emoji_weather(query_location)
-    #         except TypeError:
-    #             out = "!qw [set] LOCATION"
-    #     elif message.content.startswith("!qw set"):
-    #         q = message.content[7:]
-    #         params = (author_id, author_name, q)
-    #         sqlconn.execute("INSERT OR REPLACE INTO weather (id, name, location) VALUES (?, ?, ?)", params)
-    #         out = "Location set as %s" % q
-    #     else:
-    #         q = remove_command(message.content)
-    #         out = Weather.emoji_weather(q)
-    #     sqlconn.commit()
-    #     sqlconn.close()
+    # Returns with the weather of a specified location
+    # Needs to be the last 'w' command
+    elif (startswith(userInput, "!weather") or startswith(userInput, "!w")):
+        try:
+            q = remove_command(userInput)
+            out = Weather.main(q)
+        except TypeError:
+            out = "No location found. Please be more specific."
 
     elif (startswith(userInput, "!youtube") or startswith(userInput, "!yt")):
         q = remove_command(userInput)
         out = Youtube.search(q)
 
-    # elif message.content.startswith('!xkcd'):
-    #     out = XKCD.main(message.content)
+    elif startswith(userInput, '!xkcd'):
+        out = XKCD.main(userInput)
 
     if out != "":
         print(out + '\n')

@@ -4,3 +4,11 @@
 def remove_command(m):
     tmp = m.split(" ")[1:]
     return " ".join(tmp)
+
+def startswith(phrase, substring):
+    subLength = len(substring)
+    if len(phrase) < subLength:
+        return False
+    if substring.upper() == phrase[:subLength].upper():
+        return True
+    return False

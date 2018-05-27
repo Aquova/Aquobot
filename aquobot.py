@@ -596,13 +596,13 @@ async def on_message(message):
 
             elif message.content.startswith('!rockpaperscissors') or message.content.startswith('!rps'):
                 if len(message.content.split(" ")) == 1:
-                    out = '`!rockpaperscISSors MOVE`'
+                    out = '`!rockpaperscissors MOVE`'
                 else:
                     hand = remove_command(message.content)
                     options = {"ROCK":":fist:", "PAPER":":hand_splayed:", "SCISSORS":":v:"}
                     optionsList = list(options.keys())
                     if hand.upper() not in optionsList:
-                        out = "You need to throw either rock, paper, or scISSors"
+                        out = "You need to throw either rock, paper, or scissors"
                     else:
                         playerIndex = optionsList.index(hand.upper())
                         cpuIndex = random.randint(0, len(optionsList) - 1)
