@@ -594,7 +594,7 @@ async def on_message(message):
             elif message.content.startswith('!quote'):
                 out = Quotes.main(message)
 
-            elif message.content.startswith('!rockpaperscISSors') or message.content.startswith('!rps'):
+            elif message.content.startswith('!rockpaperscissors') or message.content.startswith('!rps'):
                 if len(message.content.split(" ")) == 1:
                     out = '`!rockpaperscISSors MOVE`'
                 else:
