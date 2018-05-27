@@ -10,8 +10,7 @@ sys.path.insert(0, './commands')
 from googletrans import Translator
 from google import google
 import lxml.etree as ET
-import aiohttp, wolframalpha, asyncio, json, random, sqlite3, datetime, urllib, time
-import async_timeout
+import http, wolframalpha, json, random, sqlite3, datetime, urllib, time, requests
 from Utils import remove_command
 
 import Help, Select, BF, Cal, Ecco, Weather, ISS, Jokes, Mayan, Morse, Roman, Scrabble, Speedrun, Steam, Todo, Upside, Until, Wikipedia, Youtube, XKCD
@@ -26,9 +25,17 @@ def startswith(phrase, substring):
     subLength = len(substring)
     if len(phrase) < subLength:
         return False
-    if substring == phrase[:subLength]:
+    if substring.upper() == phrase[:subLength].upper():
         return True
     return False
+
+def printTitle():
+    print("                         _           _   ")
+    print("  __ _  __ _ _   _  ___ | |__   ___ | |_ ")
+    print(" / _` |/ _` | | | |/ _ \| '_ \ / _ \| __|")
+    print("| (_| | (_| | |_| | (_) | |_) | (_) | |_ ")
+    print(" \__,_|\__, |\__,_|\___/|_.__/ \___/ \__|")
+    print("")
 
 def main():
     userInput = input("> ")
@@ -54,47 +61,43 @@ def main():
     elif startswith(userInput, "!alive"):
         out = random.choice(['Nah.', 'Who wants to know?', ':robot: `yes`', "I wouldn't be responding if I were dead."])
 
-    # elif (message.content.startswith('!brainfuck') or message.content.startswith('!bf')):
-    #     if len(message.content.split(" ")) == 1:
-    #         out = '!brainfuck CODE\nInfo on the language: <https://learnxinyminutes.com/docs/brainfuck/>\nStill confused? Use this site to help visualize what is happening <http://bf.jamesliu.info/>'
-    #     else:
-    #         q = remove_command(message.content)
-    #         if q[0] in '+-[]><.':
-    #             out = BF.decode(q)
-    #         else:
-    #             out = BF.encode(q)
+    elif (startswith(userInput, "!brainfuck") or startswith(userInput, "!bf")):
+        if len(userInput.split(" ")) == 1:
+            out = '!brainfuck CODE\nInfo on the language: <https://learnxinyminutes.com/docs/brainfuck/>\nStill confused? Use this site to help visualize what is happening <http://bf.jamesliu.info/>'
+        else:
+            q = remove_command(userInput)
+            if q[0] in '+-[]><.':
+                out = BF.decode(q)
+            else:
+                out = BF.encode(q)
 
-    # # Prints out the calendar for the month
-    # elif message.content.startswith('!cal'):
-    #     out = Cal.main(message)
+    # Chooses between given options
+    elif startswith(userInput, "!choose"):
+        if userInput == "!choose":
+            out = "!choose OPTION1, OPTION2, OPTION3..."
+        else:
+            tmp = remove_command(userInput)
+            choice = tmp.split(",")
+            out = str(random.choice(choice))
 
-    # # Chooses between given options
-    # elif message.content.startswith('!choose'):
-    #     if message.content == "!choose":
-    #         out = "!choose OPTION1, OPTION2, OPTION3..."
-    #     else:
-    #         tmp = remove_command(message.content)
-    #         choice = tmp.split(",")
-    #         out = str(random.choice(choice))
+    # Responds with .png image of text in "Ecco the Dolphin" style
+    elif startswith(userInput, "!ecco"):
+        if userInput == '!ecco':
+            out = '!ecco PHRASE'
+        else:
+            q = remove_command(userInput)
+            valid = Ecco.text(q)
+            if valid == 'ERROR':
+                out = 'That phrase used an invalid character. Please try again.'
+            else:
+                out = "Image generated."
 
-    # # Responds with .png image of text in "Ecco the Dolphin" style
-    # elif message.content.startswith('!ecco'):
-    #     if message.content == '!ecco':
-    #         out = '!ecco PHRASE'
-    #     else:
-    #         q = remove_command(message.content)
-    #         valid = Ecco.text(q)
-    #         if valid == 'ERROR':
-    #             out = 'That phrase used an invalid character. Please try again.'
-    #         else:
-    #             out = "Image generated."
-
-    # # Repeats back user message
-    # elif message.content.startswith('!echo'):
-    #     out = remove_command(message.content)
+    # Repeats back user message
+    elif startswith(userInput, "!echo"):
+        out = remove_command(userInput)
 
     # # Tells a 7 day forecast based on user or location. Uses same database as weather
-    # elif (message.content.startswith('!forecast') or message.content.startswith('!f')):
+    # elif (startswith(userInput, "!forecast") or startswith(userInput, "!f")):
     #     sqlconn = sqlite3.connect('database.db')
     #     author_id = int(message.author.id)
     #     author_name = message.author.name
@@ -145,67 +148,58 @@ def main():
     #     sqlconn.commit()
     #     sqlconn.close()
 
-    # elif message.content.startswith('!g'):
-    #     q = remove_command(message.content)
-    #     out = google.search(q)[0].link
+    elif startswith(userInput, '!g'):
+        q = remove_command(userInput)
+        out = google.search(q)[0].link
 
     # elif message.content.startswith('!iss'):
     #     out = ISS.main(message.author.id)
 
-    # # elif message.content.startswith('!img'):
-    # #     if message.content == '!img':
-    # #         out = "!img QUERY"
-    # #     else:
-    # #         q = remove_command(message.content)
-    # #         params = {'q': q,
-    # #             'safe': 'on',
-    # #             'lr': 'lang_en',
-    # #             'hl': 'en',
-    # #             'tbm': 'isch'
-    # #         }
+    elif startswith(userInput, "!img"):
+        if userInput == "!img":
+            out = "!img QUERY"
+        else:
+            q = remove_command(userInput)
+            params = {'q': q,
+                'safe': 'on',
+                'lr': 'lang_en',
+                'hl': 'en',
+                'tbm': 'isch'
+            }
 
-    # #         headers = {
-    # #             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:54.0) Gecko/20100101 Firefox/54.0'
-    # #         }
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:54.0) Gecko/20100101 Firefox/54.0'
+            }
 
-    # #         with aiohttp.ClientSession() as session:
-    # #             try:
-    # #                 with async_timeout.timeout(5):
-    # #                     with session.get('https://google.com/search', params=params, headers=headers) as resp:
-    # #                         if resp.status == 200:
-    # #                             root = ET.fromstring(resp.text(), ET.HTMLParser())
-    # #                             foo = root.xpath(".//div[@class='rg_meta notranslate']")[0].text
-    # #                             result = json.loads(foo)
-    # #                             out = result['ou']
-    # #                         else:
-    # #                             out = "Google is unavailable I guess?\nError: {}".format(resp.response)
-    # #             except IndexError:
-    # #                 out = "No search results found at all. Did you search for something naughty?"
-    # #             except asyncio.TimeoutError:
-    # #                 out = "Timeout error"
-    # #             except Exception as e:
-    # #                 out = "An unusual error of type {} occurred".format(type(e).__name__)
+            r = requests.get('https://google.com/search', params=params, headers=headers)
+            if r.status_code == 200:
+                root = ET.fromstring(r.text, ET.HTMLParser())
+                foo = root.xpath(".//div[@class='rg_meta notranslate']")[0].text
+                result = json.loads(foo)
+                out = result['ou']
+            else:
+                out = "Google is unavailable I guess?\nError: {}".format(r.status_code)
 
-    # # Tells a joke from a pre-programmed list
-    # # elif message.content.startswith('!joke'):
-    # #     joke_list = Jokes.joke()
-    # #     pick_joke = random.choice(list(joke_list.keys()))
-    # #     out = joke_list[pick_joke]
-    # #     print(pick_joke)
-    # #     await asyncio.sleep(5)
+    # Tells a joke from a pre-programmed list
+    elif startswith(userInput, "!joke"):
+        joke_list = Jokes.joke()
+        pick_joke = random.choice(list(joke_list.keys()))
+        out = joke_list[pick_joke]
+        print(pick_joke)
+        time.sleep(5)
 
-    # # Converts time into the Mayan calendar, why not
-    # elif message.content.startswith('!mayan'):
-    #     parse = message.content.split(" ")
-    #     if message.content == '!mayan':
-    #         out = '!mayan MM-DD-YYYY/TODAY'
-    #     else:
-    #         out = "That date is " + str(Mayan.mayan(parse[1])) + " in the Mayan Long Count"
+    # Converts time into the Mayan calendar, why not
+    elif startswith(userInput, "!mayan"):
+        parse = userInput.split(" ")
+        if userInput == '!mayan':
+            out = '!mayan MM-DD-YYYY/TODAY'
+        else:
+            out = "That date is " + str(Mayan.mayan(parse[1])) + " in the Mayan Long Count"
 
-    # # Converts message into/out of morse code
-    # elif message.content.startswith('!morse'):
-    #     parse = remove_command(message.content)
-    #     out = Morse.main(parse)
+    # Converts message into/out of morse code
+    elif startswith(userInput, "!morse"):
+        parse = remove_command(userInput)
+        out = Morse.main(parse)
 
     # elif message.content.startswith('!rockpaperscissors') or message.content.startswith('!rps'):
     #     if len(message.content.split(" ")) == 1:
@@ -243,23 +237,23 @@ def main():
     #             sqlconn.commit()
     #             sqlconn.close()
 
-    # # Convert number into/out of roman numerals
-    # elif message.content.startswith('!roman'):
-    #     parse = message.content.split(" ")
-    #     if message.content == '!roman':
-    #         out = '!roman NUMBER/NUMERAL'
-    #     elif parse[1].isalpha() == True:
-    #         out = Roman.roman_to_int(parse[1])
-    #     else:
-    #         out = Roman.int_to_roman(parse[1])
+    # Convert number into/out of roman numerals
+    elif startswith(userInput, "!roman"):
+        parse = userInput.split(" ")
+        if userInput == '!roman':
+            out = '!roman NUMBER/NUMERAL'
+        elif parse[1].isalpha() == True:
+            out = str(Roman.roman_to_int(parse[1]))
+        else:
+            out = str(Roman.int_to_roman(parse[1]))
 
-    # # Returns scrabble value of given word
-    # elif message.content.startswith('!scrabble'):
-    #     parse = message.content.split(" ")
-    #     if message.content == '!scrabble':
-    #         out = '!scrabble WORD'
-    #     else:
-    #         out = Scrabble.scrabble(parse[1])
+    # Returns scrabble value of given word
+    elif startswith(userInput, "!scrabble"):
+        parse = userInput.split(" ")
+        if userInput == '!scrabble':
+            out = '!scrabble WORD'
+        else:
+            out = str(Scrabble.scrabble(parse[1]))
 
     # elif message.content.startswith('!slots'):
     #     sqlconn = sqlite3.connect('database.db')
@@ -289,18 +283,17 @@ def main():
     # #     else:
     # #         await Speedrun.game(q, client, message)
 
-    # # elif message.content.startswith('!spellcheck'):
-    # #     q = remove_command(message.content).replace(" ", "+")
-    # #     sc_url = 'https://montanaflynn-spellcheck.p.mashape.com/check/?text=' + q
-    # #     headers = {
-    # #         "X-Mashape-Key": cfg['Client']['mashape'],
-    # #         "Accept": "text/plain"
-    # #     }
+    elif startswith(userInput, "!spellcheck"):
+        q = remove_command(userInput).replace(" ", "+")
+        sc_url = 'https://montanaflynn-spellcheck.p.mashape.com/check/?text=' + q
+        headers = {
+            "X-Mashape-Key": cfg['Client']['mashape'],
+            "Accept": "text/plain"
+        }
 
-    # #     async with aiohttp.ClientSession() as session:
-    # #         async with session.get(sc_url, headers=headers) as resp:
-    # #             results = json.loads(resp.text())
-    # #             out = "Suggestion: {}".format(results['suggestion'])
+        r = requests.get(sc_url, headers=headers)
+        results = json.loads(r.text)
+        out = "Suggestion: {}".format(results['suggestion'])
 
     # # elif message.content.startswith('!steam'):
     # #     if len(message.content.split(" ")) == 1:
@@ -352,23 +345,18 @@ def main():
     # elif message.content.startswith('!todo'):
     #     out = Todo.main(message.content, message.author.name, message.author.id, str(message.timestamp))
 
-    # # elif (message.content.startswith('!tr') or message.content.startswith('!translate')):
-    # #     if (message.content == '!tr' or message.content == '!translate'):
-    # #         out = '!tr SOURCE_LANG MESSAGE'
-    # #     else:
-    # #         try:
-    # #             dest_lang = message.content.split(" ")[1]
-    # #             text = " ".join(message.content.split(" ")[2:])
-    # #             if text == '^':
-    # #                 async for mes in client.logs_from(message.channel, limit=10):
-    # #                     if mes.content != message.content:
-    # #                         text = mes.content
-    # #                         break
-    # #             tr = Translator()
-    # #             new = tr.translate(text, dest=dest_lang)
-    # #             out = new.text
-    # #         except ValueError:
-    # #             out = "Invalid destination language."
+    elif (startswith(userInput, "!tr") or startswith(userInput, "!translate")):
+        if (userInput == '!tr' or userInput == '!translate'):
+            out = '!tr SOURCE_LANG MESSAGE'
+        else:
+            try:
+                dest_lang = userInput.split(" ")[1]
+                text = " ".join(userInput.split(" ")[2:])
+                tr = Translator()
+                new = tr.translate(text, dest=dest_lang)
+                out = new.text
+            except ValueError:
+                out = "Invalid destination language."
 
     # # elif message.content.startswith('!twitch'):
     # #     if message.content == '!twitch':
@@ -401,31 +389,31 @@ def main():
     # #                         embed.set_thumbnail(url=results['users'][0]['logo'])
     # #                     await client.send_message(message.channel, embed=embed)
 
-    # # Prints given text upside down
-    # elif message.content.startswith('!upside'):
-    #     m = remove_command(message.content)
-    #     out = Upside.down(m)
+    # Prints given text upside down
+    elif startswith(userInput, "!upside"):
+        m = remove_command(userInput)
+        out = Upside.down(m)
 
-    # # Gives number of days until specified date
-    # elif message.content.startswith('!until'):
-    #     parse = message.content.split(" ")
-    #     if message.content == '!until':
-    #         out = '!until MM-DD-YYYY'
-    #     else:
-    #         out = str(Until.main(parse[1])) + " days"
+    # Gives number of days until specified date
+    elif startswith(userInput, "!until"):
+        parse = userInput.split(" ")
+        if userInput == '!until':
+            out = '!until MM-DD-YYYY'
+        else:
+            out = str(Until.main(parse[1])) + " days"
 
-    # # Returns with Wolfram Alpha result of query
-    # elif message.content.startswith('!wolfram'):
-    #     try:
-    #         q = remove_command(message.content)
-    #         res = waclient.query(q)
-    #         out = next(res.results).text
-    #     except AttributeError:
-    #         out = "No results"
+    # Returns with Wolfram Alpha result of query
+    elif startswith(userInput, '!wolfram'):
+        try:
+            q = remove_command(userInput)
+            res = waclient.query(q)
+            out = next(res.results).text
+        except AttributeError:
+            out = "No results"
 
-    # elif message.content.startswith('!wiki'):
-    #     q = remove_command(message.content)
-    #     out = Wikipedia.main(q)
+    elif startswith(userInput, "!wiki"):
+        q = remove_command(userInput)
+        out = Wikipedia.main(q)
 
     # # Returns with the weather of a specified location
     # # Needs to be the last 'w' command
@@ -478,9 +466,9 @@ def main():
     #     sqlconn.commit()
     #     sqlconn.close()
 
-    # elif (message.content.startswith('!youtube') or message.content.startswith('!yt')):
-    #     q = remove_command(message.content)
-    #     out = Youtube.search(q)
+    elif (startswith(userInput, "!youtube") or startswith(userInput, "!yt")):
+        q = remove_command(userInput)
+        out = Youtube.search(q)
 
     # elif message.content.startswith('!xkcd'):
     #     out = XKCD.main(message.content)
@@ -489,7 +477,7 @@ def main():
         print(out + '\n')
 
 if __name__ == '__main__':
-    print("Aquobot")
+    printTitle()
     while (True):
         try:
             main()
