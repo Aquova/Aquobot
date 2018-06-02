@@ -7,10 +7,11 @@ Written by aquova, 2018
 from googletrans import Translator
 from google import google
 import lxml.etree as ET
-import sys, wolframalpha, json, random, sqlite3, datetime, time, requests, os
+import sys, wolframalpha, json, random, sqlite3, datetime, requests, os
+from time import sleep
 from commands.Utils import remove_command, startswith
 
-from commands import Help, Select, BF, Ecco, Weather, Jokes, Mayan, Morse, Roman, Scrabble, Todo, Upside, Until, Wikipedia, Youtube, XKCD
+from commands import Help, Select, BF, Ecco, Weather, Jokes, Mayan, Morse, Roman, Scrabble, Todo, Upside, Until, Wikipedia, Youtube, XKCD, Slots
 
 with open(os.path.join(sys.path[0], 'config.json')) as json_data_file:
     cfg = json.load(json_data_file)
@@ -134,7 +135,7 @@ def main():
         pick_joke = random.choice(list(joke_list.keys()))
         out = joke_list[pick_joke]
         print(pick_joke)
-        time.sleep(5)
+        sleep(5)
 
     # Converts time into the Mayan calendar, why not
     elif startswith(userInput, "!mayan"):
@@ -163,12 +164,12 @@ def main():
 
                 # They have the same play, it's a tie
                 if cpuIndex == playerIndex:
-                    out = "You both threw {}, it's a tie!\n".format(optionsList[cpuIndex].title())
+                    out = "You both threw {}, it's a tie!".format(optionsList[cpuIndex].title())
                 # Player threw the weaker hand, they lose
                 elif (playerIndex + 1) % 3 == cpuIndex:
                     out = "{} beats {}, you lose!".format(optionsList[cpuIndex].title(), optionsList[playerIndex].title())
                 else:
-                    out = "{} beats {}, you win!\n".format(optionsList[playerIndex].title(), optionsList[cpuIndex].title())
+                    out = "{} beats {}, you win!".format(optionsList[playerIndex].title(), optionsList[cpuIndex].title())
 
     # Convert number into/out of roman numerals
     elif startswith(userInput, "!roman"):
