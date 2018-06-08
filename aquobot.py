@@ -1057,6 +1057,9 @@ async def on_message(message):
             elif message.content.startswith('!brohamir'):
                 out = "https://2.bp.blogspot.com/-wk1vLogeifI/Vxu6zZJqJFI/AAAAAAAAGHs/_XXBvq83y_INAbF9JyYAvrC1E0iprQq5ACLcB/s1600/Not%2Ba%2Bmerry%2Bman.gif"
 
+            elif message.content.startswith('!battleshout'):
+                out = "Don't worry fam, I got you\nhttps://secure.runescape.com/m=weblogin/loginform.ws?mod=www&ssl=1&dest=community"
+
             elif (message.content.upper() == 'AQUOBOT ATTACK MODE' or message.content.upper() == 'AQUOBOT, ATTACK MODE'):
                 out = '`ENGAGING ATTACK MODE`\n`ATOMIC BATTERIES TO POWER. TURBINES TO SPEED.`\n`READY TO EXECUTE ATTACK VECTOR` :robot:'
 
