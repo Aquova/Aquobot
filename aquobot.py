@@ -1045,6 +1045,18 @@ async def on_message(message):
             elif message.content.startswith('!rice'):
                 out = "BUTT SOUP"
 
+            elif message.content.startswith('!bee'):
+                out = "https://cdn0.vox-cdn.com/thumbor/REPNGW_qBQLBZvZd2ex91Gcy2V8=/0x0:1920x1080/1600x900/cdn0.vox-cdn.com/uploads/chorus_image/image/51953231/bee_movie.0.jpeg"
+
+            elif message.content.startswith('!zero'):
+                out = "https://cdn.discordapp.com/attachments/424262282550181889/454455984526721024/zoro.png"
+
+            elif message.content.startswith('!crumble'):
+                out = "https://i.imgur.com/euZCbcT.gifv"
+
+            elif message.content.startswith('!brohamir'):
+                out = "https://2.bp.blogspot.com/-wk1vLogeifI/Vxu6zZJqJFI/AAAAAAAAGHs/_XXBvq83y_INAbF9JyYAvrC1E0iprQq5ACLcB/s1600/Not%2Ba%2Bmerry%2Bman.gif"
+
             elif (message.content.upper() == 'AQUOBOT ATTACK MODE' or message.content.upper() == 'AQUOBOT, ATTACK MODE'):
                 out = '`ENGAGING ATTACK MODE`\n`ATOMIC BATTERIES TO POWER. TURBINES TO SPEED.`\n`READY TO EXECUTE ATTACK VECTOR` :robot:'
 
