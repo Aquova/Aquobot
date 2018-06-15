@@ -19,7 +19,8 @@ with open(os.path.join(sys.path[0], 'config.json')) as json_data_file:
 wolframKey = str(cfg['Client']['wolfram'])
 waclient = wolframalpha.Client(wolframKey)
 
-sqlconn = sqlite3.connect('cli.db')
+dbPath = os.path.join(os.path.dirname(__file__), "cli.db")
+sqlconn = sqlite3.connect(dbPath)
 sqlconn.execute("CREATE TABLE IF NOT EXISTS todo (id INT PRIMARY KEY, message TEXT, t TEXT);")
 sqlconn.commit()
 sqlconn.close()
