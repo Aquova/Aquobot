@@ -1060,6 +1060,9 @@ async def on_message(message):
             elif message.content.startswith('!battleshout'):
                 out = "Don't worry fam, I got you\nhttps://secure.runescape.com/m=weblogin/loginform.ws?mod=www&ssl=1&dest=community"
 
+            elif message.content.startswith('!apple'):
+                out = "https://cdn.discordapp.com/attachments/177124219144896512/457812695144595486/unknown.png"
+
             elif (message.content.upper() == 'AQUOBOT ATTACK MODE' or message.content.upper() == 'AQUOBOT, ATTACK MODE'):
                 out = '`ENGAGING ATTACK MODE`\n`ATOMIC BATTERIES TO POWER. TURBINES TO SPEED.`\n`READY TO EXECUTE ATTACK VECTOR` :robot:'
 
