@@ -31,6 +31,10 @@ def write(message):
     if message.channel.type == discord.ChannelType.text:
         f = "logs/{}/#{}.log".format(message.server.name, message.channel.name)
         ts = message.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        mes = message.content
+        if message.attachments != []:
+            for item in message.attachments:
+                mes += ' ' + item
         try:
             if message.author.nick == None:
                 name = message.author.name
@@ -39,7 +43,7 @@ def write(message):
         except AttributeError:
             name = message.author.name
         with open(f, 'a', encoding='utf-8') as openFile:
-            openFile.write("{} <{}> {}\n".format(ts, name, message.content))
+            openFile.write("{} <{}> {}\n".format(ts, name, mes))
 
 def changeNick(old, new, server):
     for channel in server.channels:
