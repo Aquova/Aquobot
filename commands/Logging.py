@@ -34,7 +34,7 @@ def write(message):
         mes = message.content
         if message.attachments != []:
             for item in message.attachments:
-                mes += ' ' + item
+                mes += ' ' + item['url']
         try:
             if message.author.nick == None:
                 name = message.author.name

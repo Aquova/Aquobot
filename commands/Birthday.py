@@ -42,10 +42,7 @@ async def check_birthday(client):
                     bday_names.append(birthdays[i][1])
                     bday_ids.append(birthdays[i][0])
             except ValueError as e:
-                print("Error handled: " + e)
                 pass
-    else:
-        print("birthdays is null apparently")
 
     if bday_ids != []:
         for j in range(0, len(bday_ids)):
@@ -53,12 +50,14 @@ async def check_birthday(client):
                 ids = [x.id for x in server.members]
                 if str(bday_ids[j]) in ids:
                     mess = "Today is {}'s birthday! Everybody wish them a happy birthday! :birthday:".format(bday_names[j])
-                    print(mess)
                     try:
                         await client.send_message(server.default_channel, mess)
                     except discord.errors.InvalidArgument:
-                        print("Server '{}' has no default channel, skipping".format(server.name))
-                        pass # This probably means their server doesn't have a default channel. I'm unsure what approach to do with this.
+                        pass
+                        # Maybe check for first channel with send_message permissions?
+                        # for channel in server.channels:
+                        #     await client.send_message(channel, mess)
+                        #     break
 
     sqlconn.commit()
     sqlconn.close()
