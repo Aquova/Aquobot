@@ -603,7 +603,8 @@ async def on_message(message):
                         out = "You need to throw either rock, paper, or scissors"
                     else:
                         playerIndex = optionsList.index(hand.upper())
-                        cpuIndex = random.randint(0, len(optionsList) - 1)
+                        cpu = random.choice(optionsList)
+                        cpuIndex = optionsList.index(cpu)
                         sqlconn = sqlite3.connect('database.db')
                         money = sqlconn.execute("SELECT value FROM points WHERE userid=?", [message.author.id])
                         try:
