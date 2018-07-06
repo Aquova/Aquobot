@@ -1072,8 +1072,11 @@ async def on_message(message):
 
             if out != "":
                 await client.send_typing(message.channel)
-
-            await client.send_message(message.channel, out)
+                
+            if len(out) > 2000:
+                await client.send_message(message.channel, "That message is longer than Discord's message limit. Tell aquova to make a permanent fix.")
+            else:
+                await client.send_message(message.channel, out)
 
         except discord.errors.HTTPException:
             pass
