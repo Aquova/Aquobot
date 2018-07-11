@@ -15,7 +15,7 @@ import aiohttp, signal, wolframalpha, async_timeout
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, time
 
 # Local python modules
-from commands import BF, Birthday, Blackjack, Braille, Cal, Ecco, Emoji, Help, Jokes, ISS
+from commands import BF, Birthday, Blackjack, Braille, Cal, Ecco, Emoji, Help, Jokes, ISS, Reminders
 from commands import Logging, MAL, Mayan, Morse, Roman, Quotes, Scrabble, Select, Steam, Slots
 from commands import Speedrun, Todo, Upside, Weather, Youtube, Wikipedia, XKCD, Whatpulse, Until
 from commands.Utils import remove_command
@@ -540,7 +540,7 @@ async def on_message(message):
 
             # Pins most recent message of specified user
             elif message.content.startswith('!pin'):
-                if message.content == '!pin':
+                if len(message.content) == 0:
                     out = '!pin @USERNAME'
                 else:
                     id = message.content.split(" ")[1]
@@ -591,6 +591,9 @@ async def on_message(message):
             # Users can add quotes to a database, and recall a random one
             elif message.content.startswith('!quote'):
                 out = Quotes.main(message)
+
+            elif message.content.startswith('!remind'):
+                await Reminders.main(client, message)
 
             elif message.content.startswith('!rockpaperscissors') or message.content.startswith('!rps'):
                 if len(message.content.split(" ")) == 1:
@@ -1072,9 +1075,21 @@ async def on_message(message):
 
             if out != "":
                 await client.send_typing(message.channel)
-                
+
             if len(out) > 2000:
-                await client.send_message(message.channel, "That message is longer than Discord's message limit. Tell aquova to make a permanent fix.")
+                # There's probably a slicker way than this. This also relies on there being line breaks
+                lines = out.split('\n')
+                if len(lines) == 1:
+                    await client.send_message(message.channel, "That message is longer than Discord's message limit. Tell aquova to make a permanent fix.")
+
+                newOut = ""
+                for line in lines:
+                    if len(newOut) + len(line) < 2000:
+                        newOut += '\n' + line
+                    else:
+                        await client.send_message(message.channel, newOut)
+                        newOut = line
+                await client.send_message(message.channel, newOut)
             else:
                 await client.send_message(message.channel, out)
 
