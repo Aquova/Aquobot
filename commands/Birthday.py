@@ -1,4 +1,4 @@
-import sqlite3, asyncio, sqlite3, datetime, discord
+import sqlite3, asyncio, datetime, discord
 
 months = {'JANUARY':1,
           'JAN':1,

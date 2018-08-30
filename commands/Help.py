@@ -10,6 +10,7 @@ info = {
 	'cal':['!cal [MONTH]', 'Prints out the calendar for the month', ''],
 	'choose':['!choose OPTION1, OPTION2, OPTION3, ...', 'Picks between a list of options, separated by commas', ''],
 	'deletethis':['!deltethis', 'Posts the .gif of Eggman holding the "delete this" sign', 'Also works with "!dt"'],
+	'define':['!define PHRASE COMMAND', 'Users can make their own commands that can then be called with !PHRASE!', ''],
 	'dt':['!dt', 'Posts the .gif of Eggman holding the "delete this" sign', 'Also works with "!deletethis"'],
 	'ecco':['!ecco PHRASE', 'Takes text and adds it to an image in the style of Ecco the Dolphin', ''],
 	'echo':['!echo PHRASE', 'Repeats back what is said to it', ''],
@@ -79,4 +80,7 @@ def main(m):
 		output = "There is no command by that name."
 
 	return output
+
+def functions():
+	return list(info.keys())
 
