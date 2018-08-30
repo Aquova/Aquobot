@@ -316,7 +316,9 @@ async def on_message(message):
         elif message.content.startswith('!define'):
             q = remove_command(message.content)
             words = q.split(" ")
-            if words[0] in Help.functions():
+            if len(words) < 2:
+                out = "`!define PHRASE RESPONSE`"
+            elif words[0] in Help.functions():
                 out = "`{}` is a built-in Aquobot function, you will need to use another.".format(words[0])
             else:
                 phrase = "!" + words[0]
