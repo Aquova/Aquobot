@@ -436,7 +436,7 @@ async def on_message(message):
                 q = remove_command(message.content)
                 mem = discord.utils.get(message.server.members, name=q)
                 try:
-                    out = mem.avatar_url
+                    out = mem.avatar_url.replace("webm", "jpeg")
                 except AttributeError:
                     out = "There is no user by that name, please try again. (Usernames are case sensitive)."
 
