@@ -431,12 +431,12 @@ async def on_message(message):
 
         elif message.content.startswith('!getavatar'):
             if len(message.content.split(" ")) == 1:
-                out = message.author.avatar_url
+                out = message.author.avatar_url.replace("webp", "png")
             else:
                 q = remove_command(message.content)
                 mem = discord.utils.get(message.server.members, name=q)
                 try:
-                    out = mem.avatar_url.replace("webp", "jpeg")
+                    out = mem.avatar_url.replace("webp", "png")
                 except AttributeError:
                     out = "There is no user by that name, please try again. (Usernames are case sensitive)."
 
