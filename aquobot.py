@@ -14,9 +14,9 @@ import aiohttp, signal, wolframalpha, async_timeout
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, time
 
 # Local python modules
-from commands import BF, Birthday, Blackjack, Cal, CustomCommands, Ecco, Emoji, Help, Jokes, ISS, Reminders
+from commands import BF, Birthday, Blackjack, Cal, CustomCommands, Ecco, Emoji, Help, Jokes, Reminders
 from commands import Logging, MAL, Mayan, Morse, Roman, Quotes, Scrabble, Select, Steam, Slots
-from commands import Speedrun, Todo, Upside, Weather, Youtube, Wikipedia, XKCD, Whatpulse, Until
+from commands import Speedrun, Todo, Upside, Weather, Youtube, Wikipedia, XKCD, Until
 from commands.Utils import remove_command
 
 # Logs to discord.log
@@ -43,7 +43,6 @@ sqlconn.execute("CREATE TABLE IF NOT EXISTS birthday (id INT PRIMARY KEY, name T
 sqlconn.execute("CREATE TABLE IF NOT EXISTS quotes (num INT PRIMARY KEY, quote TEXT, username TEXT, userid INT, messageid INT, serverid INT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS todo (id INT PRIMARY KEY, userid INT, username TEXT, message TEXT, t TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS days (userid INT PRIMARY KEY, last TEXT);")
-sqlconn.execute("CREATE TABLE IF NOT EXISTS whatpulse (userid INT PRIMARY KEY, username TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS anime (userid INT PRIMARY KEY, username TEXT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS points (userid INT PRIMARY KEY, value INT);")
 sqlconn.execute("CREATE TABLE IF NOT EXISTS commands (phrase TEXT, response TEXT);")
@@ -103,11 +102,6 @@ async def on_reaction_add(reaction, user):
                 sqlconn.close()
                 out = 'Quote added by {}: "{}" ~{}. (#{})'.format(user.name, mes, user_name, str(num + 1))
                 await client.send_message(reaction.message.channel, out)
-    elif (reaction.emoji == '📌' or reaction.emoji == '📍'):
-        try:
-            await client.pin_message(reaction.message)
-        except discord.errors.HTTPException as e:
-            await client.send_message(reaction.message.channel, e) # If max pin limit has been reached
 
 @client.event
 async def on_server_join(server):
@@ -275,41 +269,6 @@ async def on_message(message):
                 choice = tmp.split(",")
                 out = str(random.choice(choice))
 
-        # This one is for me and eemie
-        elif message.content.startswith('!days'):
-            if message.server.id == cfg['Servers']['Brickhouse']:
-                if (message.author.id == cfg['Users']['eemie'] or message.author.id == cfg['Users']['aquova']):
-                    sqlconn = sqlite3.connect('database.db')
-                    today = datetime.date.today()
-                    if message.content == '!days reset':
-                        params = [message.author.id, today]
-                        sqlconn.execute("INSERT OR REPLACE INTO days (userid, last) VALUES (?, ?)", params)
-                        out = "Date updated, you sly dog :smirk:"
-                    elif message.content.startswith('!days reset'):
-                        target = " ".join(message.content.split(" ")[2:])
-                        # MM/DD/YYYY
-                        m = int(target[:2])
-                        d = int(target[3:5])
-                        y = int(target[6:10])
-                        day = datetime.date(y, m, d)
-                        params = [message.author.id, day]
-                        sqlconn.execute("INSERT OR REPLACE INTO days (userid, last) VALUES (?, ?)", params)
-                        out = "Date updated, you sly dog :smirk:"
-                    else:
-                        last_day = sqlconn.execute("SELECT last FROM days WHERE userid=?", [message.author.id]).fetchone()[0]
-                        last_day = datetime.datetime.strptime(last_day, '%Y-%m-%d').date()
-                        delta = today - last_day
-                        num = str(delta).split(" ")[0]
-                        tmp = ""
-                        try:
-                            for digit in num:
-                                tmp = tmp + num_emoji[int(digit)]
-                        except ValueError:
-                            tmp = ":zero:"
-                        out = "It has been {} days since your last time! :confetti_ball:".format(tmp)
-                sqlconn.commit()
-                sqlconn.close()
-
         elif (message.content.startswith('!deletethis') or message.content.startswith('!dt')):
             out = 'https://cdn.discordapp.com/attachments/214906642741854210/353702529277886471/delete_this.gif'
 
@@ -444,9 +403,6 @@ async def on_message(message):
             q = remove_command(message.content)
             out = google.search(q)[0].link
 
-        elif message.content.startswith('!iss'):
-            out = ISS.main(message.author.id)
-
         elif message.content.startswith('!img'):
             if message.content == '!img':
                 out = "!img QUERY"
@@ -489,42 +445,6 @@ async def on_message(message):
             await client.send_message(message.channel, pick_joke)
             await asyncio.sleep(5)
 
-        elif (message.content.startswith('!lovecalc') or message.content.startswith('!lc')):
-            name_a = message.content.split(" ")[1]
-            name_b = message.content.split(" ")[2]
-            love_url = 'https://love-calculator.p.mashape.com/getPercentage?fname={}&sname={}'.format(name_a, name_b)
-
-            headers = {
-                "X-Mashape-Key": cfg['Client']['mashape'],
-                "Accept": "application/json"
-            }
-
-            async with aiohttp.ClientSession() as session:
-                async with session.get(love_url, headers=headers) as resp:
-                    results = json.loads(resp.text())
-                    out = "{} and {} are {}% compatible. {}".format(name_a, name_b, results['percentage'], results['result'])
-
-        elif message.content.startswith('!mathfact'):
-            if message.content == '!mathfact':
-                out = '!mathfact NUMBER'
-            else:
-                num = message.content.split(" ")[1]
-                try:
-                    foo = int(num)
-                    fact_url = "https://numbersapi.p.mashape.com/{}/math?fragment=true&json=true".format(num)
-                    headers = {
-                        "X-Mashape-Key": cfg['Client']['mashape'],
-                        "Accept": "text/plain"
-                    }
-
-
-                    async with aiohttp.ClientSession() as session:
-                        async with session.get(fact_url, headers=headers) as resp:
-                            results = json.loads(resp.text())
-                            out = "{} is {}".format(num, results['text'])
-                except TypeError:
-                    out = "That is not a number, please try again."
-
         # Converts time into the Mayan calendar, why not
         elif message.content.startswith('!mayan'):
             parse = message.content.split(" ")
@@ -551,22 +471,6 @@ async def on_message(message):
                     out = "Your new nickname is {}".format(new)
                 except discord.errors.Forbidden:
                     out = "Aquobot does not have privileges to change nicknames on this server, or it is lower on the role hierarchy than the user you want to rename."
-
-        # Pins most recent message of specified user
-        elif message.content.startswith('!pin'):
-            if len(message.content) == 0:
-                out = '!pin @USERNAME'
-            else:
-                id = message.content.split(" ")[1]
-                id = id[3:-1]
-                user = discord.utils.get(message.server.members, id=id)
-                async for pin in client.logs_from(message.channel, limit=100):
-                    if (pin.author == user and pin.content != message.content):
-                        try:
-                            await client.pin_message(pin)
-                        except discord.errors.HTTPException as e:
-                            await client.send_message(message.channel, e) # If max pin limit has been reached
-                        break
 
         # Produces a poll where users can vote via reactions
         elif message.content.startswith('!poll'):
@@ -725,19 +629,6 @@ async def on_message(message):
             else:
                 await Speedrun.game(q, client, message)
 
-        elif message.content.startswith('!spellcheck'):
-            q = remove_command(message.content).replace(" ", "+")
-            sc_url = 'https://montanaflynn-spellcheck.p.mashape.com/check/?text=' + q
-            headers = {
-                "X-Mashape-Key": cfg['Client']['mashape'],
-                "Accept": "text/plain"
-            }
-
-            async with aiohttp.ClientSession() as session:
-                async with session.get(sc_url, headers=headers) as resp:
-                    results = json.loads(resp.text())
-                    out = "Suggestion: {}".format(results['suggestion'])
-
         # Can change "now playing" game title
         elif message.content.startswith('!status'):
             if message.author.id == cfg['Users']['aquova']:
@@ -769,7 +660,6 @@ async def on_message(message):
                     await client.send_message(message.channel, embed=embed)
                 else:
                     out = info
-                # out = Steam.get_userinfo(q) <- The old method
 
         elif message.content.startswith('!stop'):
             out = Select.stop()
@@ -922,50 +812,6 @@ async def on_message(message):
             except AttributeError:
                 out = "No results"
 
-        elif (message.content.startswith('!whatpulse') or message.content.startswith('!wp')):
-            sqlconn = sqlite3.connect('database.db')
-            if len(message.content.split(" ")) == 1:
-                userinfo = sqlconn.execute("SELECT username FROM whatpulse WHERE userid=?", [message.author.id,])
-                try:
-                    q = userinfo.fetchone()[0]
-                    info = Whatpulse.main(q)
-                    if isinstance(info, list):
-                        embed = discord.Embed(title=info[0], type='rich', description=info[8])
-                        embed.add_field(name='Date Joined', value=info[1])
-                        embed.add_field(name='Country', value=info[2])
-                        embed.add_field(name='Key Presses', value=info[3])
-                        embed.add_field(name='Clicks', value=info[4])
-                        embed.add_field(name='Downloaded', value=info[5])
-                        embed.add_field(name='Uploaded', value=info[6])
-                        embed.add_field(name='Team', value=info[7])
-                        await client.send_message(message.channel, embed=embed)
-                    else:
-                        out = info
-                except TypeError:
-                    out = "!whatpulse [set] USERNAME"
-            elif message.content.split(" ")[1].upper() == "SET":
-                username = " ".join(message.content.split(" ")[2:])
-                params = [message.author.id, username]
-                sqlconn.execute("INSERT OR REPLACE INTO whatpulse (userid, username) VALUES (?, ?)", params)
-                out = "User added"
-            else:
-                q = remove_command(message.content)
-                info = Whatpulse.main(q)
-                if isinstance(info, list):
-                    embed = discord.Embed(title=info[0], type='rich', description=info[8])
-                    embed.add_field(name='Date Joined', value=info[1])
-                    embed.add_field(name='Country', value=info[2])
-                    embed.add_field(name='Key Presses', value=info[3])
-                    embed.add_field(name='Clicks', value=info[4])
-                    embed.add_field(name='Downloaded', value=info[5])
-                    embed.add_field(name='Uploaded', value=info[6])
-                    embed.add_field(name='Team', value=info[7])
-                    await client.send_message(message.channel, embed=embed)
-                else:
-                    out = info
-            sqlconn.commit()
-            sqlconn.close()
-
         elif message.content.startswith('!wait'):
             out = "https://cdn.discordapp.com/attachments/296752525615431680/417678219408310283/8c9.png"
 
@@ -1046,9 +892,6 @@ async def on_message(message):
 
         elif "(╯°□°）╯︵ ┻━┻" in message.content.upper():
             out = "┬─┬﻿ ノ( ゜-゜ノ)"
-
-        elif ("FUCK ME" in message.content.upper() and message.author.id == cfg['Users']['eemie']):
-            out = "https://s-media-cache-ak0.pinimg.com/736x/48/2a/bf/482abf4c4f8cd8d9345253db901cf1d7.jpg"
 
         elif ("AQUOBOT" in message.content.upper() and (("FUCK" in message.content.upper()) or ("HATE" in message.content.upper()))):
             out = ":cold_sweat:"
