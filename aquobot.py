@@ -8,14 +8,12 @@ Requires Python 3.5+ to run
 
 import sys, discord, os
 from googletrans import Translator
-from google import google
-import lxml.etree as ET
-import aiohttp, signal, wolframalpha, async_timeout
+import aiohttp, signal, wolframalpha
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, time
 
 # Local python modules
 from commands import BF, Birthday, Blackjack, Cal, CustomCommands, Ecco, Emoji, Help, Jokes, Reminders
-from commands import Logging, MAL, Mayan, Morse, Roman, Quotes, Scrabble, Select, Steam, Slots
+from commands import Logging, MAL, Mayan, Morse, Roman, Quotes, Scrabble, Select, Steam, Slots, Search
 from commands import Speedrun, Todo, Upside, Weather, Youtube, Wikipedia, XKCD, Until
 from commands.Utils import remove_command
 
@@ -399,43 +397,19 @@ async def on_message(message):
                 except AttributeError:
                     out = "There is no user by that name, please try again. (Usernames are case sensitive)."
 
-        elif message.content.startswith('!g'):
-            q = remove_command(message.content)
-            out = google.search(q)[0].link
+        elif message.content.startswith('!g') or message.content.startswith("!google"):
+            if len(message.content) == 1:
+                out = "!g QUERY"
+            else:
+                q = remove_command(message.content)
+                out = await Search.google(q)
 
         elif message.content.startswith('!img'):
             if message.content == '!img':
                 out = "!img QUERY"
             else:
                 q = remove_command(message.content)
-                params = {'q': q,
-                    'safe': 'on',
-                    'lr': 'lang_en',
-                    'hl': 'en',
-                    'tbm': 'isch'
-                }
-
-                headers = {
-                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:54.0) Gecko/20100101 Firefox/54.0'
-                }
-
-                async with aiohttp.ClientSession() as session:
-                    try:
-                        with async_timeout.timeout(5):
-                            async with session.get('https://google.com/search', params=params, headers=headers) as resp:
-                                if resp.status == 200:
-                                    root = ET.fromstring(await resp.text(), ET.HTMLParser())
-                                    foo = root.xpath(".//div[@class='rg_meta notranslate']")[0].text
-                                    result = json.loads(foo)
-                                    out = result['ou']
-                                else:
-                                    out = "Google is unavailable I guess?\nError: {}".format(resp.response)
-                    except IndexError:
-                        out = "No search results found at all. Did you search for something naughty?"
-                    except asyncio.TimeoutError:
-                        out = "Timeout error"
-                    except Exception as e:
-                        out = "An unusual error of type {} occurred".format(type(e).__name__)
+                out = await Search.images(q)
 
         # Tells a joke from a pre-programmed list
         elif message.content.startswith('!joke'):
