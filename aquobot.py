@@ -335,7 +335,7 @@ async def on_message(message):
             out = "There's no !fw command, quit asking."
 
         # Tells a 7 day forecast based on user or location. Uses same database as weather
-        elif (message.content.startswith('!forecast') or message.content == '!f'):
+        elif (message.content.startswith('!forecast') or message.content.startswith('!f')):
             sqlconn = sqlite3.connect('database.db')
             author_id = int(message.author.id)
             author_name = message.author.name
@@ -795,7 +795,7 @@ async def on_message(message):
 
         # Returns with the weather of a specified location
         # Needs to be the last 'w' command
-        elif (message.content.startswith('!weather') or message.content == '!w'):
+        elif (message.content.startswith('!weather') or message.content.startswith('!w')):
             sqlconn = sqlite3.connect('database.db')
             author_id = int(message.author.id)
             author_name = message.author.name
