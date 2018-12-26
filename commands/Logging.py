@@ -7,12 +7,12 @@ def setup(servers):
     if not os.path.isdir("logs"):
         os.makedirs("logs")
         for server in servers:
-            folder = "logs/{}/{}".format(server.name, year)
+            folder = "logs/{}/{}".format(year, server.name)
             os.makedirs(folder)
     else:
         for server in servers:
             try:
-                folder = "logs/{}/{}".format(server.name, year)
+                folder = "logs/{}/{}".format(year, server.name)
                 if not os.path.isdir(folder):
                     os.makedirs(folder)
             except TypeError: # I'm not sure what causes this tbh
