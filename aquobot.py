@@ -311,7 +311,7 @@ async def on_message(message):
 
         # Presents feedback to a special feedback channel, which authorized users can respond to
         elif message.content.startswith('!feedback'):
-            if (message.author.id == cfg['Users']['aquova'] or message.author.id == cfg['Users']['eemie']):
+            if message.author.id == cfg['Users']['aquova']:
                 if message.content == '!feedback':
                     out = '!feedback CHANNEL_ID MESSAGE'
                 else:
@@ -484,8 +484,8 @@ async def on_message(message):
         elif message.content.startswith('!quote'):
             out = Quotes.main(message)
 
-        elif message.content.startswith('!remind'):
-            await Reminders.main(client, message)
+        # elif message.content.startswith('!remind'):
+        #     await Reminders.main(client, message)
 
         elif message.content.startswith('!rockpaperscissors') or message.content.startswith('!rps'):
             if len(message.content.split(" ")) == 1:
@@ -547,7 +547,7 @@ async def on_message(message):
             server_list = client.servers
             server_num = str(len(server_list))
             out = "I am currently a member of {} servers".format(server_num)
-            if (message.content == '!servers list' and (message.author.id == cfg['Users']['aquova'] or message.author.id == cfg['Users']['eemie'])):
+            if (message.content == '!servers list' and message.author.id == cfg['Users']['aquova']):
                 for server in server_list:
                     out += '\n' + server.name
 
@@ -672,9 +672,6 @@ async def on_message(message):
         elif message.content.startswith('!todo'):
             out = Todo.main(message.content, message.author.name, message.author.id, str(message.timestamp))
 
-        elif message.content.startswith('!trapcard'):
-            out = 'https://pbs.twimg.com/media/CXnDzNFWAAA70wX.jpg'
-
         elif (message.content.startswith('!tr') or message.content.startswith('!translate')):
             if (message.content == '!tr' or message.content == '!translate'):
                 out = '!tr SOURCE_LANG MESSAGE'
@@ -785,9 +782,6 @@ async def on_message(message):
                 out = next(res.results).text
             except AttributeError:
                 out = "No results"
-
-        elif message.content.startswith('!wait'):
-            out = "https://cdn.discordapp.com/attachments/296752525615431680/417678219408310283/8c9.png"
 
         elif message.content.startswith('!wiki'):
             q = remove_command(message.content)
