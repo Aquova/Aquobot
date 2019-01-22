@@ -1,4 +1,4 @@
-import aiohttp, async_timeout, json
+import aiohttp, async_timeout, json, asyncio
 import lxml.etree as ET
 
 # I probably could combine these into one function someday
