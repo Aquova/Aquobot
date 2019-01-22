@@ -6,7 +6,7 @@
 *discord.log
 logs
 
-# System generated files 
+# System generated files
 .DS_Store
 __pycache__
 *.swp
@@ -18,3 +18,4 @@ __pycache__
 
 # Simply isn't needed
 ecco.png
+ecco.gif

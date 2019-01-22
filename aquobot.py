@@ -8,6 +8,7 @@ Requires Python 3.5+ to run
 
 import sys, discord, os
 from googletrans import Translator
+from shutil import which
 import aiohttp, signal, wolframalpha
 import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, time
 
@@ -182,7 +183,7 @@ async def on_message(message):
             try:
                 if message.author.id == cfg['Users']['aquova']:
                     await client.send_message(message.channel, "Restarting and updating...")
-                    subprocess.call("./update.sh", shell=True)
+                    subprocess.call(["./update.sh"])
                     sys.exit()
             except KeyError:
                 out = "Need to update config.json with owner and admin User IDs"
@@ -602,6 +603,22 @@ async def on_message(message):
                 await Speedrun.user(remove_command(q), client, message)
             else:
                 await Speedrun.game(q, client, message)
+
+        elif message.content.startswith("!spoiler"):
+            if message.content == '!spoiler':
+                out = '!spoiler PHRASE'
+            else:
+                q = remove_command(message.content)
+                valid = Ecco.text(q)
+                if valid == 'ERROR':
+                    out = 'That phrase used an invalid character. Please try again.'
+                else:
+                    if which("convert") is None:
+                        await client.send_message(message.channel, "This command requires ImageMagick to be installed. Tell aquova to install it.")
+                        return
+
+                    subprocess.call(["convert", "./commands/EccoBackground.png", "./commands/ecco.png", "-delay", "100", "-loop", "1", "./commands/ecco.gif"])
+                    await client.send_file(message.channel, fp='./commands/ecco.gif')
 
         # Can change "now playing" game title
         elif message.content.startswith('!status'):
