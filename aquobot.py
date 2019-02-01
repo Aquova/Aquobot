@@ -14,7 +14,7 @@ import asyncio, json, subprocess, logging, random, sqlite3, datetime, urllib, ti
 
 # Local python modules
 from commands import BF, Birthday, Blackjack, Cal, CustomCommands, Ecco, Emoji, Help, Jokes, Reminders
-from commands import Logging, MAL, Mayan, Morse, Roman, Quotes, Scrabble, Select, Steam, Slots, Search
+from commands import Logging, MAL, Mayan, Minesweeper, Morse, Roman, Quotes, Scrabble, Select, Steam, Slots, Search
 from commands import Speedrun, Todo, Upside, Weather, Youtube, Wikipedia, XKCD, Until
 from commands.Utils import remove_command
 
@@ -427,6 +427,15 @@ async def on_message(message):
                 out = '!mayan MM-DD-YYYY/TODAY'
             else:
                 out = "That date is " + str(Mayan.mayan(parse[1])) + " in the Mayan Long Count"
+
+        # Posts a Minesweeper board using spoiler tags
+        elif message.content.startswith("!minesweeper"):
+            await client.send_message(message.channel, "Generating Minesweeper board, please wait.")
+            ms = Minesweeper.Minesweeper()
+            ms.generate()
+            rows = ms.getBoard()
+            for line in rows:
+                await client.send_message(message.channel, line)
 
         # Converts message into/out of morse code
         elif message.content.startswith('!morse'):

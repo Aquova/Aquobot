@@ -29,6 +29,7 @@ info = {
 	'lc':['!lc NAME1 NAME2', 'Gives the compatibility of two people. Toally not bogus.', 'Can also be used with "!lovecalc"'],
 	'mathfact':['!mathfact INTEGER', 'Gives mathematical facts about a number', ''],
 	'mayan':['!mayan MM-DD-YYYY', 'Converts the date into the Mayan Long Count', ''],
+	'minesweeper':['!minesweeper', 'Creates a Minesweeper board using spoiler tags!', ''],
 	'morse':['!morse MESSAGE', 'Converts message into or out of morse code', ''],
 	'myanimelist':['!myanimelist [set] USERNAME', 'Shows the MyAnimeList profile of the given user', 'Also works with "!mal"'],
 	'mal':['!mal [set] USERNAME', 'Shows the MyAnimeList profile of the given user', 'Also works with "!myanimelist"'],
