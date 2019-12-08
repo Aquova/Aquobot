@@ -28,7 +28,7 @@ async def google(searchTerm):
         except asyncio.TimeoutError:
             out = "Timeout error"
         except Exception as e:
-            out = "An unusual error of type {} occurred: ".format(type(e).__name__, str(e))
+            out = "An unusual error of type {} occurred: {}".format(type(e).__name__, str(e))
 
         return out
 

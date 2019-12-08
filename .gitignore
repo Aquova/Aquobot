@@ -1,21 +1,22 @@
-# Config/Private data
-*.json
+# Private files
+config.json
+**/private/*
 *.db
 
-# Bot logging files
-*discord.log
-logs
+# Editor files
+*.swp
+*.code-workspace
 
-# System generated files
+# Virtualenv stuff
+bin/*
+include/*
+lib/*
+local/*
+share/*
+.Python
+pip-selfcheck.json
+
+# Other junk
 .DS_Store
 __pycache__
-*.swp
 
-# VSCode files
-.vscode
-*.code-workspace
-*.pylintrc
-
-# Simply isn't needed
-ecco.png
-ecco.gif
