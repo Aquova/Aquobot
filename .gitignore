@@ -2,6 +2,12 @@
 *.json
 *.db
 
+# Python virtualenv files
+bin/**
+include/**
+lib/**
+share/**
+
 # Bot logging files
 *discord.log
 logs
@@ -12,7 +18,7 @@ __pycache__
 *.swp
 
 # VSCode files
-.vscode
+.vscode/**
 *.code-workspace
 *.pylintrc
 
