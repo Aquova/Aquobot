@@ -8,7 +8,7 @@ geopy==1.11.0
 async_timeout==1.4.0
 requests==2.12.4
 discord.py==0.16.11
-Pillow==5.1.0
+Pillow==6.2.0
 google_api_python_client==1.6.7
 discord==0.0.2
 protobuf==3.5.2.post1
