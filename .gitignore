@@ -3,10 +3,10 @@
 *.db
 
 # Python virtualenv files
-bin/**
-include/**
-lib/**
-share/**
+**/bin
+**/include
+**/lib
+**/share
 
 # Bot logging files
 *discord.log
@@ -18,8 +18,6 @@ __pycache__
 *.swp
 
 # VSCode files
-.vscode/**
-*.code-workspace
 *.pylintrc
 
 # Simply isn't needed

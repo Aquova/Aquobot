@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "/home/aquova/Desktop/git/aquobot"
+		}
+	],
+	"settings": {
+		"search.exclude": {
+			"**/bin": true,
+			"**/include": true,
+			"**/lib": true
+		}
+	}
+}
