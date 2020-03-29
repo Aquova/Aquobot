@@ -43,7 +43,7 @@ async def main(client, m):
     except TypeError:
         userMoney = 0
 
-    await client.send_message(m.channel, "Alright {}, time to play Blackjack!".format(m.author.name))
+    await m.channel.send("Alright {}, time to play Blackjack!".format(m.author.name))
 
     # Initialize deck and hands
     deck = Deck()
@@ -54,18 +54,18 @@ async def main(client, m):
     dealer.add(deck.deal(2))
     player.add(deck.deal(2))
 
-    await client.send_message(m.channel, "Okay {}, you've drawn a {} and {}, for a total of {}".format(m.author.name, player.cards[0], player.cards[1], player.value))
+    await m.channel.send("Okay {}, you've drawn a {} and {}, for a total of {}".format(m.author.name, player.cards[0], player.cards[1], player.value))
 
     # If player blackjacks, finished
     if player.value == 21:
         userMoney += 150
-        await client.send_message(m.channel, "{}: Blackjack!! You win! You now have {} points!".format(m.author.name, userMoney))
+        await m.channel.send("{}: Blackjack!! You win! You now have {} points!".format(m.author.name, userMoney))
         params = [m.author.id, userMoney]
         sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)
     # If dealer blackjacks, finished
     elif dealer.value == 21:
         userMoney -= 100
-        await client.send_message(m.channel, "{}: The dealer has a Blackjack, you lose. You now have {} points".format(m.author.name,userMoney))
+        await m.channel.send("{}: The dealer has a Blackjack, you lose. You now have {} points".format(m.author.name,userMoney))
         params = [m.author.id, userMoney]
         sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)
     else:
@@ -74,13 +74,13 @@ async def main(client, m):
         # While no player has passed 21, continue playing
         while (dealer.value < 21 and player.value < 21):
             if first:
-                await client.send_message(m.channel, "{}: Would you like to 'hit', 'stand', or 'double down' ('dd')?".format(m.author.name))
+                await m.channel.send("{}: Would you like to 'hit', 'stand', or 'double down' ('dd')?".format(m.author.name))
             else:
-                await client.send_message(m.channel, "{}: Would you like to 'hit' or 'stand'?".format(m.author.name))
+                await m.channel.send("{}: Would you like to 'hit' or 'stand'?".format(m.author.name))
 
             msg = await client.wait_for_message(author=m.author, timeout=10)
             if msg == None:
-                await client.send_message(m.channel, "{}: I'm sorry, but you have taken too long to respond".format(m.author.name))
+                await m.channel.send("{}: I'm sorry, but you have taken too long to respond".format(m.author.name))
                 break
             # If player stands, calculate dealers final score
             elif msg.content.upper() == 'STAND':
@@ -93,7 +93,7 @@ async def main(client, m):
                 first = False
                 newCard = deck.deal(1)
                 player.add(newCard)
-                await client.send_message(m.channel, "{}: You drew a {}, your new total is {}".format(m.author.name, newCard[0], player.value))
+                await m.channel.send("{}: You drew a {}, your new total is {}".format(m.author.name, newCard[0], player.value))
                 if player.value > 21:
                     break
             # Double down gives one more card, and multiplies points by 'dd' multiplier
@@ -101,7 +101,7 @@ async def main(client, m):
                 dd = 2
                 newCard = deck.deal(1)
                 player.add(newCard)
-                await client.send_message(m.channel, "{}: You've chosen to double down! You get one more card, and the bets are doubled.\nYou drew a {}, your new total is {}".format(m.author.name, newCard[0], player.value))
+                await m.channel.send("{}: You've chosen to double down! You get one more card, and the bets are doubled.\nYou drew a {}, your new total is {}".format(m.author.name, newCard[0], player.value))
                 if player.value > 21:
                     break
                 else:
@@ -109,23 +109,23 @@ async def main(client, m):
                         dealer.add(deck.deal(1))
                     break
             else:
-                await client.send_message(m.channel, "{}: That's not a valid answer, try again.".format(m.author.name))
+                await m.channel.send("{}: That's not a valid answer, try again.".format(m.author.name))
 
         # Send corresponding message regarding current user points
         if dealer.value > 21:
             userMoney += 50 * dd
-            await client.send_message(m.channel, "{}: The dealer has gone over 21, you win! You now have {} points".format(m.author.name,userMoney))
+            await m.channel.send("{}: The dealer has gone over 21, you win! You now have {} points".format(m.author.name,userMoney))
         elif player.value > 21:
             userMoney -= 50 * dd
-            await client.send_message(m.channel, "{}: You have gone over 21, you lose.. You now have {} points".format(m.author.name,userMoney))
+            await m.channel.send("{}: You have gone over 21, you lose.. You now have {} points".format(m.author.name,userMoney))
         elif dealer.value > player.value:
             userMoney -= 50 * dd
-            await client.send_message(m.channel, "{}: The dealer had {} while you had {}, you lose. You now have {} points".format(m.author.name, dealer.value, player.value, userMoney))
+            await m.channel.send("{}: The dealer had {} while you had {}, you lose. You now have {} points".format(m.author.name, dealer.value, player.value, userMoney))
         elif dealer.value == player.value:
-            await client.send_message(m.channel, "{}: The dealer had {} while you had {}, it's a draw! You still have {} points".format(m.author.name,dealer.value, player.value, userMoney))
+            await m.channel.send("{}: The dealer had {} while you had {}, it's a draw! You still have {} points".format(m.author.name,dealer.value, player.value, userMoney))
         else:
             userMoney += 50 * dd
-            await client.send_message(m.channel, "{}: The dealer has {}, but you have {}! You win! You now have {} points".format(m.author.name, dealer.value, player.value, userMoney))
+            await m.channel.send("{}: The dealer has {}, but you have {}! You win! You now have {} points".format(m.author.name, dealer.value, player.value, userMoney))
 
         params = [m.author.id, userMoney]
         sqlconn.execute("INSERT OR REPLACE INTO points (userid, value) VALUES (?, ?)", params)

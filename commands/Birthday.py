@@ -51,13 +51,9 @@ async def check_birthday(client):
                 if str(bday_ids[j]) in ids:
                     mess = "Today is {}'s birthday! Everybody wish them a happy birthday! :birthday:".format(bday_names[j])
                     try:
-                        await client.send_message(server.default_channel, mess)
+                        await server.default_channel.send(mess)
                     except discord.errors.InvalidArgument:
                         pass
-                        # Maybe check for first channel with send_message permissions?
-                        # for channel in server.channels:
-                        #     await client.send_message(channel, mess)
-                        #     break
 
     sqlconn.commit()
     sqlconn.close()

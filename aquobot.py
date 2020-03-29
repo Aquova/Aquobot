@@ -3,29 +3,25 @@ The Aquobot program for Discord
 http://github.com/aquova/Aquobot
 
 Written by Austin Bricker, 2017-2020
-Requires Python 3.5+ to run
 """
 
 import sys, discord, os
-from googletrans import Translator
-from shutil import which
-import aiohttp, signal, wolframalpha
-import asyncio, json, subprocess, random, sqlite3, datetime, urllib, time
+# from googletrans import Translator
+import asyncio, json, subprocess, random, sqlite3, datetime, time
 
 # Local python modules
-from commands import Birthday, Blackjack, Ecco, Help, Jokes
+from commands import Birthday, Blackjack, Ecco, Jokes
 from commands import Minesweeper, Quotes, Select, Search
-from commands import Weather, Youtube
+# from commands import Weather, Youtube
 from commands.Utils import remove_command
 
 # config.json isn't included in repository, to protect public keys
-with open(os.path.join(sys.path[0], 'config.json')) as json_data_file:
+with open('config.json') as json_data_file:
     cfg = json.load(json_data_file)
 
 discord_key = str(cfg['Client']['discord'])
 
 client = discord.Client()
-waclient = wolframalpha.Client(wolfram_key)
 
 # Setup persistant database
 sqlconn = sqlite3.connect('database.db')
@@ -46,12 +42,6 @@ async def on_ready():
     print(client.user.id)
     print('------')
 
-    # Set up "now playing" dialogue
-    game_object = discord.Game(name="type !help", type=0)
-    await client.change_presence(game=game_object)
-
-    Logging.setup(client.servers)
-
     dateCheck = datetime.time(7, 0) # Check for birthday everyday at 7 AM
     diff = datetime.timedelta(hours=24) - (datetime.datetime.combine(datetime.date.min, datetime.datetime.now().time()) - datetime.datetime.combine(datetime.date.min, dateCheck))
     await asyncio.sleep(diff.seconds)
@@ -70,7 +60,7 @@ async def on_reaction_add(reaction, user):
         if reaction.message.attachments != []:
             for item in reaction.message.attachments:
                 mes += '\n' + item['url']
-        server_id = reaction.message.server.id
+        server_id = reaction.message.guild.id
         if mes != "":
             mes_id = int(reaction.message.id)
             sqlconn = sqlite3.connect('database.db')
@@ -86,28 +76,20 @@ async def on_reaction_add(reaction, user):
                 sqlconn.commit()
                 sqlconn.close()
                 out = 'Quote added by {}: "{}" ~{}. (#{})'.format(user.name, mes, user_name, str(num + 1))
-                await client.send_message(reaction.message.channel, out)
+                await reaction.message.channel.send(out)
 
 # Upon typed message in chat
 @client.event
 async def on_message(message):
-    # if message.author.id == client.user.id:
     if message.author.bot:
         return
     try:
         out = ""
-        # !help links to website with command list
-        if message.content.startswith("!help"):
-            if message.content == '!help':
-                out = "http://aquova.github.io/Aquobot\nFor help on a specific command, type `!help COMMAND`"
-            else:
-                out = Help.main(remove_command(message.content))
-
         # Updates bot to most recent version
-        elif message.content.startswith("!update"):
+        if message.content.startswith("!update"):
             try:
                 if message.author.id == cfg['Users']['aquova']:
-                    await client.send_message(message.channel, "Restarting and updating...")
+                    await message.channel.send("Restarting and updating...")
                     subprocess.call(["./update.sh"])
                     sys.exit()
             except KeyError:
@@ -117,12 +99,8 @@ async def on_message(message):
         elif message.content.startswith('!alive'):
             out = random.choice(['Nah.', 'Who wants to know?', ':robot: `yes`', "I wouldn't be responding if I were dead."])
 
-        # Gives brief overview of the bot
-        elif message.content.startswith('!about'):
-            out = "Hello, my name is Aquobot. I was written by aquova so he would have something interesting to put on a resume. I am currently connected to {} servers, and I look forward to spending time with you! If you want to have me on your server, go visit <https://discordapp.com/oauth2/authorize?client_id=323620520073625601&scope=bot&permISSions=0>, and ~~when~~ if that doesn't work, contact Aquova#1296.".format(len(client.servers))
-
         elif message.content.startswith('!ban'):
-            out = Select.ban(message.server.members, message.author.name)
+            out = Select.ban(message.guild.members, message.author.name)
 
         # Database of user birthdays. Will notify server if user's birthday on list is that day
         elif message.content.startswith('!birthday'):
@@ -222,7 +200,7 @@ async def on_message(message):
                 out = message.author.avatar_url.replace("webp", "png")
             else:
                 q = remove_command(message.content)
-                mem = discord.utils.get(message.server.members, name=q)
+                mem = discord.utils.get(message.guild.members, name=q)
                 try:
                     out = mem.avatar_url.replace("webp", "png")
                 except AttributeError:
@@ -247,17 +225,17 @@ async def on_message(message):
             joke_list = Jokes.joke()
             pick_joke = random.choice(list(joke_list.keys()))
             out = joke_list[pick_joke]
-            await client.send_message(message.channel, pick_joke)
+            await message.channel.send(pick_joke)
             await asyncio.sleep(5)
 
         # Posts a Minesweeper board using spoiler tags
         elif message.content.startswith("!minesweeper"):
-            await client.send_message(message.channel, "Generating Minesweeper board, please wait.")
+            await message.channel.send("Generating Minesweeper board, please wait.")
             ms = Minesweeper.Minesweeper()
             ms.generate()
             rows = ms.getBoard()
             for line in rows:
-                await client.send_message(message.channel, line)
+                await message.channel.send(line)
 
         # Produces a poll where users can vote via reactions
         elif message.content.startswith('!poll'):
@@ -273,7 +251,7 @@ async def on_message(message):
                     i += 1
                     poll = poll + str(i) + ". " + item + '\n'
 
-                poll_message = await client.send_message(message.channel, poll)
+                poll_message = await message.channel.send(poll)
 
                 for j in range(1, num + 1):
                     await client.add_reaction(poll_message, num_emoji[j])
@@ -307,7 +285,7 @@ async def on_message(message):
                     out += '\n' + server.name
 
         elif message.content.startswith('!serverinfo'):
-            server = message.server
+            server = message.guild
             name = server.name
             serv_id = server.id
             embed = discord.Embed(title=name, type='rich', description=serv_id)
@@ -328,7 +306,7 @@ async def on_message(message):
             embed.add_field(name='Number of Channels', value=channel_count)
             embed.add_field(name='Number of Roles', value=len(roles))
 
-            await client.send_message(message.channel, embed=embed)
+            await message.channel.send(embed=embed)
 
         # Can change "now playing" game title
         elif message.content.startswith('!status'):
@@ -398,9 +376,9 @@ async def on_message(message):
                 q = str(remove_command(message.content))
                 if q.startswith('<@'):
                     id = ''.join(c for c in q if c.isdigit())
-                    mem = discord.utils.get(message.server.members, id=id)
+                    mem = discord.utils.get(message.guild.members, id=id)
                 else:
-                    mem = discord.utils.get(message.server.members, name=q)
+                    mem = discord.utils.get(message.guild.members, name=q)
             try:
                 username = mem.name + '#' + mem.discriminator
                 created = mem.created_at.strftime('%B %d, %Y %I:%M %p')
@@ -427,7 +405,7 @@ async def on_message(message):
                 embed.add_field(name='Server Roles', value=roles)
                 embed.set_thumbnail(url=avatar)
 
-                await client.send_message(message.channel, embed=embed)
+                await client.send(message.channel, embed=embed)
             except AttributeError:
                 out = "There is no user by that name, please try again. (Usernames are case sensitive)."
 
@@ -486,25 +464,22 @@ async def on_message(message):
             q = remove_command(message.content)
             out = Youtube.search(q)
 
-        if out != "":
-            await client.send_typing(message.channel)
-
         if len(str(out)) > 2000:
             # There's probably a slicker way than this. This also relies on there being line breaks
             lines = out.split('\n')
             if len(lines) == 1:
-                await client.send_message(message.channel, "That message is longer than Discord's message limit. Tell aquova to make a permanent fix.")
+                await message.channel.send("That message is longer than Discord's message limit. Tell aquova to make a permanent fix.")
 
             newOut = ""
             for line in lines:
                 if len(newOut) + len(line) < 2000:
                     newOut += '\n' + line
                 else:
-                    await client.send_message(message.channel, newOut)
+                    await message.channel.send(newOut)
                     newOut = line
-            await client.send_message(message.channel, newOut)
+            await message.channel.send(newOut)
         else:
-            await client.send_message(message.channel, out)
+            await message.channel.send(out)
 
     except discord.errors.HTTPException:
         pass

@@ -3,7 +3,7 @@ from commands.Utils import remove_command
 
 def main(message):
     sqlconn = sqlite3.connect('database.db')
-    mes_server = message.server.id
+    mes_server = message.guild.id
     if message.content == '!quote':
         try:
             valid = sqlconn.execute("SELECT quote FROM quotes WHERE serverid=?", [mes_server])
